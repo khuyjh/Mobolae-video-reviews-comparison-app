@@ -15,7 +15,7 @@ const TestPage = () => {
   };
 
   return (
-    <div className='bg-gray-100 p-8'>
+    <div className='bg-gray-800 p-8'>
       <ProductCard {...dummyData} />
     </div>
   );

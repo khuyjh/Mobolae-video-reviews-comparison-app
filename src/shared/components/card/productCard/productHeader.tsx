@@ -12,10 +12,10 @@ interface ProductHeaderProps {
 
 const ProductHeader = ({ chipLabel, title, views }: ProductHeaderProps) => {
   return (
-    <div>
-      <Chip>{chipLabel}</Chip>
-      <h2>{title}</h2>
-      <p>조회 {views}</p>
+    <div className='flex flex-col items-start gap-[10px]'>
+      <Chip className='text-xs-regular bg-[#23B5811A] text-[#23B581]'>{chipLabel}</Chip>
+      <h2 className='text-xl-semibold text-white'>{title}</h2>
+      <p className='text-md-light text-gray-600'>조회 {views}</p>
     </div>
   );
 };
