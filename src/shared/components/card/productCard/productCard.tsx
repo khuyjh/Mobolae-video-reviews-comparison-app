@@ -13,25 +13,35 @@ interface ProductCardProps {
   title: string;
   views: number;
   description: string;
+  isEditable: boolean;
 }
 
-const ProductCard = ({ imageSrc, chipLabel, title, views, description }: ProductCardProps) => {
+const ProductCard = ({
+  imageSrc,
+  chipLabel,
+  title,
+  views,
+  description,
+  isEditable,
+}: ProductCardProps) => {
   return (
-    <div>
+    <div className='flex flex-col md:flex-row'>
       {/* 이미지 섹션 */}
       <div>
-        <img src={imageSrc} alt='' />
+        <img src={imageSrc} alt='' className='h-full w-full object-cover' />
       </div>
 
       {/* 콘텐츠 섹션 */}
-      <div>
-        {/* 헤더 (칩, 제목, 조회수) */}
-        <ProductHeader chipLabel={chipLabel} title={title} views={views} />
-        {/* 액션 버튼 (찜, 공유) */}
-        <ProductActions />
+      <div className='flex flex-1 flex-col p-[20px]'>
+        <div className='flex items-start justify-between'>
+          {/* 헤더 (칩, 제목, 조회수) */}
+          <ProductHeader chipLabel={chipLabel} title={title} views={views} />
+          {/* 액션 버튼 (찜, 공유) */}
+          <ProductActions />
+        </div>
         {/* 설명 */}
         <ProductDescription description={description} />
-        <ProductButtons />
+        <ProductButtons isEditable={isEditable} />
       </div>
     </div>
   );
