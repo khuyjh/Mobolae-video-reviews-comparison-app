@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 
-import CategorySidebar from '@/app/components/CategorySidebar';
+import CategorySidebar from '@/features/mainPage/components/CategorySidebar';
 import { CATEGORIES } from '@/shared/constants/constants';
 import { CategoryMenuProps } from '@/shared/types/CategoryTypes';
 

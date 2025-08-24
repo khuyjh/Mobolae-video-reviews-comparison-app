@@ -16,14 +16,9 @@ const VARIANT_STYLE = {
 const BASE_STYLE =
   'xl:text-lg-semibold flex h-[50px] w-full max-w-[335px] cursor-pointer items-center justify-center rounded-md font-semibold whitespace-nowrap disabled:cursor-auto md:h-[55px] md:max-w-110 xl:h-[65px] xl:max-w-160';
 
-const Button = ({ type = 'button', variant = 'primary', ...props }: Props) => {
+const Button = ({ className, type = 'button', variant = 'primary', ...props }: Props) => {
   return (
-    <button
-      className={cn(BASE_STYLE, VARIANT_STYLE[variant], props.className)}
-      type={type}
-      disabled={props.disabled}
-      onClick={props.onClick}
-    >
+    <button className={cn(BASE_STYLE, VARIANT_STYLE[variant], className)} type={type} {...props}>
       {props.children}
     </button>
   );

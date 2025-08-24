@@ -17,7 +17,7 @@ const chipVariants = cva(
       },
       /* 칩의 크기 (패딩, 폰트 사이즈) */
       size: {
-        ranking: 'px-[8px] py-[2px] text-sm-regular',
+        ranking: 'px-[8px] py-[2px] text-xs-regular',
         category: 'px-[10px] py-[4px] text-lg-medium',
         filter: 'px-[12px] py-[6px] text-md-regular',
         thumbs: 'px-[12px] py-[6px] text-md-regular',

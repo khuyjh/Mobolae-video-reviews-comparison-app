@@ -1,6 +1,6 @@
 import React from 'react';
 
-import CategoryItem from '@/app/components/CategoryItem';
+import CategoryItem from '@/features/mainPage/components/CategoryItem';
 import { Category } from '@/shared/types/CategoryTypes';
 
 /**
