@@ -6,20 +6,22 @@ import KakaotalkIcon from '../../../../../public/icons/kakaotalk.svg';
 import ShareIcon from '../../../../../public/icons/share.svg';
 
 const ProductActions = () => {
-  <div>
+  return (
     <div>
+      <div>
+        <button>
+          <KakaotalkIcon />
+        </button>
+        <button>
+          <ShareIcon />
+        </button>
+      </div>
+
       <button>
-        <KakaotalkIcon />
-      </button>
-      <button>
-        <ShareIcon />
+        <Heart />
       </button>
     </div>
-
-    <button>
-      <Heart />
-    </button>
-  </div>;
+  );
 };
 
 export default ProductActions;
