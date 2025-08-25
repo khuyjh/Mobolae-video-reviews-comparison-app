@@ -6,6 +6,6 @@ export function toCompareChip(index: number, keyword: string): ChipProps {
   return {
     variant: 'compare',
     colorKey,
-    children: keyword, // 검색어 그대로 보여줌
+    children: keyword,
   };
 }

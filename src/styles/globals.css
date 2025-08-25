@@ -26,20 +26,31 @@
   /* chip color*/
   --color-green-500: #23b581;
   --color-green-50: #23b5811a;
+
   --color-purple-500: #a953ff;
   --color-purple-50: #a953ff1a;
+
   --color-pink-500: #d676c1;
   --color-pink-50: #d676c11a;
   --color-pink-400: #fd529a;
   --color-pink-100: #fd529a1a;
+
   --color-orange-500: #ff7e46;
   --color-orange-50: #ff7e461a;
+
   --color-blue-500: #3098e3;
+  --color-blue-400: #5363ff;
   --color-blue-50: #3098e31a;
+
   --color-yellow-500: #c5d17c;
   --color-yellow-50: #c5d17c1a;
+
   --color-red-500: #f75532;
   --color-red-100: #f755321a;
+
+  --color-gray-50: #9fa6b21a;
+
+  --color-black-50: #00000080;
 }
 
 @layer utilities {

@@ -9,7 +9,7 @@ export function buildRankingMap<T extends { id: number; reviewCount: number }>(
   return new Map(
     [...items]
       .sort((a, b) => b.reviewCount - a.reviewCount)
-      .slice(0, 5)
+      .slice(0, 5) //5위까지
       .map((item, index) => [item.id, index + 1]),
   );
 }

@@ -102,12 +102,19 @@ const _Chip = ({
   ...props
 }: ChipProps) => {
   let colorClass = '';
+  let iconColorClass = '';
 
   switch (variant) {
     case 'thumbs':
+      iconColorClass = isToggled ? 'text-blue-400' : 'text-gray-400 group-hover:text-gray-300';
       colorClass = isToggled
-        ? 'bg-red-500 border-red-500 text-white shadow-lg'
-        : 'bg-gray-100 border-gray-300 text-gray-600 hover:bg-gray-200';
+        ? 'bg-black-800 border border-black-700 text-pink gap-[5px] tesx-xs-regular xl:text-md-regular '
+        : 'bg-black-800 border border-black-700 text-gray-400 hover:text-gray-300 gap-[5px] tesx-xs-regular xl:text-md-regular';
+      break;
+    case 'filter':
+      iconColorClass = 'text-gray-400 group-hover:text-gray-300';
+      colorClass =
+        'bg-black-800 border-black-700 text-gray-400 hover:text-gray-300 border border-black-700';
       break;
     default:
       colorClass = colorKey
@@ -116,28 +123,32 @@ const _Chip = ({
   }
 
   const renderContent = () => {
+    const thumbsIconClasses = 'w-[14px] h-[14px] md:w-[18px] md:h-[18px]';
+    const compareIconClasses = 'w-[17px] h-[17px] md:w-[19px] md:h-[19px]';
     switch (variant) {
       case 'filter':
         return (
           <>
-            <Shapes size={16} />
+            <Shapes size={18} className={iconColorClass} />
             {children}
           </>
         );
       case 'thumbs':
         return (
           <>
-            <ThumbsUp size={16} />
+            <ThumbsUp className={cn(iconColorClass, thumbsIconClasses)} />
             {children}
           </>
         );
       case 'compare':
         if (onRemove) {
           return (
-            <div className='inline-flex items-center gap-1'>
+            <div className='inline-flex items-center gap-[10px]'>
               {children}
-              <button onClick={onRemove} className='focus:outline-none'>
-                <X size={16} className='rounded-sm border border-black text-white' />
+              <button onClick={onRemove} className='bg-black-50 rounded-[6px] focus:outline-none'>
+                <X
+                  className={cn('rounded-sm border border-black text-white', compareIconClasses)}
+                />
               </button>
             </div>
           );
