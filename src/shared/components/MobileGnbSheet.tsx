@@ -4,7 +4,7 @@ import Link from 'next/link';
 
 import { MenuIcon } from 'lucide-react';
 
-import BottomSheet from '@/shared/components/MobileBottomSheet';
+import MobileBottomSheet from '@/shared/components/MobileBottomSheet';
 import { SheetClose } from '@/shared/components/ui/sheet';
 
 interface GnbSheetProps {
@@ -20,7 +20,7 @@ interface GnbSheetProps {
  *   - 로그인 상태: 비교하기, 마이페이지
  *   - 비로그인 상태: 로그인, 회원가입
  */
-export default function MobileGnbSheet({ isLoggedIn }: GnbSheetProps) {
+const MobileGnbSheet = ({ isLoggedIn }: GnbSheetProps) => {
   // 로그인 여부에 따라 메뉴 항목을 분기
   const items = isLoggedIn
     ? [
@@ -34,32 +34,21 @@ export default function MobileGnbSheet({ isLoggedIn }: GnbSheetProps) {
 
   return (
     <div className='md:hidden'>
-      <BottomSheet
+      <MobileBottomSheet
         trigger={
           <button type='button' aria-label='메뉴 열기'>
-            {/* 햄버거 아이콘 */}
             <MenuIcon className='transition-color size-5 text-gray-400 duration-200 hover:text-white' />
           </button>
         }
-        side='bottom'
-        className='rounded-t-lg'
-        a11yTitle='GNB 메뉴'
-        a11yDescription='메뉴 항목을 선택하세요.'
+        title='메뉴'
       >
-        {/* 시트 내부 헤더 */}
-        <div className='px-4'>
-          <h3 className='text-base-semibold text-white'>메뉴</h3>
-        </div>
-
-        {/* 시트 내부 메뉴 리스트 */}
-        <ul>
+        <ul className='flex flex-col space-y-4'>
           {items.map((item) => (
             <li key={item.href}>
-              {/* 메뉴 클릭 시 자동으로 시트 닫힘 */}
               <SheetClose asChild>
                 <Link
                   href={item.href}
-                  className='border-black-800 text-md-medium xl:text-base-medium hover:bg-black-800 mt-4 flex items-center rounded-lg border px-4 py-[15px] text-gray-600 hover:text-white'
+                  className='border-black-800 text-md-medium xl:text-base-medium hover:bg-black-800 flex items-center rounded-lg border px-4 py-[15px] text-gray-600 hover:text-white'
                 >
                   <span>{item.label}</span>
                 </Link>
@@ -67,7 +56,9 @@ export default function MobileGnbSheet({ isLoggedIn }: GnbSheetProps) {
             </li>
           ))}
         </ul>
-      </BottomSheet>
+      </MobileBottomSheet>
     </div>
   );
-}
+};
+
+export default MobileGnbSheet;
