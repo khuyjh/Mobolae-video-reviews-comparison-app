@@ -5,7 +5,7 @@ import { useState } from 'react';
 import CategorySidebar from '@/features/mainPage/components/CategorySidebar';
 import { CATEGORIES } from '@/shared/constants/constants';
 
-import MobileCategorySheet from './MobileCategrySheet';
+import MobileCategorySheet from './MobileCategorySheet';
 
 /**
  * 홈 카테고리 메뉴
