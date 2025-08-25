@@ -1,9 +1,10 @@
 'use client';
 
-import { FilterIcon } from 'lucide-react';
+import { ShapesIcon } from 'lucide-react';
 import React from 'react';
 
 import CategoryItem from '@/features/mainPage/components/CategoryItem';
+import { Chip } from '@/shared/components/chip';
 import MobileBottomSheet from '@/shared/components/MobileBottomSheet';
 import { SheetClose } from '@/shared/components/ui/sheet';
 import { Category } from '@/shared/types/CategoryTypes';
@@ -37,14 +38,19 @@ const MobileCategorySheet: React.FC<MobileCategorySheetProps> = ({
     <div className='md:hidden'>
       <MobileBottomSheet
         trigger={
-          <button
-            type='button'
-            className='border-black-700 bg-black-900 inline-flex items-center gap-2 rounded-md border px-3 py-2 text-white'
+          <Chip
+            variant='filter'
+            size='filter'
+            clickable
+            role='button'
             aria-label='카테고리 바텀시트 열기'
+            className='border-black-700 bg-black-900 text-md-regular hover:bg-black-800 gap-2 border text-white'
           >
-            <FilterIcon className='size-4' />
-            <span>{selectedCategory ? selectedLabel : '카테고리'}</span>
-          </button>
+            <ShapesIcon className='size-[18px] text-gray-400' />
+            <span className={selectedCategory ? 'text-gray-400' : 'text-gray-600'}>
+              {selectedCategory ? selectedLabel : '카테고리'}
+            </span>
+          </Chip>
         }
         title='카테고리'
       >
