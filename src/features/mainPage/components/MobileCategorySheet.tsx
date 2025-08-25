@@ -35,47 +35,45 @@ const MobileCategorySheet: React.FC<MobileCategorySheetProps> = ({
     categories.find((category) => category.value === selectedCategory)?.name ?? '카테고리';
 
   return (
-    <div className='md:hidden'>
-      <MobileBottomSheet
-        trigger={
-          <Chip
-            variant='filter'
-            size='filter'
-            clickable
-            role='button'
-            aria-label='카테고리 바텀시트 열기'
-            className='border-black-700 bg-black-900 text-md-regular hover:bg-black-800 gap-2 border text-white'
-          >
-            <ShapesIcon className='size-[18px] text-gray-400' />
-            <span className={selectedCategory ? 'text-gray-400' : 'text-gray-600'}>
-              {selectedCategory ? selectedLabel : '카테고리'}
-            </span>
-          </Chip>
-        }
-        title='카테고리'
-      >
-        <ul className='space-y-2' role='list'>
-          {categories.map((category: Category) => {
-            const active = selectedCategory === category.value;
-            const next = active ? null : category.value;
+    <MobileBottomSheet
+      trigger={
+        <Chip
+          variant='filter'
+          size='filter'
+          clickable
+          role='button'
+          aria-label='카테고리 바텀시트 열기'
+          className='border-black-700 bg-black-900 text-md-regular hover:bg-black-800 gap-2 border text-white'
+        >
+          <ShapesIcon className='size-[18px] text-gray-400' />
+          <span className={selectedCategory ? 'text-gray-400' : 'text-gray-600'}>
+            {selectedCategory ? selectedLabel : '카테고리'}
+          </span>
+        </Chip>
+      }
+      title='카테고리'
+    >
+      <ul className='space-y-2' role='list'>
+        {categories.map((category: Category) => {
+          const active = selectedCategory === category.value;
+          const next = active ? null : category.value;
 
-            return (
-              <li key={category.id}>
-                <SheetClose asChild>
-                  <div aria-current={active ? 'true' : undefined}>
-                    <CategoryItem
-                      category={category}
-                      isSelected={active}
-                      onClick={() => onCategorySelect(next)}
-                    />
-                  </div>
-                </SheetClose>
-              </li>
-            );
-          })}
-        </ul>
-      </MobileBottomSheet>
-    </div>
+          return (
+            <li key={category.id}>
+              <SheetClose asChild>
+                <div aria-current={active ? 'true' : undefined}>
+                  <CategoryItem
+                    category={category}
+                    isSelected={active}
+                    onClick={() => onCategorySelect(next)}
+                  />
+                </div>
+              </SheetClose>
+            </li>
+          );
+        })}
+      </ul>
+    </MobileBottomSheet>
   );
 };
 
