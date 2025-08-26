@@ -1,44 +1,54 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 import CategorySidebar from '@/features/mainPage/components/CategorySidebar';
+import MobileCategorySheet from '@/features/mainPage/components/MobileCategorySheet';
 import { CATEGORIES } from '@/shared/constants/constants';
-
-import MobileCategorySheet from './MobileCategorySheet';
+import useMediaQuery from '@/shared/hooks/useMediaQuery';
 
 /**
- * 홈 카테고리 메뉴
- * - 내부에서 선택 상태 관리
- * - 반응형 분기는 CSS 클래스(md:hidden / md:block)로 처리
+ * 카테고리 메뉴
+ * - PC/Tablet: 사이드바 슬롯에 렌더
+ * - Mobile: 시트 트리거 슬롯에 렌더
  */
 export default function CategoryMenu() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const isDesktopUp = useMediaQuery('(min-width: 768px)');
+
+  // 마운트 확인 (SSR/CSR 불일치 방지)
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  // 현재 렌더링할 슬롯 결정
+  const target = useMemo(() => {
+    if (!mounted) return null;
+    const id = isDesktopUp ? 'desktop-category-slot' : 'mobile-category-slot';
+    return document.getElementById(id);
+  }, [mounted, isDesktopUp]);
 
   const handleSelect = (value: string | null) => {
     setSelectedCategory(value);
-    // 필요 시 여기에서 클라이언트 동작 수행 (검색 필터링, router.push 등)
+    // TODO: 추후 검색/라우터 연동
   };
 
-  return (
-    <>
-      {/* 데스크탑/태블릿 */}
-      <div className='hidden md:block'>
-        <CategorySidebar
-          categories={CATEGORIES}
-          selectedCategory={selectedCategory}
-          onCategorySelect={(v) => handleSelect(v)}
-        />
-      </div>
+  if (!mounted || !target) return null;
 
-      {/* 모바일 */}
-      <div className='md:hidden'>
-        <MobileCategorySheet
-          categories={CATEGORIES}
-          selectedCategory={selectedCategory}
-          onCategorySelect={handleSelect}
-        />
-      </div>
-    </>
+  return createPortal(
+    isDesktopUp ? (
+      <CategorySidebar
+        categories={CATEGORIES}
+        selectedCategory={selectedCategory}
+        onCategorySelect={handleSelect}
+      />
+    ) : (
+      <MobileCategorySheet
+        categories={CATEGORIES}
+        selectedCategory={selectedCategory}
+        onCategorySelect={handleSelect}
+      />
+    ),
+    target,
   );
 }
