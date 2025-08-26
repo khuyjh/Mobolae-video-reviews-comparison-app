@@ -41,16 +41,12 @@ const HomeItemCard = ({
 }: HomeItemCardProps) => {
   return (
     // 가장 바깥 컨테이너 - width값을 가장 바깥인 부모 컨테이너에만 적용 고정값으로 처리하기로 함 Link 태그로 변경됨
-    <Link
-      href={`/product/${contentId}`}
-      aria-label={`${title} 상세보기`}
-      className={CARD_BASE_STYLE}
-    >
+    <Link href={`/product/${contentId}`} className={CARD_BASE_STYLE}>
       {/* 아이템 요소 컨테이너 */}
       <div className='flex w-full flex-col gap-[10px]'>
         {/* 이미지 컨테이너 - api 이미지 비율이 다를 경우 깨질 수 있어 고정 값 대신 해당 사항 적용*/}
         <div className='relative aspect-[14/9] w-full'>
-          <Image src={contentImage} alt={title} fill className='object-contain' />
+          <Image src={contentImage} alt={title} fill className='object-cover' />
         </div>
         {/* 제목 및 값 섹션 */}
         <div className='w-full'>
@@ -77,7 +73,7 @@ const HomeItemCard = ({
             {/* 별점 컨테이너 - 모바일은 다음 줄로 이동, 태블릿 이상에선 오른쪽 정렬*/}
             <div className={STAR_CONTAINER_STYLE}>
               {/* 별 아이콘 lucide 사용 */}
-              <Star className='h-auto w-[12px] fill-yellow-400 stroke-yellow-400 md:w-[15px] xl:w-[16px]' />
+              <Star className='aria-hidden="true" h-auto w-[12px] fill-yellow-400 stroke-yellow-400 md:w-[15px] xl:w-[16px]' />
               {/* 별점 */}
               <span className='text-sm-regular md:text-md-regular xl:text-base-regular text-gray-400'>
                 {rating}
