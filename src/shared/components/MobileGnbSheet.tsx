@@ -28,7 +28,7 @@ const MobileGnbSheet = ({ isLoggedIn }: GnbSheetProps) => {
   const items = isLoggedIn
     ? [
         { href: '/compare', label: '비교하기' },
-        { href: '/me', label: '마이페이지' },
+        { href: '/mypage', label: '마이페이지' },
       ]
     : [
         { href: '/login', label: '로그인' },
