@@ -11,7 +11,7 @@ import Input from '@/shared/components/Input';
 import PasswordInput from '@/shared/components/PasswordInput';
 
 import { signUpRequest } from '../../api/authApi';
-import { signUpSchema, SignUpSchema } from '../../schemas/signUpSchema';
+import { signUpSchema, SignUpSchema } from '../../schemas/authSchema';
 
 const SignUpForm = () => {
   const {
