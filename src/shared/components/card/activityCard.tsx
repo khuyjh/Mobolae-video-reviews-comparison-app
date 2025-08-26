@@ -77,7 +77,11 @@ const ActivityCard = ({
   };
 
   return (
-    <div className={cn(CARD_BASE_STYLE, className)}>
+    <div
+      className={cn(CARD_BASE_STYLE, className)}
+      role='group'
+      aria-label={typeof title === 'string' ? title : undefined}
+    >
       {/* 상단 텍스트 */}
       <p className={TOP_BASE_STYLE}>{title}</p>
       {/* 하단 컨텐츠 */}

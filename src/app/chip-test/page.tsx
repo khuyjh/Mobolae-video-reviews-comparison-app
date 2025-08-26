@@ -31,25 +31,25 @@ const ChipTestPage = () => {
         </h3>
         <div className='flex flex-wrap items-center gap-2'>
           {/* variant와 colorKey를 필수로 전달 */}
-          <Chip variant='category' clickable colorKey='영화'>
+          <Chip variant='category' clickable colorKey='영화' textSize='category'>
             영화
           </Chip>
-          <Chip variant='category' clickable colorKey='드라마'>
+          <Chip variant='category' clickable colorKey='드라마' textSize='category'>
             드라마
           </Chip>
-          <Chip variant='category' clickable colorKey='공연/뮤지컬'>
+          <Chip variant='category' clickable colorKey='공연/뮤지컬' textSize='category'>
             공연/뮤지컬
           </Chip>
-          <Chip variant='category' clickable colorKey='애니메이션'>
+          <Chip variant='category' clickable colorKey='애니메이션' textSize='category'>
             애니메이션
           </Chip>
-          <Chip variant='category' clickable colorKey='다큐멘터리'>
+          <Chip variant='category' clickable colorKey='다큐멘터리' textSize='category'>
             다큐멘터리
           </Chip>
-          <Chip variant='category' clickable colorKey='키즈'>
+          <Chip variant='category' clickable colorKey='키즈' textSize='category'>
             키즈
           </Chip>
-          <Chip variant='category' clickable colorKey='예능'>
+          <Chip variant='category' clickable colorKey='예능' textSize='category'>
             예능
           </Chip>
         </div>
@@ -62,19 +62,19 @@ const ChipTestPage = () => {
         </h3>
         <div className='flex flex-wrap items-center gap-2'>
           {/* variant와 colorKey를 필수로 전달 */}
-          <Chip variant='ranking' colorKey='1등'>
+          <Chip variant='ranking' colorKey='1등' textSize='ranking'>
             1등
           </Chip>
-          <Chip variant='ranking' colorKey='2등'>
+          <Chip variant='ranking' colorKey='2등' textSize='ranking'>
             2등
           </Chip>
-          <Chip variant='ranking' colorKey='3등'>
+          <Chip variant='ranking' colorKey='3등' textSize='ranking'>
             3등
           </Chip>
-          <Chip variant='ranking' colorKey='4등'>
+          <Chip variant='ranking' colorKey='4등' textSize='ranking'>
             4등
           </Chip>
-          <Chip variant='ranking' colorKey='5등'>
+          <Chip variant='ranking' colorKey='5등' textSize='ranking'>
             5등
           </Chip>
         </div>
@@ -85,10 +85,10 @@ const ChipTestPage = () => {
         <h3 className='mb-2 text-xl font-semibold text-white'>필터 칩: (아이콘 포함, 클릭 가능)</h3>
         <div className='flex flex-wrap items-center gap-2'>
           {/* variant="filter", clickable prop 전달 */}
-          <Chip variant='filter' clickable>
+          <Chip variant='filter' clickable textSize='filter'>
             필터
           </Chip>
-          <Chip variant='filter' clickable>
+          <Chip variant='filter' clickable textSize='filter'>
             장르
           </Chip>
         </div>
@@ -101,7 +101,13 @@ const ChipTestPage = () => {
         </h3>
         <div className='flex flex-wrap items-center gap-2'>
           {/* variant="thumbs", isToggled prop과 onClick 핸들러 전달 */}
-          <Chip variant='thumbs' clickable isToggled={isThumbsToggled} onClick={handleThumbsClick}>
+          <Chip
+            variant='thumbs'
+            clickable
+            isToggled={isThumbsToggled}
+            onClick={handleThumbsClick}
+            textSize='thumbs'
+          >
             132
           </Chip>
         </div>
@@ -118,6 +124,7 @@ const ChipTestPage = () => {
               variant='compare'
               colorKey={chip.colorKey}
               onRemove={() => handleRemoveChip(chip.id)}
+              textSize='compare'
             >
               {chip.text}
             </Chip>

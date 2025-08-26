@@ -14,13 +14,21 @@ const chipVariants = cva('inline-flex items-center justify-center whitespace-now
       thumbs: 'rounded-full',
       compare: 'rounded-[6px]',
     },
-    /* 칩의 크기 (패딩, 폰트 사이즈) */
+    /* 칩의 크기 */
     size: {
-      ranking: 'px-[8px] py-[2px] text-xs-regular',
-      category: 'px-[10px] py-[4px] text-lg-medium',
-      filter: 'px-[12px] py-[6px] text-md-regular',
-      thumbs: 'px-[12px] py-[6px] text-md-regular',
-      compare: 'px-[10px] py-[8px] text-base-regular gap-1',
+      ranking: 'px-[6px] py-[2px] xl:px-[8px] xl:py-[2px]',
+      category: 'px-[10px] py-[4px] ',
+      filter: 'px-[12px] py-[6px] ',
+      thumbs: 'px-[12px] py-[6px] ',
+      compare: 'px-[10px] py-[8px]',
+    },
+    /* 텍스트 사이즈 */
+    textSize: {
+      ranking: 'text-xs-regular',
+      category: 'text-lg-medium',
+      filter: 'text-md-regular',
+      thumbs: 'text-md-regular',
+      compare: 'text-base-regular',
     },
     /* 칩의 상호작용 */
     clickable: {
@@ -73,6 +81,7 @@ type ConditionalChipProps =
       onRemove?: () => void;
       isToggled?: never;
       colorKey: '1번' | '2번';
+      textSize?: 'compare';
     })
   | (BaseChipProps & { variant: 'filter'; colorKey?: never; isToggled?: never; onRemove?: never })
   | (BaseChipProps & {
@@ -80,12 +89,14 @@ type ConditionalChipProps =
       colorKey?: '1등' | '2등' | '3등' | '4등' | '5등';
       isToggled?: never;
       onRemove?: never;
+      textSize?: 'ranking';
     })
   | (BaseChipProps & {
       variant: 'category';
       colorKey?: ColorSchemeKey;
       isToggled?: never;
       onRemove?: never;
+      textSize?: 'category';
     });
 
 export type ChipProps = ConditionalChipProps;
@@ -99,6 +110,7 @@ const _Chip = ({
   children,
   isToggled,
   onRemove,
+  textSize,
   ...props
 }: ChipProps) => {
   let colorClass = '';
@@ -108,8 +120,8 @@ const _Chip = ({
     case 'thumbs':
       iconColorClass = isToggled ? 'text-blue-400' : 'text-gray-400 group-hover:text-gray-300';
       colorClass = isToggled
-        ? 'bg-black-800 border border-black-700 text-pink gap-[5px] tesx-xs-regular xl:text-md-regular '
-        : 'bg-black-800 border border-black-700 text-gray-400 hover:text-gray-300 gap-[5px] tesx-xs-regular xl:text-md-regular';
+        ? 'bg-black-800 border border-black-700 text-pink gap-[5px]'
+        : 'bg-black-800 border border-black-700 text-gray-400 hover:text-gray-300 gap-[5px]';
       break;
     case 'filter':
       iconColorClass = 'text-gray-400 group-hover:text-gray-300';
@@ -161,7 +173,7 @@ const _Chip = ({
 
   return (
     <div
-      className={cn(chipVariants({ size, variant, clickable }), colorClass, className)}
+      className={cn(chipVariants({ size, variant, clickable, textSize }), colorClass, className)}
       {...props}
     >
       {renderContent()}
