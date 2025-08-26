@@ -31,7 +31,7 @@ const MobileGnbSheet = ({ isLoggedIn }: GnbSheetProps) => {
         { href: '/mypage', label: '마이페이지' },
       ]
     : [
-        { href: '/login', label: '로그인' },
+        { href: '/signin', label: '로그인' },
         { href: '/signup', label: '회원가입' },
       ];
 
