@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode, useEffect, useState } from 'react';
+import { ReactNode, useEffect, useRef, useState } from 'react';
 
 import {
   Sheet,
@@ -27,6 +27,9 @@ export interface MobileBottomSheetProps {
   mobileOnly?: boolean; // 기본 true
 }
 
+const BASE_STYLE =
+  'bg-black-900 focus-visible:ring-black-700 focus-visible:ring-offset-black-900 rounded-t-lg border-none p-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2';
+
 /**
  * MobileBottomSheet 컴포넌트
  *
@@ -45,6 +48,8 @@ const MobileBottomSheet = ({
 }: MobileBottomSheetProps) => {
   const [open, setOpen] = useState(false);
 
+  // 컨테이너 포커스 대상
+  const contentRef = useRef<HTMLDivElement>(null);
   // 훅 사용: md 이상인지 여부
   const isDesktopUp = useMediaQuery('(min-width: 768px)');
 
@@ -61,8 +66,14 @@ const MobileBottomSheet = ({
       <SheetTrigger asChild>{trigger}</SheetTrigger>
 
       <SheetContent
+        ref={contentRef}
         side={side}
-        className={cn('bg-black-900 rounded-t-lg border-none p-0', className)}
+        className={cn(BASE_STYLE, className)}
+        onOpenAutoFocus={(e) => {
+          e.preventDefault();
+          requestAnimationFrame(() => contentRef.current?.focus());
+        }}
+        tabIndex={-1}
       >
         {/* 헤더 */}
         <div className='border-black-800 border-b p-4'>
