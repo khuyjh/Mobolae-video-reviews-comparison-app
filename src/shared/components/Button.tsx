@@ -7,7 +7,8 @@ interface Props extends ComponentPropsWithoutRef<'button'> {
 }
 
 const VARIANT_STYLE = {
-  primary: 'bg-main text-white disabled:bg-black-700 disabled:text-gray-600 hover:bg-red',
+  primary:
+    'transition-all ease-in-out duration-200 bg-main text-white disabled:bg-black-700 disabled:text-gray-600 hover:bg-red',
   secondary: 'bg-transparent text-main border-1 border-main hover:border-red hover:text-red',
   tertiary:
     'bg-transparent text-gray-600 border-1 border-gray-600 hover:border-gray-400 hover:text-gray-400 focus:border-red focus:text-red',
