@@ -16,6 +16,6 @@ export function toCategoryChip(category: { id: number; name: string }): ChipProp
   return {
     variant: 'category',
     colorKey: key,
-    children: category.name,
+    children: key,
   };
 }

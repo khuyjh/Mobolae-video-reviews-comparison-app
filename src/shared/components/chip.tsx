@@ -1,15 +1,43 @@
 import { cva, type VariantProps } from 'class-variance-authority';
-import { ThumbsUp, Shapes, X } from 'lucide-react';
+import { Shapes, X } from 'lucide-react';
 import React from 'react';
 
 import { cn } from '@/shared/lib/cn';
 
-const chipVariants = cva('inline-flex items-center justify-center whitespace-nowrap', {
+import ThumbsdownIcon from '../../../public/icons/thumbsdown.svg';
+import ThumbsupIcon from '../../../public/icons/thumbsup.svg';
+
+const BASE_CHIP_CLASS = 'inline-flex items-center justify-center whitespace-nowrap group';
+
+const ICON_SIZE = {
+  thumbs: 'w-[14px] h-[14px] md:w-[18px] md:h-[18px]',
+  compare: 'w-[17px] h-[17px] md:w-[19px] md:h-[19px]',
+};
+
+const DARK_BG = 'bg-black-800 border border-black-700';
+const DARK_BG_HOVER = 'hover:bg-black-700';
+
+const CHIP_THUMBS_TOGGLED = `
+  ${DARK_BG} ${DARK_BG_HOVER} text-pink gap-[5px]
+`;
+const CHIP_THUMBS_UNTOGGLED = `
+  ${DARK_BG} ${DARK_BG_HOVER} text-gray-400 hover:text-gray-300 gap-[5px]
+`;
+
+const CHIP_FILTER_SELECTED = `
+  ${DARK_BG} text-white gap-[5px]
+`;
+const CHIP_FILTER_UNSELECTED = `
+  bg-black-900 border border-black-900 hover:bg-black-800 
+  text-gray-600 hover:text-gray-400 gap-[5px]
+`;
+
+const chipVariants = cva(BASE_CHIP_CLASS, {
   variants: {
     /* 칩의 모양 */
     variant: {
       ranking: 'rounded-[50px]',
-      category: 'rounded-[8px]',
+      category: 'rounded-[6px]',
       filter: 'rounded-full',
       thumbs: 'rounded-full',
       compare: 'rounded-[6px]',
@@ -17,18 +45,18 @@ const chipVariants = cva('inline-flex items-center justify-center whitespace-now
     /* 칩의 크기 */
     size: {
       ranking: 'px-[6px] py-[2px] xl:px-[8px] xl:py-[2px]',
-      category: 'px-[10px] py-[4px] ',
+      category: 'px-[8px] py-[4px] ',
       filter: 'px-[12px] py-[6px] ',
-      thumbs: 'px-[12px] py-[6px] ',
+      thumbs: 'px-[10px] py-[6px] xl:px-[12px] xl:py-[6px]',
       compare: 'px-[10px] py-[8px]',
     },
     /* 텍스트 사이즈 */
     textSize: {
-      ranking: 'text-xs-regular',
-      category: 'text-lg-medium',
+      ranking: 'text-xxs-regular xl:text-xs-regular',
+      category: 'text-xs-regular',
       filter: 'text-md-regular',
-      thumbs: 'text-md-regular',
-      compare: 'text-base-regular',
+      thumbs: 'text-xs-regular xl:text-md-regular',
+      compare: 'text-md-regular md:text-base-regular',
     },
     /* 칩의 상호작용 */
     clickable: {
@@ -66,7 +94,10 @@ export const colorSchemes = {
 
 type ColorSchemeKey = keyof typeof colorSchemes;
 
-type BaseChipProps = React.HTMLAttributes<HTMLDivElement> & VariantProps<typeof chipVariants>;
+type BaseChipProps = React.HTMLAttributes<HTMLDivElement> &
+  VariantProps<typeof chipVariants> & {
+    isSelected?: boolean;
+  };
 
 /**
  * variant 값에 따라 달라지는 조건부 props 정의
@@ -111,22 +142,17 @@ const _Chip = ({
   isToggled,
   onRemove,
   textSize,
+  isSelected,
   ...props
 }: ChipProps) => {
   let colorClass = '';
-  let iconColorClass = '';
 
   switch (variant) {
     case 'thumbs':
-      iconColorClass = isToggled ? 'text-blue-400' : 'text-gray-400 group-hover:text-gray-300';
-      colorClass = isToggled
-        ? 'bg-black-800 border border-black-700 text-pink gap-[5px]'
-        : 'bg-black-800 border border-black-700 text-gray-400 hover:text-gray-300 gap-[5px]';
+      colorClass = isToggled ? CHIP_THUMBS_TOGGLED : CHIP_THUMBS_UNTOGGLED;
       break;
     case 'filter':
-      iconColorClass = 'text-gray-400 group-hover:text-gray-300';
-      colorClass =
-        'bg-black-800 border-black-700 text-gray-400 hover:text-gray-300 border border-black-700';
+      colorClass = isSelected ? CHIP_FILTER_SELECTED : CHIP_FILTER_UNSELECTED;
       break;
     default:
       colorClass = colorKey
@@ -135,20 +161,24 @@ const _Chip = ({
   }
 
   const renderContent = () => {
-    const thumbsIconClasses = 'w-[14px] h-[14px] md:w-[18px] md:h-[18px]';
-    const compareIconClasses = 'w-[17px] h-[17px] md:w-[19px] md:h-[19px]';
+    const thumbsIconClasses = ICON_SIZE.thumbs;
+    const compareIconClasses = ICON_SIZE.compare;
     switch (variant) {
       case 'filter':
         return (
           <>
-            <Shapes size={18} className={iconColorClass} />
+            <Shapes size={18} className='text-gray-400 group-hover:text-gray-300' />
             {children}
           </>
         );
       case 'thumbs':
         return (
           <>
-            <ThumbsUp className={cn(iconColorClass, thumbsIconClasses)} />
+            {isToggled ? (
+              <ThumbsupIcon className={thumbsIconClasses} />
+            ) : (
+              <ThumbsdownIcon className={thumbsIconClasses} />
+            )}
             {children}
           </>
         );
@@ -157,9 +187,12 @@ const _Chip = ({
           return (
             <div className='inline-flex items-center gap-[10px]'>
               {children}
-              <button onClick={onRemove} className='bg-black-50 rounded-[6px] focus:outline-none'>
+              <button
+                onClick={onRemove}
+                className='bg-black-50 cursor-pointer rounded-[6px] focus:outline-none'
+              >
                 <X
-                  className={cn('rounded-sm border border-black text-white', compareIconClasses)}
+                  className={cn('rounded-[6px] border border-black text-white', compareIconClasses)}
                 />
               </button>
             </div>
@@ -174,6 +207,9 @@ const _Chip = ({
   return (
     <div
       className={cn(chipVariants({ size, variant, clickable, textSize }), colorClass, className)}
+      role={clickable ? 'button' : undefined}
+      tabIndex={clickable ? 0 : undefined}
+      aria-pressed={variant === 'filter' ? isSelected : undefined}
       {...props}
     >
       {renderContent()}
