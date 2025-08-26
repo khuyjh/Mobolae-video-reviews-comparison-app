@@ -32,8 +32,6 @@ const SignUpForm = () => {
   const router = useRouter();
 
   const onSubmit: SubmitHandler<SignUpSchema> = async (data) => {
-    if (isSubmitting) return;
-
     try {
       const res = await signUpRequest(data);
       console.log(res);
@@ -51,6 +49,7 @@ const SignUpForm = () => {
     <form
       className='mx-auto flex flex-col gap-[30px] md:w-110 md:gap-10 xl:w-160'
       onSubmit={handleSubmit(onSubmit)}
+      noValidate
     >
       <Input
         label='이메일'
