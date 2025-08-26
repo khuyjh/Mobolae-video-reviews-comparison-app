@@ -16,6 +16,12 @@ const CARD_BASE_STYLE =
 
 const CONTENT_ALIGNMENT_STYLE = 'justify-center items-start md:justify-center md:items-center';
 
+const iconMap = {
+  star: { component: <Star fill='currentColor' />, colorClass: 'text-yellow' },
+  heart: { component: <Heart fill='currentColor' />, colorClass: 'text-red' },
+  message: { component: <MessageSquare fill='currentColor' />, colorClass: 'text-blue-500' },
+};
+
 const StatisticsCard = ({
   title,
   value,
@@ -23,12 +29,6 @@ const StatisticsCard = ({
   comparisonText,
   className,
 }: StatisticsCardProps) => {
-  const iconMap = {
-    star: { component: <Star fill='currentColor' />, colorClass: 'text-yellow' },
-    heart: { component: <Heart fill='currentColor' />, colorClass: 'text-red' },
-    message: { component: <MessageSquare fill='currentColor' />, colorClass: 'text-blue-500' },
-  };
-
   const { component: IconComponent, colorClass } = iconMap[iconType];
   const formattedValue = formatNumber(value); //한국식 숫자 단위
 
