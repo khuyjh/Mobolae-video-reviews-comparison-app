@@ -30,7 +30,7 @@ export default function CategoryMenu() {
 
   const handleSelect = (value: string | null) => {
     setSelectedCategory(value);
-    // TODO: 추후 검색/라우터 연동
+    // TODO: 카테고리 선택 로직 추가
   };
 
   if (!mounted || !target) return null;
