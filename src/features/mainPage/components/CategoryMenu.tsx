@@ -28,7 +28,7 @@ export default function CategoryMenu() {
     return document.getElementById(id);
   }, [mounted, isDesktopUp]);
 
-  const handleSelect = (value: string | null) => {
+  const handleCategorySelect = (value: string | null) => {
     setSelectedCategory(value);
     // TODO: 카테고리 선택 로직 추가
   };
@@ -40,13 +40,13 @@ export default function CategoryMenu() {
       <CategorySidebar
         categories={CATEGORIES}
         selectedCategory={selectedCategory}
-        onCategorySelect={handleSelect}
+        onCategorySelect={handleCategorySelect}
       />
     ) : (
       <MobileCategorySheet
         categories={CATEGORIES}
         selectedCategory={selectedCategory}
-        onCategorySelect={handleSelect}
+        onCategorySelect={handleCategorySelect}
       />
     ),
     target,
