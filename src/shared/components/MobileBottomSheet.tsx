@@ -86,7 +86,7 @@ const MobileBottomSheet = ({
         </div>
 
         {/* 본문 */}
-        <div className='p-4'>{children}</div>
+        <div className='p-4 pb-8'>{children}</div>
       </SheetContent>
     </Sheet>
   );
