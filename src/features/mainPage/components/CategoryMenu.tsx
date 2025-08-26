@@ -13,7 +13,7 @@ import useMediaQuery from '@/shared/hooks/useMediaQuery';
  * - PC/Tablet: 사이드바 슬롯에 렌더
  * - Mobile: 시트 트리거 슬롯에 렌더
  */
-export default function CategoryMenu() {
+const CategoryMenu = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const isDesktopUp = useMediaQuery('(min-width: 768px)');
 
@@ -51,4 +51,6 @@ export default function CategoryMenu() {
     ),
     target,
   );
-}
+};
+
+export default CategoryMenu;
