@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { Star } from 'lucide-react';
 import React from 'react';
 
+import SafeImage from '@/shared/components/SafeImage';
+
 /* props 사용 설명입니다.
  * title: 콘텐츠 제목
  * contentImage: api상 이미지
@@ -44,9 +46,9 @@ const HomeItemCard = ({
     <Link href={`/product/${contentId}`} className={CARD_BASE_STYLE}>
       {/* 아이템 요소 컨테이너 */}
       <div className='flex w-full flex-col gap-[10px]'>
-        {/* 이미지 컨테이너 - api 이미지 비율이 다를 경우 깨질 수 있어 고정 값 대신 해당 사항 적용*/}
-        <div className='relative aspect-[14/9] w-full'>
-          <Image src={contentImage} alt={title} fill className='object-cover' />
+        {/* 이미지 컨테이너 - api 이미지 비율이 다를 경우 깨질 수 있어 고정 값 대신 해당 사항 적용 + 최소 너비 min-w 추가 */}
+        <div className='relative aspect-[14/9] w-full min-w-[140px]'>
+          <SafeImage src={contentImage} alt={title} fill className='object-cover' />
         </div>
         {/* 제목 및 값 섹션 */}
         <div className='w-full'>
