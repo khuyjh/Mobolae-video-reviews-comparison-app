@@ -7,8 +7,9 @@ import ShareIcon from '../../../../../public/icons/share.svg';
 
 const ProductActions = () => {
   return (
-    <div>
-      <div>
+    <div className='flex flex-col items-end gap-[10px]'>
+      {/* 공유 버튼 그룹 */}
+      <div className='flex gap-[10px]'>
         <button>
           <KakaotalkIcon />
         </button>
@@ -16,7 +17,7 @@ const ProductActions = () => {
           <ShareIcon />
         </button>
       </div>
-
+      {/* 찜 버튼 */}
       <button>
         <Heart />
       </button>
