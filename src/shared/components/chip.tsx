@@ -1,5 +1,5 @@
 import { cva, type VariantProps } from 'class-variance-authority';
-import * as React from 'react';
+import React from 'react';
 
 import { cn } from '@/shared/lib/cn';
 
@@ -29,7 +29,7 @@ const chipVariants = cva(
       },
     },
     defaultVariants: {
-      /* 기본값 */
+      /* 기본값 - 카테고리*/
       variant: 'category',
       size: 'category',
     },
@@ -40,17 +40,9 @@ export interface ChipProps
   extends React.HTMLAttributes<HTMLDivElement>,
     VariantProps<typeof chipVariants> {}
 
-const Chip = React.forwardRef<HTMLDivElement, ChipProps>(
-  ({ className, size, variant, clickable, ...props }, ref) => {
-    return (
-      <div
-        className={cn(chipVariants({ size, variant, clickable }), className)}
-        ref={ref}
-        {...props}
-      />
-    );
-  },
-);
+const Chip = ({ className, size, variant, clickable, ...props }: ChipProps) => {
+  return <div className={cn(chipVariants({ size, variant, clickable }), className)} {...props} />;
+};
 Chip.displayName = 'Chip';
 
 export { Chip, chipVariants };

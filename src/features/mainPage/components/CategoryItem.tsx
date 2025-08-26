@@ -30,7 +30,7 @@ interface CategoryItemProps {
 const CategoryItem: React.FC<CategoryItemProps> = ({ category, isSelected, onClick }) => (
   <button
     onClick={onClick}
-    className={`text-md-medium xl:text-base-medium w-full rounded-lg border px-5 py-[15px] text-left transition-all duration-200 ${
+    className={`text-md-medium xl:text-base-medium w-full cursor-pointer rounded-lg border px-5 py-[15px] text-left transition-all duration-200 ${
       isSelected
         ? 'bg-black-800 border-black-700 text-white'
         : 'border-black-900 bg-black-900 hover:bg-black-800 text-gray-600 hover:text-gray-400'
