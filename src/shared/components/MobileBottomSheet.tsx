@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 
 import {
   Sheet,
@@ -9,6 +9,7 @@ import {
   SheetTitle,
   SheetDescription,
 } from '@/shared/components/ui/sheet';
+import useMediaQuery from '@/shared/hooks/useMediaQuery';
 import { cn } from '@/shared/lib/cn';
 
 export type SheetSide = 'top' | 'right' | 'bottom' | 'left';
@@ -23,6 +24,7 @@ export interface MobileBottomSheetProps {
   description?: ReactNode; // 시트 설명 (선택)
   side?: SheetSide; // 열리는 방향 (기본 bottom)
   className?: string; // SheetContent 클래스
+  mobileOnly?: boolean; // 기본 true
 }
 
 /**
@@ -39,31 +41,43 @@ const MobileBottomSheet = ({
   description,
   side = 'bottom',
   className,
+  mobileOnly = true,
 }: MobileBottomSheetProps) => {
+  const [open, setOpen] = useState(false);
+
+  // 훅 사용: md 이상인지 여부
+  const isDesktopUp = useMediaQuery('(min-width: 768px)');
+
+  // md 이상으로 전환되면 자동 닫기
+  useEffect(() => {
+    if (isDesktopUp && open) setOpen(false);
+  }, [isDesktopUp, open]);
+
+  // 모바일 전용이면 데스크톱에서 아예 렌더 안 함
+  if (mobileOnly && isDesktopUp) return null;
+
   return (
-    <div>
-      <Sheet>
-        <SheetTrigger asChild>{trigger}</SheetTrigger>
+    <Sheet open={open} onOpenChange={setOpen}>
+      <SheetTrigger asChild>{trigger}</SheetTrigger>
 
-        <SheetContent
-          side={side}
-          className={cn('bg-black-900 rounded-t-lg border-none p-0', className)}
-        >
-          {/* 헤더 */}
-          <div className='border-black-800 border-b p-4'>
-            <SheetTitle className='text-base-semibold text-white'>{title}</SheetTitle>
-            {description && (
-              <SheetDescription className='mt-1 text-sm text-gray-500'>
-                {description}
-              </SheetDescription>
-            )}
-          </div>
+      <SheetContent
+        side={side}
+        className={cn('bg-black-900 rounded-t-lg border-none p-0', className)}
+      >
+        {/* 헤더 */}
+        <div className='border-black-800 border-b p-4'>
+          <SheetTitle className='text-base-semibold text-white'>{title}</SheetTitle>
+          {description && (
+            <SheetDescription className='mt-1 text-sm text-gray-500'>
+              {description}
+            </SheetDescription>
+          )}
+        </div>
 
-          {/* 본문 */}
-          <div className='p-4'>{children}</div>
-        </SheetContent>
-      </Sheet>
-    </div>
+        {/* 본문 */}
+        <div className='p-4'>{children}</div>
+      </SheetContent>
+    </Sheet>
   );
 };
 

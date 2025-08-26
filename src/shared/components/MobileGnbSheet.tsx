@@ -36,28 +36,26 @@ const MobileGnbSheet = ({ isLoggedIn }: GnbSheetProps) => {
       ];
 
   return (
-    <div className='md:hidden'>
-      <MobileBottomSheet
-        trigger={
-          <button type='button' aria-label='메뉴 열기'>
-            <MenuIcon className='transition-color size-5 text-gray-400 duration-200 hover:text-white' />
-          </button>
-        }
-        title='메뉴'
-      >
-        <ul className='flex flex-col space-y-4'>
-          {items.map((item) => (
-            <li key={item.href}>
-              <SheetClose asChild>
-                <Link href={item.href} className={LINK_STYLE}>
-                  <span>{item.label}</span>
-                </Link>
-              </SheetClose>
-            </li>
-          ))}
-        </ul>
-      </MobileBottomSheet>
-    </div>
+    <MobileBottomSheet
+      trigger={
+        <button type='button' aria-label='메뉴 열기'>
+          <MenuIcon className='transition-color size-5 text-gray-400 duration-200 hover:text-white' />
+        </button>
+      }
+      title='메뉴'
+    >
+      <ul className='flex flex-col space-y-4'>
+        {items.map((item) => (
+          <li key={item.href}>
+            <SheetClose asChild>
+              <Link href={item.href} className={LINK_STYLE}>
+                <span>{item.label}</span>
+              </Link>
+            </SheetClose>
+          </li>
+        ))}
+      </ul>
+    </MobileBottomSheet>
   );
 };
 
