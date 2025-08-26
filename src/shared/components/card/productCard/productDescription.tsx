@@ -6,7 +6,9 @@ interface ProductDescriptionProps {
 }
 
 const ProductDescription = ({ description }: ProductDescriptionProps) => {
-  return <p>{description}</p>;
+  return (
+    <p className='text-md-regular mb-[40px] w-full leading-[20px] text-white'>{description}</p>
+  );
 };
 
 export default ProductDescription;
