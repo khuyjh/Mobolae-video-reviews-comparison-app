@@ -2,18 +2,20 @@
 
 import React from 'react';
 
+import { toCategoryChip } from '@/shared/utils/categoryUtil';
+
 import { Chip } from '../../chip';
 
 interface ProductHeaderProps {
-  chipLabel: string;
+  category: { id: number; name: string };
   title: string;
   views: number | string;
 }
 
-const ProductHeader = ({ chipLabel, title, views }: ProductHeaderProps) => {
+const ProductHeader = ({ category, title, views }: ProductHeaderProps) => {
   return (
     <div className='my-[20px] flex flex-col items-start gap-[10px]'>
-      <Chip className='text-xs-regular bg-[#23B5811A] text-[#23B581]'>{chipLabel}</Chip>
+      <Chip {...toCategoryChip(category)} />
       <h2 className='text-xl-semibold text-white'>{title}</h2>
       <p className='text-md-light text-gray-600'>조회 {views}</p>
     </div>

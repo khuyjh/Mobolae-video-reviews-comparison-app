@@ -11,7 +11,7 @@ import ProductHeader from './productHeader';
 
 interface ProductCardProps {
   imageSrc: string;
-  chipLabel: string;
+  category: { id: number; name: string };
   title: string;
   views: number | string;
   description: string;
@@ -20,7 +20,7 @@ interface ProductCardProps {
 
 const ProductCard = ({
   imageSrc,
-  chipLabel,
+  category,
   title,
   views,
   description,
@@ -39,7 +39,7 @@ const ProductCard = ({
       <div className='flex flex-1 flex-col p-[20px]'>
         <div className='flex items-start justify-between'>
           {/* 헤더 (칩, 제목, 조회수) */}
-          <ProductHeader chipLabel={chipLabel} title={title} views={formattedViews} />
+          <ProductHeader category={category} title={title} views={formattedViews} />
           {/* 액션 버튼 (찜, 공유) */}
           <ProductActions />
         </div>
