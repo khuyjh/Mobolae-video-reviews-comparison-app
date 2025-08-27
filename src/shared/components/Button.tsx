@@ -22,7 +22,7 @@ const VARIANT_STYLE = {
   secondary:
     'bg-transparent text-main border-1 border-main hover:border-red hover:text-red hover:bg-red/10',
   tertiary:
-    'bg-transparent text-gray-600 border-1 border-gray-600 hover:border-gray-400 hover:text-gray-400 hover:bg-gray-400/10 focus:border-red focus:text-red focus:hover:bg-red/10',
+    'bg-transparent text-gray-600 border-1 border-gray-600 hover:border-gray-400 hover:text-gray-400 hover:bg-gray-400/10',
 };
 
 const BASE_STYLE =
