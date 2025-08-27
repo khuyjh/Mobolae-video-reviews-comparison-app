@@ -75,6 +75,7 @@ const MobileBottomSheet = ({
             contentRef.current?.querySelector<HTMLElement>('.nav-item')?.focus(),
           );
         }}
+        aria-describedby={undefined}
       >
         {/* 헤더 */}
         <div className='border-black-800 border-b p-4'>
