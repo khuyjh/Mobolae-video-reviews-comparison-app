@@ -50,7 +50,7 @@ const Dropdown = ({
   );
 
   return (
-    <div className={cn('w-full', className)}>
+    <div className={cn('w-full max-w-[355px] md:w-[360px] xl:max-w-[400px]', className)}>
       <Select
         value={value}
         onValueChange={(v) => {
