@@ -7,7 +7,7 @@ import { cn } from '../lib/cn';
 
 export interface InputProps extends ComponentPropsWithRef<'input'> {
   label?: string;
-  error?: FieldError;
+  error?: FieldError | undefined;
   helperText?: string;
 }
 

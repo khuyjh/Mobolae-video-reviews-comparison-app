@@ -1,5 +1,5 @@
-import SignInForm from '@/features/signIn/components/SignInForm';
-import SocialLogin from '@/features/signIn/components/SocialLogin';
+import SignInForm from '@/features/auth/signIn/components/SignInForm';
+import SocialLogin from '@/features/auth/signIn/components/SocialLogin';
 
 const SignInPage = () => {
   return (
