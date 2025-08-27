@@ -1,4 +1,3 @@
-// 이미지 + 메인
 import Image from 'next/image';
 
 import React from 'react';
@@ -18,6 +17,9 @@ interface ProductCardProps {
   isEditable: boolean;
 }
 
+const IMAGE_CONTAINER_STYLES =
+  'relative aspect-[335/236] w-full bg-gray-300 md:h-[197px] md:w-[280px] xl:h-[250px] xl:w-[335px]';
+
 const ProductCard = ({
   imageSrc,
   category,
@@ -29,18 +31,18 @@ const ProductCard = ({
   const formattedViews = formatNumber(views);
 
   return (
-    <div className='flex flex-col md:flex-row'>
+    <div className='flex flex-col px-[20px] md:flex-row md:gap-5'>
       {/* 이미지 섹션 */}
-      <div className='relative aspect-[335/236] w-full bg-gray-300 md:h-[197px] md:w-[280px] xl:h-[250px] xl:w-[335px]'>
-        <Image src={imageSrc} alt={title} layout='fill' objectFit='cover' />
+      <div className={IMAGE_CONTAINER_STYLES}>
+        <Image src={imageSrc} alt={title} fill className='object-cover' />
       </div>
 
       {/* 콘텐츠 섹션 */}
-      <div className='flex flex-1 flex-col p-[20px] md:px-[20px] md:py-0 xl:px-[40px]'>
+      <div className='mt-5 flex flex-1 flex-col md:mt-0 md:py-0 xl:px-[40px]'>
         <ProductHeader category={category} title={title} views={formattedViews} />
         {/* 설명 */}
-        <ProductDescription description={description} />
-        <ProductButtons isEditable={isEditable} />
+        <ProductDescription description={description} className='mt-[20px]' />
+        <ProductButtons isEditable={isEditable} className='mt-[40px] md:mt-[60px]' />
       </div>
     </div>
   );
