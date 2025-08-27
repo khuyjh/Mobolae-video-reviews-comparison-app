@@ -1,7 +1,7 @@
 import { ChipProps } from '../../shared/components/chip';
 
-export function toCompareChip(index: number, keyword: string): ChipProps {
-  const colorKey = index === 0 ? '1번' : '2번';
+export function toCompareChip(index: 0 | 1, keyword: string): ChipProps {
+  const colorKey: '1번' | '2번' = index === 0 ? '1번' : '2번';
 
   return {
     variant: 'compare',

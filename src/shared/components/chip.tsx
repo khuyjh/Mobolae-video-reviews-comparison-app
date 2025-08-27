@@ -175,9 +175,9 @@ const _Chip = ({
         return (
           <>
             {isToggled ? (
-              <ThumbsupIcon className={thumbsIconClasses} />
+              <ThumbsupIcon className={thumbsIconClasses} aria-label='좋아요 선택됨' />
             ) : (
-              <ThumbsdownIcon className={thumbsIconClasses} />
+              <ThumbsdownIcon className={thumbsIconClasses} aria-label='좋아요 선택 안 됨' />
             )}
             {children}
           </>
@@ -188,7 +188,9 @@ const _Chip = ({
             <div className='inline-flex items-center gap-[10px]'>
               {children}
               <button
+                type='button'
                 onClick={onRemove}
+                aria-label='비교 칩 제거'
                 className='bg-black-50 cursor-pointer rounded-[6px] focus:outline-none'
               >
                 <X
