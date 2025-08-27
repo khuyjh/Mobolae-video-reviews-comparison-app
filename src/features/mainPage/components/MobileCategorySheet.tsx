@@ -9,6 +9,8 @@ import MobileBottomSheet from '@/shared/components/MobileBottomSheet';
 import { SheetClose } from '@/shared/components/ui/sheet';
 import { Category } from '@/shared/types/CategoryTypes';
 
+import ArrowList from './ArrowList';
+
 interface MobileCategorySheetProps {
   /** 카테고리 목록 */
   categories: Category[];
@@ -53,26 +55,28 @@ const MobileCategorySheet: React.FC<MobileCategorySheetProps> = ({
       }
       title='카테고리'
     >
-      <ul className='space-y-2' role='list'>
-        {categories.map((category: Category) => {
-          const active = selectedCategory === category.value;
-          const next = active ? null : category.value;
+      <ArrowList>
+        <ul className='space-y-2' role='list'>
+          {categories.map((category: Category) => {
+            const active = selectedCategory === category.value;
+            const next = active ? null : category.value;
 
-          return (
-            <li key={category.id}>
-              <SheetClose asChild>
-                <div aria-current={active ? 'true' : undefined}>
-                  <CategoryItem
-                    category={category}
-                    isSelected={active}
-                    onClick={() => onCategorySelect(next)}
-                  />
-                </div>
-              </SheetClose>
-            </li>
-          );
-        })}
-      </ul>
+            return (
+              <li key={category.id}>
+                <SheetClose asChild>
+                  <div aria-current={active ? 'true' : undefined}>
+                    <CategoryItem
+                      category={category}
+                      isSelected={active}
+                      onClick={() => onCategorySelect(next)}
+                    />
+                  </div>
+                </SheetClose>
+              </li>
+            );
+          })}
+        </ul>
+      </ArrowList>
     </MobileBottomSheet>
   );
 };

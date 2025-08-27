@@ -4,6 +4,7 @@ import Link from 'next/link';
 
 import { MenuIcon } from 'lucide-react';
 
+import ArrowList from '@/features/mainPage/components/ArrowList';
 import MobileBottomSheet from '@/shared/components/MobileBottomSheet';
 import { SheetClose } from '@/shared/components/ui/sheet';
 
@@ -44,17 +45,19 @@ const MobileGnbSheet = ({ isLoggedIn }: GnbSheetProps) => {
       }
       title='메뉴'
     >
-      <ul className='flex flex-col space-y-4'>
-        {items.map((item) => (
-          <li key={item.href}>
-            <SheetClose asChild>
-              <Link href={item.href} className={LINK_STYLE}>
-                <span>{item.label}</span>
-              </Link>
-            </SheetClose>
-          </li>
-        ))}
-      </ul>
+      <ArrowList>
+        <ul className='flex flex-col space-y-4'>
+          {items.map((item) => (
+            <li key={item.href}>
+              <SheetClose asChild>
+                <Link href={item.href} className={`nav-item ${LINK_STYLE}`} tabIndex={-1}>
+                  <span>{item.label}</span>
+                </Link>
+              </SheetClose>
+            </li>
+          ))}
+        </ul>
+      </ArrowList>
     </MobileBottomSheet>
   );
 };
