@@ -8,14 +8,7 @@ interface BaseUserType {
   teamId: '16-7';
 }
 
-export interface SignUpResponse {
+export interface AuthResponse {
   accessToken: string;
   user: BaseUserType & { email: string };
-}
-
-export interface SignUpFormValues {
-  email: string;
-  nickname: string;
-  password: string;
-  passwordConfirmation: string;
 }
