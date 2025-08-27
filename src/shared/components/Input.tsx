@@ -7,7 +7,7 @@ import { cn } from '../lib/cn';
 
 export interface InputProps extends ComponentPropsWithRef<'input'> {
   label?: string;
-  error?: FieldError;
+  error?: FieldError | undefined;
   helperText?: string;
 }
 
@@ -30,6 +30,7 @@ const Input = ({ className, label, error, helperText, ...props }: InputProps) =>
           BASE_INPUT_STYLE,
           {
             'border-red': error,
+            'mb-[10px]': helperText || error,
           },
           className,
         )}
@@ -38,9 +39,9 @@ const Input = ({ className, label, error, helperText, ...props }: InputProps) =>
       />
 
       {error ? (
-        <p className='text-red text-xs-regular xl:text-md-regular mt-[10px]'>{error.message}</p>
+        <p className='text-red text-xs-regular xl:text-md-regular'>{error.message}</p>
       ) : (
-        <p className='text-xs-regular xl:text-md-regular mt-[10px] text-gray-600'>{helperText}</p>
+        <p className='text-xs-regular xl:text-md-regular text-gray-600'>{helperText}</p>
       )}
     </div>
   );
