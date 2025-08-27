@@ -23,25 +23,13 @@ const ProductHeader = ({ category, title, views }: ProductHeaderProps) => {
   };
 
   return (
-    // 전체를 감싸는 컨테이너: 모바일에서는 세로, 태블릿부터 가로
-    <div className='flex w-full flex-col items-start md:flex-row md:items-start md:justify-between'>
-      {/* 칩 + 제목 + 조회수 그룹 */}
-      <div className='my-[20px] flex flex-col items-start gap-[10px] md:my-0'>
+    /* 전체 컨테이너 */
+    <div className='flex w-full flex-col'>
+      {/* 모바일 -> 칩+ 공유버튼 태블릿/pc -> 칩*/}
+      <div className='flex w-full items-center justify-between md:block'>
         <Chip {...toCategoryChip(category)} />
-        <h2 className='text-xl-semibold text-white'>{title}</h2>
-        <p className='text-md-light text-gray-600'>조회 {views}</p>
-      </div>
-
-      {/* 찜 버튼 + 공유 버튼 그룹 */}
-      <div className='my-[20px] flex flex-col items-end gap-[10px] md:my-0 md:flex-row md:items-center'>
-        <button onClick={handleLikeClick} className='cursor-pointer'>
-          <Heart
-            className={`h-6 w-6 xl:h-7 xl:w-7 ${isLiked ? 'text-main' : 'text-gray-600'}`}
-            fill={isLiked ? 'red' : 'none'}
-          />
-        </button>
-        {/* 공유 버튼 그룹 */}
-        <div className='flex gap-[10px]'>
+        {/* 공유 버튼 (모바일) */}
+        <div className='flex gap-[10px] md:hidden'>
           <button className='bg-black-800 cursor-pointer rounded-[6px] p-[5px]'>
             <KakaotalkIcon className='h-6 w-6 xl:h-7 xl:w-7' />
           </button>
@@ -50,6 +38,31 @@ const ProductHeader = ({ category, title, views }: ProductHeaderProps) => {
           </button>
         </div>
       </div>
+
+      {/* 모바일 -> 제목+찜, 태블릿/pc -> 제목+찜+공유버튼 */}
+      <div className='mt-[10px] flex w-full items-center justify-between'>
+        <div className='flex w-full items-center justify-between'>
+          <h2 className='text-xl-semibold text-white'>{title}</h2>
+          <button onClick={handleLikeClick} className='cursor-pointer'>
+            <Heart
+              className={`h-6 w-6 xl:h-7 xl:w-7 ${isLiked ? 'text-main' : 'text-gray-600'}`}
+              fill={isLiked ? 'red' : 'none'}
+            />
+          </button>
+        </div>
+        {/* 공유 버튼 (태블릿/PC) */}
+        <div className='hidden gap-[10px] md:flex'>
+          <button className='bg-black-800 cursor-pointer rounded-[6px] p-[5px]'>
+            <KakaotalkIcon className='h-6 w-6 xl:h-7 xl:w-7' />
+          </button>
+          <button className='bg-black-800 cursor-pointer rounded-[6px] p-[5px]'>
+            <ShareIcon className='h-6 w-6 xl:h-7 xl:w-7' />
+          </button>
+        </div>
+      </div>
+
+      {/* 조회수 */}
+      <p className='text-md-light mt-[10px] text-gray-600'>조회 {views}</p>
     </div>
   );
 };
