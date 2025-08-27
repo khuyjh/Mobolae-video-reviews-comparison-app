@@ -33,11 +33,11 @@ export default function GlobalNav() {
   }, [searchOpen]);
 
   return (
-    <header className='sticky top-0 z-40 border border-[var(--color-black-800)] bg-[var(--color-black-900)] py-[11px] pb-[11px] md:py-[15px] md:pb-[15px] xl:py-[22px] xl:pb-[22px]'>
+    <header className='border-black-800 bg-black-900 sticky top-0 z-40 border py-[11px] pb-[11px] md:py-[15px] md:pb-[15px] xl:py-[22px] xl:pb-[22px]'>
       <nav className={NAV_CONTAINER}>
         {/*로고*/}
         <Link href='/' className='flex items-center'>
-          <img src='/icons/Logo.svg' alt='로고' className='h-[28px] md:h-[46px] xl:h-[56]' />
+          <img src='/icons/Logo.svg' alt='로고' className='h-[28px] md:h-[46px] xl:h-[56px]' />
         </Link>
         {/*PC 검색창*/}
         <div className='hidden md:flex md:items-center'>
@@ -55,19 +55,19 @@ export default function GlobalNav() {
           {/*PC 오른쪽 메뉴 / 로그인 상태 -> 비교하기, 내 프로필 / 로그아웃 상태 -> 로그인, 회원가입*/}
           {isLoggedIn ? (
             <div className={DESKTOP_MENU}>
-              <Link href='/compare' className='hover:text-[var(--color-gray-600)]'>
+              <Link href='/compare' className='hover:text-gray-600'>
                 비교하기
               </Link>
-              <Link href='/mypage' className='hover:text-[var(--color-gray-600)]'>
+              <Link href='/mypage' className='hover:text-gray-600'>
                 내 프로필
               </Link>
             </div>
           ) : (
             <div className={DESKTOP_AUTH}>
-              <Link href='/signin' className='hover:text-[var(--color-gray-600)]'>
+              <Link href='/signin' className='hover:text-gray-600'>
                 로그인
               </Link>
-              <Link href='/signup' className='hover:text-[var(--color-gray-600)]'>
+              <Link href='/signup' className='hover:text-gray-600'>
                 회원가입
               </Link>
             </div>
