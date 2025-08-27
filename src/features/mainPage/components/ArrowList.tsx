@@ -5,14 +5,14 @@ import React, { ReactNode, KeyboardEvent } from 'react';
 /**
  * ArrowList 컴포넌트
  *
- * - 자식 버튼들을 ↑/↓ 키로 이동 가능하게 만들어 줌
- * - 버튼에는 반드시 className="nav-item"을 붙여야 탐색 대상이 됨
+ * - 자식 버튼들(리스트 메뉴뉴)을 ↑/↓ 키로 이동 가능하게 만들어 줌
+ * - 버튼(리스트 메뉴)에는 반드시 className="nav-item"을 붙여야 탐색 대상이 됨
  */
 interface ArrowListProps {
   children: ReactNode;
 }
 
-export default function ArrowList({ children }: ArrowListProps) {
+const ArrowList = ({ children }: ArrowListProps) => {
   const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     const { key, currentTarget } = e;
 
@@ -49,4 +49,6 @@ export default function ArrowList({ children }: ArrowListProps) {
       {children}
     </div>
   );
-}
+};
+
+export default ArrowList;
