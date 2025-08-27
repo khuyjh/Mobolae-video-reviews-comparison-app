@@ -40,7 +40,7 @@ const MobileGnbSheet = ({ isLoggedIn }: GnbSheetProps) => {
     <MobileBottomSheet
       trigger={
         <button type='button' aria-label='메뉴 열기' className='cursor-pointer'>
-          <MenuIcon className='transition-color size-5 text-gray-400 duration-200 hover:text-white' />
+          <MenuIcon className='transition-color size-6 text-gray-400 duration-200 hover:text-white' />
         </button>
       }
       title='메뉴'

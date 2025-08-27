@@ -6,6 +6,8 @@ import { useState } from 'react';
 
 import { cn } from '@/shared/lib/cn';
 
+import MobileGnbSheet from './MobileGnbSheet';
+
 export default function GlobalNav() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -53,7 +55,7 @@ export default function GlobalNav() {
         </div>
 
         {/*모바일 메뉴,검색 버튼*/}
-        <div className='flex items-center md:hidden'>
+        <div className='flex items-center gap-5 md:hidden'>
           {!searchOpen && (
             <>
               <button
@@ -63,12 +65,7 @@ export default function GlobalNav() {
               >
                 <img src='/icons/SearchIcon.svg' alt='검색' />
               </button>
-              <button
-                className='ml-[20px] grid h-[24px] w-[24px] place-items-center'
-                aria-label='메뉴 열기'
-              >
-                <img src='/icons/MenuIcon.svg' alt='메뉴' />
-              </button>
+              <MobileGnbSheet isLoggedIn={isLoggedIn} />
             </>
           )}
         </div>
