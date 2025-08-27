@@ -33,7 +33,7 @@ export default function GlobalNav() {
   }, [searchOpen]);
 
   return (
-    <header className='sticky z-40 border border-[var(--color-black-800)] bg-[var(--color-black-900)] py-[11px] pb-[11px] md:py-[15px] md:pb-[15px] xl:py-[22px] xl:pb-[22px]'>
+    <header className='sticky top-0 z-40 border border-[var(--color-black-800)] bg-[var(--color-black-900)] py-[11px] pb-[11px] md:py-[15px] md:pb-[15px] xl:py-[22px] xl:pb-[22px]'>
       <nav className={NAV_CONTAINER}>
         {/*로고*/}
         <Link href='/' className='flex items-center'>
