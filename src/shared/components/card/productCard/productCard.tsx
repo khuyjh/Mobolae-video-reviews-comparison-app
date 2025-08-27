@@ -1,5 +1,7 @@
 // 이미지 + 메인
 
+import Image from 'next/image';
+
 import React from 'react';
 
 import { formatNumber } from '@/shared/utils/formatters';
@@ -30,13 +32,13 @@ const ProductCard = ({
 
   return (
     <div className='flex flex-col md:flex-row'>
-      {/* 이미지 섹션 */}
-      <div>
-        <img src={imageSrc} alt='' className='h-full w-full object-cover' />
+      {/* 이미지 섹션 - bg-gray-300 임시*/}
+      <div className='relative aspect-[335/236] w-full bg-gray-300 md:h-[197px] md:w-[280px] xl:h-[250px] xl:w-[335px]'>
+        <Image src={imageSrc} alt={title} layout='fill' objectFit='cover' />
       </div>
 
       {/* 콘텐츠 섹션 */}
-      <div className='flex flex-1 flex-col p-[20px]'>
+      <div className='flex flex-1 flex-col p-[20px] md:px-[20px] md:py-0 xl:px-[40px]'>
         <div className='flex items-start justify-between'>
           {/* 헤더 (칩, 제목, 조회수) */}
           <ProductHeader category={category} title={title} views={formattedViews} />

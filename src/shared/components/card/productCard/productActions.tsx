@@ -14,20 +14,20 @@ const ProductActions = () => {
   };
 
   return (
-    <div className='my-[20px] flex flex-col items-end gap-[10px]'>
-      {/* 공유 버튼 그룹 */}
-      <div className='flex gap-[10px]'>
-        <button className='bg-black-800 rounded-[6px] p-[5px]'>
-          <KakaotalkIcon />
+    <div className='my-[20px] flex flex-col items-end gap-[10px] md:my-[40px] md:flex-row md:items-center md:gap-[101px] xl:gap-[214px]'>
+      {/* 공유 버튼 그룹, 클릭 시 토스트 설정*/}
+      <div className='flex gap-[10px] md:order-2'>
+        <button className='bg-black-800 cursor-pointer rounded-[6px] p-[5px]'>
+          <KakaotalkIcon className='h-6 w-6 xl:h-7 xl:w-7' />
         </button>
-        <button className='bg-black-800 rounded-[6px] p-[5px]'>
-          <ShareIcon />
+        <button className='bg-black-800 cursor-pointer rounded-[6px] p-[5px]'>
+          <ShareIcon className='h-6 w-6 xl:h-7 xl:w-7' />
         </button>
       </div>
       {/* 찜 버튼 */}
-      <button onClick={handleLikeClick}>
+      <button onClick={handleLikeClick} className='cursor-pointer md:order-1'>
         <Heart
-          className={isLiked ? 'text-red-500' : 'text-gray-600'}
+          className={`h-6 w-6 xl:h-7 xl:w-7 ${isLiked ? 'text-main' : 'text-gray-600'}`}
           fill={isLiked ? 'red' : 'none'}
         />
       </button>

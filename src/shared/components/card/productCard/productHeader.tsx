@@ -14,7 +14,7 @@ interface ProductHeaderProps {
 
 const ProductHeader = ({ category, title, views }: ProductHeaderProps) => {
   return (
-    <div className='my-[20px] flex flex-col items-start gap-[10px]'>
+    <div className='my-[20px] flex flex-col items-start gap-[10px] md:my-0'>
       <Chip {...toCategoryChip(category)} />
       <h2 className='text-xl-semibold text-white'>{title}</h2>
       <p className='text-md-light text-gray-600'>조회 {views}</p>
