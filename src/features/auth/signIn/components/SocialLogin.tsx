@@ -1,4 +1,4 @@
-import KakaoIcon from '../../../../public/icons/KakaoIcon.svg';
+import KakaoIcon from '../../../../../public/icons/KakaoIcon.svg';
 
 const SocialLogin = () => {
   return (
