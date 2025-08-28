@@ -9,9 +9,11 @@ import { SubmitHandler, useForm } from 'react-hook-form';
 import Button from '@/shared/components/Button';
 import Input from '@/shared/components/Input';
 import PasswordInput from '@/shared/components/PasswordInput';
+import { useUserStore } from '@/shared/stores/userStore';
 
 import { signUpRequest } from '../../api/authApi';
 import { signUpSchema, SignUpSchema } from '../../schemas/authSchema';
+import { setCookie } from '../../utils/cookie';
 
 const SignUpForm = () => {
   const {
@@ -20,7 +22,7 @@ const SignUpForm = () => {
     formState: { errors, isSubmitting, isValid },
   } = useForm<SignUpSchema>({
     resolver: zodResolver(signUpSchema),
-    mode: 'onBlur',
+    mode: 'onChange',
     reValidateMode: 'onChange',
     defaultValues: {
       email: '',
@@ -29,14 +31,22 @@ const SignUpForm = () => {
       passwordConfirmation: '',
     },
   });
+  const setUser = useUserStore((state) => state.setUser);
+
   const router = useRouter();
 
   const onSubmit: SubmitHandler<SignUpSchema> = async (data) => {
     try {
       const res = await signUpRequest(data);
-      console.log(res);
-      // 토큰이랑 user.me 요청 로직 이후 추가
-      router.push('/');
+      const { accessToken } = res;
+
+      if (accessToken) {
+        setCookie('accessToken', accessToken);
+      }
+
+      setUser();
+      console.log(res.user?.nickname, '님 환영합니다'); //토스트 로그인 처리
+      router.replace('/');
     } catch (e) {
       if (axios.isAxiosError(e)) {
         const message = e.response?.data.message;

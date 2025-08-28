@@ -9,9 +9,11 @@ import { SubmitHandler, useForm } from 'react-hook-form';
 import Button from '@/shared/components/Button';
 import Input from '@/shared/components/Input';
 import PasswordInput from '@/shared/components/PasswordInput';
+import { useUserStore } from '@/shared/stores/userStore';
 
 import { signInRequest } from '../../api/authApi';
 import { SignInSchema, signInSchema } from '../../schemas/authSchema';
+import { setCookie } from '../../utils/cookie';
 
 const SignInForm = () => {
   const {
@@ -27,14 +29,21 @@ const SignInForm = () => {
       password: '',
     },
   });
+  const setUser = useUserStore((state) => state.setUser);
   const router = useRouter();
 
   const onSubmit: SubmitHandler<SignInSchema> = async (data) => {
     try {
       const res = await signInRequest(data);
-      console.log(res);
-      // 토큰이랑 user.me 요청 로직 이후 추가
-      router.push('/');
+      const { accessToken } = res;
+
+      if (accessToken) {
+        setCookie('accessToken', accessToken);
+      }
+
+      setUser();
+      console.log(res.user?.nickname, '님 환영합니다'); //토스트 로그인 처리
+      router.replace('/');
     } catch (e) {
       if (axios.isAxiosError(e)) {
         const message = e.response?.data.message;

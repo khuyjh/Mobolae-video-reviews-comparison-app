@@ -1,14 +1,6 @@
-interface BaseUserType {
-  id: number;
-  nickname: string;
-  description: string;
-  image: null | string;
-  createdAt: string;
-  updatedAt: string;
-  teamId: '16-7';
-}
+import { BaseUser } from '@/shared/types/userTypes';
 
 export interface AuthResponse {
   accessToken: string;
-  user: BaseUserType & { email: string };
+  user: BaseUser & { email: string };
 }
