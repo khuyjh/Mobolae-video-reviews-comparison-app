@@ -65,7 +65,6 @@ const ActivityCard = ({ rating, reviewCount, topCategoryId, className }: Activit
       {/* 관심 카테고리 */}
       <div className={CARD_BASE_STYLE}>
         <p className={TOP_BASE_STYLE}>
-          {' '}
           관심&nbsp;
           <br />
           카테고리
