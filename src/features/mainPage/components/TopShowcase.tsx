@@ -16,7 +16,7 @@ type TopShowcaseProps = {
   }[];
 };
 
-export default function TopShowcase({ items }: TopShowcaseProps) {
+const TopShowcase = ({ items }: TopShowcaseProps) => {
   return (
     <section className='mt-[60px]'>
       <div className='mb-[30px] flex justify-between'>
@@ -26,4 +26,6 @@ export default function TopShowcase({ items }: TopShowcaseProps) {
       <ContentGrid items={items} />
     </section>
   );
-}
+};
+
+export default TopShowcase;
