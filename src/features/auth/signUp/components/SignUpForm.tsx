@@ -22,7 +22,7 @@ const SignUpForm = () => {
     formState: { errors, isSubmitting, isValid },
   } = useForm<SignUpSchema>({
     resolver: zodResolver(signUpSchema),
-    mode: 'onChange',
+    mode: 'onBlur',
     reValidateMode: 'onChange',
     defaultValues: {
       email: '',
