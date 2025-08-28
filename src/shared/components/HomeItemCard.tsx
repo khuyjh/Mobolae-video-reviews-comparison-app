@@ -1,5 +1,4 @@
 //홈 페이지 아이템 카드 컴포넌트
-import Image from 'next/image';
 import Link from 'next/link';
 
 import clsx from 'clsx';
