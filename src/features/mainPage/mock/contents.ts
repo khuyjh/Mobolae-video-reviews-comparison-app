@@ -1,3 +1,6 @@
+// src/features/mainPage/mock/contents.ts
+
+// 콘텐츠 목데이터
 export const mockContents = [
   {
     contentId: 1,
@@ -47,4 +50,13 @@ export const mockContents = [
     reviewCount: 1200,
     rating: 4.2,
   },
+];
+
+// 리뷰어 목데이터
+export const mockReviewers = [
+  { id: 1, name: '무비덕', profileImageUrl: 'https://i.pravatar.cc/40?img=1' },
+  { id: 2, name: '더라마요정', profileImageUrl: 'https://i.pravatar.cc/40?img=2' },
+  { id: 3, name: '시네필', profileImageUrl: 'https://i.pravatar.cc/40?img=3' },
+  { id: 4, name: '빙의장인', profileImageUrl: 'https://i.pravatar.cc/40?img=4' },
+  { id: 5, name: '감성장전', profileImageUrl: 'https://i.pravatar.cc/40?img=5' },
 ];

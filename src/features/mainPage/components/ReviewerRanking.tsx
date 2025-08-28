@@ -1,7 +1,8 @@
-// features/mainPage/components/ReviewerRanking.tsx
 'use client';
 
 import React from 'react';
+
+import { mockReviewers } from '@/features/mainPage/mock/contents';
 
 export interface Reviewer {
   id: number;
@@ -9,22 +10,11 @@ export interface Reviewer {
   profileImageUrl: string;
 }
 
-const sampleReviewerList: Reviewer[] = [
-  { id: 1, name: '무비덕', profileImageUrl: 'https://i.pravatar.cc/40?img=1' },
-  { id: 2, name: '더라마요정', profileImageUrl: 'https://i.pravatar.cc/40?img=2' },
-  { id: 3, name: '시네필', profileImageUrl: 'https://i.pravatar.cc/40?img=3' },
-  { id: 4, name: '빙의장인', profileImageUrl: 'https://i.pravatar.cc/40?img=4' },
-  { id: 5, name: '감성장전', profileImageUrl: 'https://i.pravatar.cc/40?img=5' },
-];
-
 /** 개별 카드 */
-function RankingCard({
-  reviewer,
-  isHorizontalLayout = false,
-}: {
+const RankingCard: React.FC<{
   reviewer: Reviewer;
   isHorizontalLayout?: boolean;
-}) {
+}> = ({ reviewer, isHorizontalLayout = false }) => {
   return (
     <div className={`rounded-lg border p-3 ${isHorizontalLayout ? 'min-w-[147px]' : ''}`}>
       <div className='flex items-center space-x-3'>
@@ -37,14 +27,12 @@ function RankingCard({
       </div>
     </div>
   );
-}
+};
 
 /** 모바일·태블릿·소형 데스크탑: 가로 스크롤 바 (lg 미만에서 보이도록) */
-export function ReviewerRankingHorizontal({
-  reviewers = sampleReviewerList,
-}: {
+export const ReviewerRankingHorizontal: React.FC<{
   reviewers?: Reviewer[];
-}) {
+}> = ({ reviewers = mockReviewers }) => {
   return (
     <section
       aria-labelledby='reviewer-ranking-title-horizontal'
@@ -60,14 +48,12 @@ export function ReviewerRankingHorizontal({
       </div>
     </section>
   );
-}
+};
 
 /** 큰 화면(lg 이상): 좌측 레일 세로 리스트 */
-export function ReviewerRankingSidebar({
-  reviewers = sampleReviewerList,
-}: {
+export const ReviewerRankingSidebar: React.FC<{
   reviewers?: Reviewer[];
-}) {
+}> = ({ reviewers = mockReviewers }) => {
   return (
     <aside
       aria-labelledby='reviewer-ranking-title-sidebar'
@@ -85,4 +71,4 @@ export function ReviewerRankingSidebar({
       </div>
     </aside>
   );
-}
+};
