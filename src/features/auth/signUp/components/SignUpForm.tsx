@@ -87,7 +87,7 @@ const SignUpForm = () => {
         {...register('passwordConfirmation')}
       />
       <Button
-        className='mt-[126px] max-w-full md:mt-5'
+        className='mt-15 max-w-full md:mt-5'
         type='submit'
         disabled={isSubmitting || !isValid}
       >
