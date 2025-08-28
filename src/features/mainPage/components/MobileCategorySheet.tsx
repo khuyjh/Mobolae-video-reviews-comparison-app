@@ -45,12 +45,8 @@ const MobileCategorySheet: React.FC<MobileCategorySheetProps> = ({
           clickable
           role='button'
           aria-label='카테고리 바텀시트 열기'
-          className='border-black-700 bg-black-900 text-md-regular hover:bg-black-800 gap-2 border text-white'
         >
-          <ShapesIcon className='size-[18px] text-gray-400' />
-          <span className={selectedCategory ? 'text-gray-400' : 'text-gray-600'}>
-            {selectedCategory ? selectedLabel : '카테고리'}
-          </span>
+          {selectedCategory ? selectedLabel : '카테고리'}
         </Chip>
       }
       title='카테고리'
