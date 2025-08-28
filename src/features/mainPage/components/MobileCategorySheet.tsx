@@ -1,6 +1,5 @@
 'use client';
 
-import { ShapesIcon } from 'lucide-react';
 import React from 'react';
 
 import CategoryItem from '@/features/mainPage/components/CategoryItem';
