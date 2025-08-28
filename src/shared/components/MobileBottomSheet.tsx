@@ -71,9 +71,11 @@ const MobileBottomSheet = ({
         className={cn(BASE_STYLE, className)}
         onOpenAutoFocus={(e) => {
           e.preventDefault();
-          requestAnimationFrame(() => contentRef.current?.focus());
+          requestAnimationFrame(() =>
+            contentRef.current?.querySelector<HTMLElement>('.nav-item')?.focus(),
+          );
         }}
-        tabIndex={-1}
+        aria-describedby={undefined}
       >
         {/* 헤더 */}
         <div className='border-black-800 border-b p-4'>
@@ -86,7 +88,7 @@ const MobileBottomSheet = ({
         </div>
 
         {/* 본문 */}
-        <div className='p-4'>{children}</div>
+        <div className='p-4 pb-8'>{children}</div>
       </SheetContent>
     </Sheet>
   );
