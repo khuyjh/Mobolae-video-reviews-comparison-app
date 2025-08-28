@@ -1,7 +1,7 @@
 //홈 페이지 아이템 카드 컴포넌트
-import Image from 'next/image';
 import Link from 'next/link';
 
+import clsx from 'clsx';
 import { Star } from 'lucide-react';
 import React from 'react';
 
@@ -14,6 +14,7 @@ import SafeImage from '@/shared/components/SafeImage';
  * reviewCount: 리뷰 개수
  * rating: 별점 개수
  * contentId: 콘텐츠 고유 id 번호
+ * className: 커스텀 디자인 여부
  */
 
 interface HomeItemCardProps {
@@ -23,11 +24,12 @@ interface HomeItemCardProps {
   reviewCount: number;
   rating: number;
   contentId: number;
+  className?: string;
 }
 
 // 카드 내부 스타일 정리
 const CARD_BASE_STYLE =
-  'block relative no-underline text-inherit cursor-pointer border border-black-700 bg-black-800 rounded-lg p-[10px] w-[160px] md:w-[247px] xl:w-[300px] h-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-500/60 transition hover:shadow-lg hover:border-gray-400';
+  'block relative no-underline text-inherit cursor-pointer border border-black-700 bg-black-800 rounded-lg p-[10px] w-full h-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-500/60 transition hover:shadow-lg hover:border-gray-400';
 const REVIEW_FAVORITE_TEXT_STYLE =
   'text-sm-regular md:text-md-regular xl:text-base-regular flex items-center gap-1 text-gray-600';
 const STAR_CONTAINER_STYLE =
@@ -40,10 +42,11 @@ const HomeItemCard = ({
   reviewCount,
   rating,
   contentId,
+  className,
 }: HomeItemCardProps) => {
   return (
-    // 가장 바깥 컨테이너 - width값을 가장 바깥인 부모 컨테이너에만 적용 고정값으로 처리하기로 함 Link 태그로 변경됨
-    <Link href={`/product/${contentId}`} className={CARD_BASE_STYLE}>
+    // 가장 바깥 컨테이너 - 고정값 제거, w-full로 변경, className props 추가
+    <Link href={`/product/${contentId}`} className={clsx(CARD_BASE_STYLE, className)}>
       {/* 아이템 요소 컨테이너 */}
       <div className='flex w-full flex-col gap-[10px]'>
         {/* 이미지 컨테이너 - api 이미지 비율이 다를 경우 깨질 수 있어 고정 값 대신 해당 사항 적용 + 최소 너비 min-w 추가 */}

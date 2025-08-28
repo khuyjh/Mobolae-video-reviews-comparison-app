@@ -3,6 +3,8 @@ import React from 'react';
 import CategoryItem from '@/features/mainPage/components/CategoryItem';
 import { Category } from '@/shared/types/CategoryTypes';
 
+import ArrowList from './ArrowList';
+
 /**
  * PC/태블릿용 사이드바 카테고리 메뉴 Props 타입
  */
@@ -35,16 +37,18 @@ const CategorySidebar: React.FC<CategorySidebarProps> = ({
   <aside className='bg-black-900 h-fit px-[10px] py-[45px] md:max-w-[220px] xl:min-w-[220px]'>
     <h3 className='text-md-regular xl:text-base-regular mb-5 px-5 text-white'>카테고리</h3>
     <nav role='navigation' aria-label='카테고리 네비게이션'>
-      <div className='space-y-2'>
-        {categories.map((category) => (
-          <CategoryItem
-            key={category.id}
-            category={category}
-            isSelected={selectedCategory === category.value}
-            onClick={() => onCategorySelect(category.value)}
-          />
-        ))}
-      </div>
+      <ArrowList>
+        <div className='space-y-2'>
+          {categories.map((category) => (
+            <CategoryItem
+              key={category.id}
+              category={category}
+              isSelected={selectedCategory === category.value}
+              onClick={() => onCategorySelect(category.value)}
+            />
+          ))}
+        </div>
+      </ArrowList>
     </nav>
   </aside>
 );
