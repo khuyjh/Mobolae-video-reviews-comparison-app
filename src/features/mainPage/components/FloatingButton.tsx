@@ -13,7 +13,7 @@ interface FloatingButtonProps {
 /** 공통 버튼 스타일 */
 const BASE_CLASSES = `
     fixed z-30 h-[60px] w-[60px] rounded-full bg-main text-white
-    transition-all duration-300
+    transition-all duration-300 cursor-pointer
     active:opacity-80
     focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2
     right-5 bottom-10

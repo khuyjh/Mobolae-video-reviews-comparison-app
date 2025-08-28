@@ -4,6 +4,7 @@ import Link from 'next/link';
 
 import { MenuIcon } from 'lucide-react';
 
+import ArrowList from '@/features/mainPage/components/ArrowList';
 import MobileBottomSheet from '@/shared/components/MobileBottomSheet';
 import { SheetClose } from '@/shared/components/ui/sheet';
 
@@ -31,7 +32,7 @@ const MobileGnbSheet = ({ isLoggedIn }: GnbSheetProps) => {
         { href: '/mypage', label: '마이페이지' },
       ]
     : [
-        { href: '/login', label: '로그인' },
+        { href: '/signin', label: '로그인' },
         { href: '/signup', label: '회원가입' },
       ];
 
@@ -39,22 +40,24 @@ const MobileGnbSheet = ({ isLoggedIn }: GnbSheetProps) => {
     <MobileBottomSheet
       trigger={
         <button type='button' aria-label='메뉴 열기' className='cursor-pointer'>
-          <MenuIcon className='transition-color size-5 text-gray-400 duration-200 hover:text-white' />
+          <MenuIcon className='transition-color size-6 text-gray-400 duration-200 hover:text-white' />
         </button>
       }
       title='메뉴'
     >
-      <ul className='flex flex-col space-y-4'>
-        {items.map((item) => (
-          <li key={item.href}>
-            <SheetClose asChild>
-              <Link href={item.href} className={LINK_STYLE}>
-                <span>{item.label}</span>
-              </Link>
-            </SheetClose>
-          </li>
-        ))}
-      </ul>
+      <ArrowList>
+        <ul className='flex flex-col space-y-4'>
+          {items.map((item) => (
+            <li key={item.href}>
+              <SheetClose asChild>
+                <Link href={item.href} className={`nav-item ${LINK_STYLE}`} tabIndex={-1}>
+                  <span>{item.label}</span>
+                </Link>
+              </SheetClose>
+            </li>
+          ))}
+        </ul>
+      </ArrowList>
     </MobileBottomSheet>
   );
 };
