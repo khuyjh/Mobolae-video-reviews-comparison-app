@@ -29,7 +29,6 @@ import { mockContents } from '@/features/mainPage/mock/contents';
  * <Home />
  * ```
  *
- * @returns {JSX.Element} 메인 페이지 전체 레이아웃
  */
 const Home = () => {
   return (
