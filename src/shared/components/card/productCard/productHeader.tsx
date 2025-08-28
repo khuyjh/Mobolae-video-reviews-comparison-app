@@ -51,6 +51,7 @@ const ProductHeader = ({ category, title, views }: ProductHeaderProps) => {
             onClick={handleLikeClick}
             className='flex-shrink-0 cursor-pointer'
             aria-label={isLiked ? '찜하기 취소' : '찜하기'}
+            aria-pressed={isLiked}
           >
             <Heart className={cn(ICON_SIZE, heartIconColor)} fill={isLiked ? 'red' : 'none'} />
           </button>

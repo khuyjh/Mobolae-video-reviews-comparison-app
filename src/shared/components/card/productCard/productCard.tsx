@@ -34,7 +34,7 @@ const ProductCard = ({
     <div className='flex flex-col px-[20px] md:flex-row md:gap-5'>
       {/* 이미지 섹션 */}
       <div className={IMAGE_CONTAINER_STYLES}>
-        <Image src={imageSrc} alt={title} fill className='object-cover' />
+        <Image src={imageSrc} alt={title} fill className='object-cover' priority />
       </div>
 
       {/* 콘텐츠 섹션 */}
