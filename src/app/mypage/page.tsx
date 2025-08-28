@@ -1,49 +1,43 @@
-// import { RankedUserItem, BasicUserItem, RatedUserItem } from '@/shared/components/card/ranking';
+'use client';
 
+import React from 'react';
+
+import ProfileBadge from '@/shared/components/card/avtataCard';
+const AVATAR = '/images/profileImg.jpg';
 const MyPage = () => {
   return (
-    // <div className='min-h-screen w-full bg-[#0f1014] p-6 lg:p-12'>
-    //   <div className='grid grid-cols-1 gap-8 md:grid-cols-2'>
-    //     {/* Ranked */}
-    //     <div className='space-y-5'>
-    //       <RankedUserItem
-    //         avatarUrl='https://images.unsplash.com/photo-1520975682031-ae7a2c41d814?w=128&auto=format&fit=crop&q=60'
-    //         name='리뷰왕'
-    //         rank={1}
-    //         followers={682}
-    //         reviews={398}
-    //       />
-    //       <RankedUserItem
-    //         avatarUrl='https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=128&auto=format&fit=crop&q=60'
-    //         name='리뷰왕'
-    //         rank={15}
-    //         followers={682}
-    //         reviews={398}
-    //       />
-    //     </div>
+    <div className='space-y-4 px-[20px]'>
+      {/*메인페이지에 들어 갈 아바타 카드*/}
+      <ProfileBadge
+        variant='ranking'
+        name='리뷰왕'
+        avatarSrc={AVATAR}
+        rank={1}
+        followers={682}
+        review={398}
+      />
+      <ProfileBadge
+        variant='ranking'
+        name='리뷰왕'
+        avatarSrc={AVATAR}
+        rank={2}
+        followers={682}
+        review={398}
+      />
+      <ProfileBadge
+        variant='ranking'
+        name='리뷰왕리뷰왕리뷰왕리뷰왕'
+        avatarSrc={AVATAR}
+        rank={3}
+        followers={800}
+        review={38}
+      />
 
-    //     {/* Basic */}
-    //     <div className='space-y-5'>
-    //       <BasicUserItem
-    //         avatarUrl='https://images.unsplash.com/photo-1560807707-8cc77767d783?w=128&auto=format&fit=crop&q=60'
-    //         name='미끄럼틀'
-    //       />
-    //       <BasicUserItem
-    //         avatarUrl='https://images.unsplash.com/photo-1544723795-3fb6469f5b39?w=128&auto=format&fit=crop&q=60'
-    //         name='미끄럼틀'
-    //       />
-    //     </div>
+      {/*리뷰페이지 카드*/}
+      <ProfileBadge variant='review_profile' name='리뷰왕' avatarSrc={AVATAR} rating={5} />
 
-    //     {/* Rated */}
-
-    //     <div className='space-y-5'>
-    //       <RatedUserItem name='리뷰왕' rating={5} />
-    //       <RatedUserItem name='리뷰왕' rating={4} />
-    //     </div>
-    //   </div>
-    // </div>
-    <div>
-      <h1>임시 코드</h1>
+      {/*팔로워 목록 카드 */}
+      <ProfileBadge variant='follower' name='미끄럼틀' avatarSrc={AVATAR} />
     </div>
   );
 };
