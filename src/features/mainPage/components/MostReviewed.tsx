@@ -2,17 +2,12 @@
 
 import React from 'react';
 
+import { ContentItem } from '@/shared/types/content';
+
 import ContentGrid from './ContentGrid';
 
 type MostReviewedProps = {
-  items: {
-    contentId: number;
-    title: string;
-    contentImage: string;
-    favoriteCount: number;
-    reviewCount: number;
-    rating: number;
-  }[];
+  items: ContentItem[];
 };
 
 const MostReviewed = ({ items }: MostReviewedProps) => {

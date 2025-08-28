@@ -3,18 +3,11 @@
 
 import React from 'react';
 
+import { ContentItem } from '@/shared/types/content';
+
 import ContentGrid from './ContentGrid';
 
-type TopShowcaseProps = {
-  items: {
-    contentId: number;
-    title: string;
-    contentImage: string;
-    favoriteCount: number;
-    reviewCount: number;
-    rating: number;
-  }[];
-};
+type TopShowcaseProps = { items: ContentItem[] };
 
 const TopShowcase = ({ items }: TopShowcaseProps) => {
   return (
