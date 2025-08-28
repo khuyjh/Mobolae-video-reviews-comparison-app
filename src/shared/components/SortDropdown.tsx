@@ -2,10 +2,9 @@
 
 'use client';
 
+import clsx from 'clsx';
 import { ChevronDown } from 'lucide-react';
 import React, { useEffect, useId, useRef, useState } from 'react';
-
-import { cn } from '@/shared/lib/cn';
 
 /** 드롭다운에서 사용할 옵션 타입 (라벨/값) */
 export interface OrderOption<K extends string = string> {
@@ -94,15 +93,16 @@ const SortDropdown = <K extends string = string>({
     setOpen(false);
     requestAnimationFrame(() => btnRef.current?.focus());
   };
+  // 드롭다운 내부 css값 상수화로 정리
+  const BASE_STYLE = 'bg-black-900 relative inline-block w-full max-w-[200px] min-w-[113px]';
+  const TRIGGER_STYLE =
+    'flex w-full justify-end gap-5 focus:outline-none md:justify-between md:px-4 xl:px-5';
+  const ARROW_STYLE = `aria-hidden="true" h-auto w-[20px] min-w-[20px] text-gray-600 transition-transform md:w-[22px] xl:w-[24px] ${open ? 'rotate-180' : ''}`;
+  const PANEL_STYLE =
+    'bg-black-800 absolute top-[110%] left-0 z-20 mt-[10px] max-h-80 w-full overflow-auto rounded-md border border-gray-700 p-2 shadow-lg';
 
   return (
-    <div
-      ref={wrapRef}
-      className={cn(
-        'bg-black-900 relative inline-block w-full max-w-[200px] min-w-[113px]',
-        className,
-      )}
-    >
+    <div ref={wrapRef} className={clsx(BASE_STYLE, className)}>
       {/* 트리거 버튼 */}
       <button
         ref={btnRef}
@@ -111,14 +111,11 @@ const SortDropdown = <K extends string = string>({
         aria-expanded={open}
         aria-controls={listId}
         onClick={() => setOpen((p) => !p)}
-        className={cn(
-          'flex w-full justify-end gap-5 focus:outline-none md:justify-between md:px-4 xl:px-5',
-          buttonClassName,
-        )}
+        className={clsx(TRIGGER_STYLE, buttonClassName)}
       >
-        {/* 정렬 기준 라벨 - TODO 모바일 기본 텍스트 크기 적용 안되는 부분 해결할 것 */}
+        {/* 정렬 기준 라벨 - cn 함수를 clsx로 대체 */}
         <span
-          className={cn(
+          className={clsx(
             'text-md-regular xl:text-base-regular truncate text-gray-600',
             open ? 'text-white' : 'text-gray-600',
           )}
@@ -126,9 +123,7 @@ const SortDropdown = <K extends string = string>({
           {selected ? selected.label : placeholder}
         </span>
         {/* 화살표 - lucide 이용 */}
-        <ChevronDown
-          className={`aria-hidden="true" h-auto w-[20px] min-w-[20px] text-gray-600 transition-transform md:w-[22px] xl:w-[24px] ${open ? 'rotate-180' : ''}`}
-        />
+        <ChevronDown className={ARROW_STYLE} />
       </button>
       {/* 옵션 패널 - z-index 20처리 트리거와 패널이 떨어져 있는 부분은 mt로 처리*/}
       {open && (
@@ -136,10 +131,7 @@ const SortDropdown = <K extends string = string>({
           id={listId}
           role='listbox'
           aria-label='정렬 옵션'
-          className={cn(
-            'bg-black-800 absolute top-[110%] left-0 z-20 mt-[10px] max-h-80 w-full overflow-auto rounded-md border border-gray-700 p-2 shadow-lg',
-            panelClassName,
-          )}
+          className={clsx(PANEL_STYLE, panelClassName)}
         >
           {options.map((opt) => {
             const isSelected = selected?.id === opt.id;
@@ -150,7 +142,7 @@ const SortDropdown = <K extends string = string>({
                 aria-selected={isSelected}
                 onMouseDown={(e) => e.preventDefault()} // blur로 인한 닫힘 방지
                 onClick={() => handleSelect(opt)}
-                className={cn(
+                className={clsx(
                   'text-md-regular xl:text-base-regular cursor-pointer rounded-md px-3 py-2',
                   isSelected
                     ? 'bg-black-700 text-white'
