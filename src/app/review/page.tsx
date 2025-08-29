@@ -33,7 +33,7 @@ const dummyReviewWithoutImage = {
 const ReviewPage = () => {
   return (
     <div className='flex min-h-screen flex-col items-center bg-gray-950 pt-6'>
-      <div className='w-full max-w-4xl space-y-6 md:min-h-[240px] md:min-w-[684px] md:px-[30px]'>
+      <div className='w-full space-y-6 md:max-w-[684px] md:px-[30px] xl:max-w-[940px]'>
         <ReviewCard {...dummyReviewWithImage} />
         <ReviewCard {...dummyReviewWithoutImage} />
       </div>
