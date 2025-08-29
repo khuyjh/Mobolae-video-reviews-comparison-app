@@ -6,7 +6,7 @@ import ReviewUser from './ReviewUser';
 
 /*
  * reviewContent: 리뷰 본문 내용
- * Images?: 리뷰에 첨부된 이미지 URL(임시)
+ * Images?: 리뷰에 첨부된 이미지 URL
  * likeCount: 리뷰 좋아요 수
  * isLiked: boolean: 좋아요
  * showActions: 리뷰 수정 및 삭제 버튼
@@ -19,6 +19,9 @@ export interface ReviewCardProps {
   isLiked: boolean;
   showActions: boolean;
   createdAt: string;
+  name: string;
+  avatarSrc: string;
+  rating: number;
 }
 
 const ReviewCard = ({
@@ -28,12 +31,15 @@ const ReviewCard = ({
   isLiked,
   showActions,
   createdAt,
+  name,
+  avatarSrc,
+  rating,
 }: ReviewCardProps) => {
   return (
     <div className='bg-black-800 w-full rounded-[12px] p-5 xl:p-7.5'>
       <div className='flex flex-col md:flex-row md:gap-[30px] xl:gap-[80px]'>
         <div className='mb-[30px] flex-shrink-0'>
-          <ReviewUser />
+          <ReviewUser name={name} avatarSrc={avatarSrc} rating={rating} />
         </div>
         <div className='flex flex-1 flex-col'>
           <div className='mb-[20px]'>

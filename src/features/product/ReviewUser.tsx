@@ -1,6 +1,23 @@
-const ReviewUser = () => {
+import ProfileBadge from '@/shared/components/card/avatarCard';
+
+interface ReviewUserProps {
+  name: string;
+  avatarSrc: string;
+  rating: number;
+}
+
+const ReviewUser = ({ name, avatarSrc, rating }: ReviewUserProps) => {
   return (
-    <div className='xl: flex h-[36px] w-[114px] items-center bg-white md:h-[36px] md:w-[159px] xl:h-[42px] xl:w-[150px]'></div>
+    <div className='flex items-center'>
+      <ProfileBadge
+        variant='reviewProfile'
+        id={1} // 더미 ID
+        name={name}
+        avatarSrc={avatarSrc}
+        rating={rating}
+        aria-label={`${name}님의 프로필과 별점 ${rating}점`}
+      />
+    </div>
   );
 };
 

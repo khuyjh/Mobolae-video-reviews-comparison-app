@@ -3,12 +3,13 @@
 import { useState } from 'react';
 
 import { Chip } from '@/shared/components/chip';
+import { formatDate } from '@/shared/utils/formateDate';
 
 /*
- * likeCount: number - 리뷰의 좋아요 수 (초기값으로 사용)
- * @param isLiked: boolean - 현재 사용자가 좋아요를 눌렀는지 여부 (초기값으로 사용)
- * @param showActions: boolean - 수정/삭제 버튼을 보여줄지 여부
- * @param createdAt: string - 리뷰 작성 날짜
+ * likeCount: number - 리뷰의 좋아요 수
+ * isLiked: boolean - 현재 사용자가 좋아요를 눌렀는지 여부
+ * showActions: boolean - 수정/삭제 버튼을 보여줄지 여부
+ * createdAt: string - 리뷰 작성 날짜
  */
 interface ReviewMetaProps {
   likeCount: number;
@@ -17,16 +18,19 @@ interface ReviewMetaProps {
   createdAt: string;
 }
 
+const META_CONTAINER_STYLE = 'flex items-center justify-between';
+const DATE_ACTIONS_WRAPPER_STYLE = 'flex items-center space-x-[15px] md:space-x-[20px]';
+const DATE_STYLE = 'text-xs-regular xl:text-md-regular text-gray-600';
+const ACTIONS_STYLE = 'text-xs-light xl:text-md-light flex items-center space-x-[10px]';
+const ACTION_BUTTON_STYLE = 'text-gray-400 hover:text-gray-300';
+
 const ReviewMeta = ({ likeCount, isLiked, showActions, createdAt }: ReviewMetaProps) => {
-  // 좋아요 상태와 좋아요 수를 관리
   const [localIsLiked, setLocalIsLiked] = useState(isLiked);
   const [localLikeCount, setLocalLikeCount] = useState(likeCount);
 
-  // 좋아요 버튼 클릭 핸들러
   const handleLikeClick = () => {
     setLocalIsLiked(!localIsLiked);
 
-    // 좋아요 수 증감 로직
     if (localIsLiked) {
       setLocalLikeCount(localLikeCount - 1);
     } else {
@@ -35,21 +39,30 @@ const ReviewMeta = ({ likeCount, isLiked, showActions, createdAt }: ReviewMetaPr
   };
 
   return (
-    <div className='flex items-center justify-between'>
-      <div className='flex items-center space-x-[15px] md:space-x-[20px]'>
-        <span className='text-xs-regular xl:text-md-regular text-gray-600'>{createdAt}</span>
+    <div className={META_CONTAINER_STYLE}>
+      <div className={DATE_ACTIONS_WRAPPER_STYLE}>
+        <span className={DATE_STYLE}>{formatDate(createdAt)}</span>
         {showActions && (
-          <div className='text-xs-light xl:text-md-light flex items-center space-x-[10px]'>
-            <button className='text-gray-400 hover:text-gray-300'>수정</button>
-            <button className='text-gray-400 hover:text-gray-300'>삭제</button>
+          <div className={ACTIONS_STYLE}>
+            <button className={ACTION_BUTTON_STYLE} aria-label='리뷰 수정하기'>
+              수정
+            </button>
+            <button className={ACTION_BUTTON_STYLE} aria-label='리뷰 삭제하기'>
+              삭제
+            </button>
           </div>
         )}
       </div>
-      <div className='flex items-center'>
-        <Chip variant='thumbs' isToggled={localIsLiked} clickable onClick={handleLikeClick}>
-          {localLikeCount}
-        </Chip>
-      </div>
+      <Chip
+        variant='thumbs'
+        isToggled={localIsLiked}
+        clickable
+        onClick={handleLikeClick}
+        aria-label={`리뷰 좋아요 ${localIsLiked ? '취소' : '추가'}`}
+        aria-pressed={localIsLiked}
+      >
+        {localLikeCount}
+      </Chip>
     </div>
   );
 };
