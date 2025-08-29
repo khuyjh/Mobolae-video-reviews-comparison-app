@@ -2,13 +2,13 @@
 
 import React from 'react';
 
-import CategoryItem from '@/features/mainPage/components/category/CategoryItem';
+import CategoryItem from '@/features/mainPage/components/CategoryItem';
 import { Chip } from '@/shared/components/chip';
 import MobileBottomSheet from '@/shared/components/MobileBottomSheet';
 import { SheetClose } from '@/shared/components/ui/sheet';
 import { Category } from '@/shared/types/CategoryTypes';
 
-import ArrowList from './category/ArrowList';
+import ArrowList from './ArrowList';
 
 interface MobileCategorySheetProps {
   /** 카테고리 목록 */

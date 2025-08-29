@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 
-import CategorySidebar from '@/features/mainPage/components/category/CategorySidebar';
+import CategorySidebar from '@/features/mainPage/components/CategorySidebar';
 import MobileCategorySheet from '@/features/mainPage/components/MobileCategorySheet';
 import { CATEGORIES } from '@/shared/constants/constants';
 import useMediaQuery from '@/shared/hooks/useMediaQuery';
