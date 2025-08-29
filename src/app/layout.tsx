@@ -1,5 +1,6 @@
 import localFont from 'next/font/local';
 
+import AuthGuard from '@/features/auth/components/AuthGuard';
 import GlobalNav from '@/shared/components/GlobalNav';
 import QueryProvider from '@/shared/providers/QueryProvider';
 
@@ -53,8 +54,10 @@ export default function RootLayout({
     <html lang='ko'>
       <QueryProvider>
         <body className={`${pretendard.className} bg-black-900`}>
-          <GlobalNav />
-          {children}
+          <AuthGuard>
+            <GlobalNav />
+            {children}
+          </AuthGuard>
         </body>
       </QueryProvider>
     </html>
