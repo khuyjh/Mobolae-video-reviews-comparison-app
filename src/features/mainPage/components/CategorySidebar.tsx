@@ -34,9 +34,14 @@ const CategorySidebar: React.FC<CategorySidebarProps> = ({
   selectedCategory,
   onCategorySelect,
 }) => (
-  <aside className='bg-black-900 h-fit px-[10px] py-[45px] md:max-w-[220px] xl:min-w-[220px]'>
-    <h3 className='text-md-regular xl:text-base-regular mb-5 px-5 text-white'>카테고리</h3>
-    <nav role='navigation' aria-label='카테고리 네비게이션'>
+  <aside
+    aria-labelledby='category-heading'
+    className='bg-black-900 h-fit px-[10px] py-[45px] md:max-w-[220px] xl:min-w-[220px]'
+  >
+    <h3 id='category-heading' className='text-md-regular xl:text-base-regular mb-5 px-5 text-white'>
+      카테고리
+    </h3>
+    <nav role='navigation' aria-label='카테고리 메뉴'>
       <ArrowList>
         <div className='space-y-2'>
           {categories.map((category) => (
