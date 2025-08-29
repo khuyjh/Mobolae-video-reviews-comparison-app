@@ -1,6 +1,6 @@
-import CategoryMenu from '@/features/mainPage/components/CategoryMenu';
+import CategoryMenu from '@/features/mainPage/components/category/CategoryMenu';
 import FloatingButton from '@/features/mainPage/components/FloatingButton';
-import MostReviewed from '@/features/mainPage/components/MostReviewed';
+import MostReviewed from '@/features/mainPage/components/list/MostReviewed';
 import {
   ReviewerRankingHorizontal,
   ReviewerRankingSidebar,

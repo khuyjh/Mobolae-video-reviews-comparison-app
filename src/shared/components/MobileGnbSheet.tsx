@@ -4,7 +4,7 @@ import Link from 'next/link';
 
 import { MenuIcon } from 'lucide-react';
 
-import ArrowList from '@/features/mainPage/components/ArrowList';
+import ArrowList from '@/features/mainPage/components/category/ArrowList';
 import MobileBottomSheet from '@/shared/components/MobileBottomSheet';
 import { SheetClose } from '@/shared/components/ui/sheet';
 
