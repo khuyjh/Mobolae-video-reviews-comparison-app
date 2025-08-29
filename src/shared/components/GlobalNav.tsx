@@ -7,10 +7,11 @@ import { useEffect, useRef, useState } from 'react';
 import { cn } from '@/shared/lib/cn';
 
 import MobileGnbSheet from './MobileGnbSheet';
+import { useUserStore } from '../stores/userStore';
 
 export default function GlobalNav() {
   const [searchOpen, setSearchOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const isLoggedIn = useUserStore((state) => state.isLoggedIn);
 
   const triggerBtnRef = useRef<HTMLButtonElement>(null);
   const mobileSearchRef = useRef<HTMLDivElement>(null);
