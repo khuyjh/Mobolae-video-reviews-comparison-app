@@ -1,11 +1,11 @@
 import CategoryMenu from '@/features/mainPage/components/category/CategoryMenu';
 import FloatingButton from '@/features/mainPage/components/FloatingButton';
 import MostReviewed from '@/features/mainPage/components/list/MostReviewed';
+import TopShowcase from '@/features/mainPage/components/list/TopShowcase';
 import {
   ReviewerRankingHorizontal,
   ReviewerRankingSidebar,
 } from '@/features/mainPage/components/ReviewerRanking';
-import TopShowcase from '@/features/mainPage/components/TopShowcase';
 import { mockContents } from '@/features/mainPage/mock/contents';
 
 /**
