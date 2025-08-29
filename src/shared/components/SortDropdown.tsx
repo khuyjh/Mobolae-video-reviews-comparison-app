@@ -6,29 +6,16 @@ import clsx from 'clsx';
 import { ChevronDown } from 'lucide-react';
 import React, { useEffect, useId, useRef, useState } from 'react';
 
-/** 드롭다운에서 사용할 옵션 타입 (라벨/값) */
+/** 드롭다운에서 사용할 옵션 타입 (라벨/값) 추후 다른 곳에서 타입 가져오는 식으로 변경 가능 */
 export interface OrderOption<K extends string = string> {
-  id: string; // 고유 식별 id (queryKey 등으로도 사용)
   label: string; // 화면에 보이는 옵션 이름
-  value: K; // API에 넘길 값(문자열)
+  value: K; // 유일 키, API 전달 역할
 }
-// 내부/외부 제어 방식을 구분하기 위해 컨트롤드/언컨트롤드 모드 패턴을 사용했습니다.
-// props.value값이 정의되어 있어서 undefined가 아니면 컨트롤드 모드로 간주합니다.
-// 그렇지 않으면 언컨트롤드 모드로 간주하고 내부 state값을 통해 관리합니다.
+
 type Props<K extends string = string> = {
-  /** 표시할 옵션 목록 */
   options: OrderOption<K>[];
-
-  /** 언컨트롤드 기본 선택 id (없으면 options[0] 사용), 컨트롤드면 무시 */
-  defaultId?: string;
-
-  /** 컨트롤드 모드: 현재 선택값 (없으면 언컨트롤드 동작) */
-  value?: OrderOption<K> | null;
-
-  /** 선택 변경 콜백 (컨트롤드/언컨트롤드 모두 호출) */
-  onChange?: (opt: OrderOption<K>) => void;
-
-  /** 미선택 시 표시할 문구 */
+  value: K;
+  onChange: (value: K) => void; // 부모엔 value만 전달
   placeholder?: string;
 
   /** 스타일 커스터마이징 (전부 className만) */
@@ -41,7 +28,6 @@ type Props<K extends string = string> = {
 //상품과 상품 리뷰
 const SortDropdown = <K extends string = string>({
   options,
-  defaultId,
   value,
   onChange,
   placeholder = '정렬 옵션 선택',
@@ -55,15 +41,8 @@ const SortDropdown = <K extends string = string>({
   const btnRef = useRef<HTMLButtonElement>(null);
   const listId = useId();
 
-  // 언컨트롤드 내부 상태
-  const [inner, setInner] = useState<OrderOption<K> | null>(() => {
-    if (value !== undefined) return value; // 컨트롤드 모드라면, 부모가 부모가 준 value로 초기화
-    if (defaultId) return options.find((o) => o.id === defaultId) ?? options[0] ?? null; // defaultId가 있는 경우
-    return options[0] ?? null; // 둘 다 없으면 첫 번째 옵션
-  });
-
-  // 현재 선택(컨트롤드 우선)
-  const selected = value !== undefined ? value : inner;
+  // 현재 value와 매칭되는 라벨(없으면 placeholder 노출)
+  const selectedOpt = options.find((o) => o.value === value) ?? null;
 
   // 바깥 클릭 닫기 기능
   useEffect(() => {
@@ -87,9 +66,8 @@ const SortDropdown = <K extends string = string>({
     return () => document.removeEventListener('keydown', onKey);
   }, [open]);
 
-  const handleSelect = (opt: OrderOption<K>) => {
-    if (value === undefined) setInner(opt); // 언컨트롤드일 때만 내부 상태 변경
-    onChange?.(opt);
+  const handleSelect = (val: K) => {
+    onChange(val); // 부모에게 값 알림
     setOpen(false);
     requestAnimationFrame(() => btnRef.current?.focus());
   };
@@ -120,7 +98,7 @@ const SortDropdown = <K extends string = string>({
             open ? 'text-white' : 'text-gray-600',
           )}
         >
-          {selected ? selected.label : placeholder}
+          {selectedOpt ? selectedOpt.label : placeholder}
         </span>
         {/* 화살표 - lucide 이용 */}
         <ChevronDown className={ARROW_STYLE} />
@@ -134,14 +112,14 @@ const SortDropdown = <K extends string = string>({
           className={clsx(PANEL_STYLE, panelClassName)}
         >
           {options.map((opt) => {
-            const isSelected = selected?.id === opt.id;
+            const isSelected = value === opt.value;
             return (
               <li
-                key={opt.id}
+                key={opt.value}
                 role='option'
                 aria-selected={isSelected}
                 onMouseDown={(e) => e.preventDefault()} // blur로 인한 닫힘 방지
-                onClick={() => handleSelect(opt)}
+                onClick={() => handleSelect(opt.value)}
                 className={clsx(
                   'text-md-regular xl:text-base-regular cursor-pointer rounded-md px-3 py-2',
                   isSelected
