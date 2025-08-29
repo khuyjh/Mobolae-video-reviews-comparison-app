@@ -22,6 +22,12 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'picsum.photos',
       },
+      //TODO: 아래 도메인 api 연결 후 삭제 (목데이터 전용)
+      {
+        protocol: 'https',
+        hostname: 'picsum.photos',
+        pathname: '/**', // 목업 이미지 허용
+      },
     ],
   },
 };
