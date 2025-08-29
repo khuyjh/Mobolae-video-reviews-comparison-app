@@ -50,7 +50,7 @@ export function StarRow({ count }: StarRowProps) {
   const stars = count;
 
   return (
-    <div className={CENTER_ROW}>
+    <div className={CENTER_ROW} aria-label={`별점 ${stars}점`}>
       {Array.from({ length: 5 }).map((_, i) => {
         const filled = i < stars;
         return (
