@@ -31,12 +31,14 @@ const ReviewCard = ({
 }: ReviewCardProps) => {
   return (
     <div className='bg-black-800 w-full rounded-[12px] p-5'>
-      <div className='flex flex-col md:flex-row'>
-        <div className='mb-[40px] flex-shrink-0'>
+      <div className='flex flex-col md:flex-row md:gap-[30px]'>
+        <div className='mb-[30px] flex-shrink-0'>
           <ReviewUser />
         </div>
-        <div className='mb-[20px] flex flex-1 flex-col'>
-          <ReviewDescription reviewContent={reviewContent} Images={Images} />
+        <div className='flex flex-1 flex-col'>
+          <div className='mb-[20px]'>
+            <ReviewDescription reviewContent={reviewContent} Images={Images} />
+          </div>
           <div>
             <ReviewMeta
               likeCount={likeCount}

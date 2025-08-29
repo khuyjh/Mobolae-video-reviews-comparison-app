@@ -8,11 +8,16 @@ interface ReviewDescriptionProps {
 const ReviewDescription = ({ reviewContent, Images }: ReviewDescriptionProps) => {
   return (
     <div>
-      <p className='text-xs-regular whitespace-pre-wrap text-white'>{reviewContent}</p>
+      <p className='text-xs-regular leading-[16px] whitespace-pre-wrap text-white xl:leading-[22px]'>
+        {reviewContent}
+      </p>
       {Images && Images.length > 0 && (
-        <div className='mt-[20px] flex space-x-[10px] overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'>
+        <div className='mt-[20px] flex space-x-[10px] overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] xl:space-x-[20px] [&::-webkit-scrollbar]:hidden'>
           {Images.map((imageSrc, index) => (
-            <div key={index} className='relative h-[60px] w-[60px] flex-shrink-0 rounded-md'>
+            <div
+              key={index}
+              className='relative h-[60px] w-[60px] flex-shrink-0 rounded-md md:h-[80px] md:w-[80px]'
+            >
               <Image
                 src={imageSrc}
                 alt={`리뷰 이미지 ${index + 1}`}
