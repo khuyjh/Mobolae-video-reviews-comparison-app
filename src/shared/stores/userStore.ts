@@ -1,9 +1,8 @@
-import Cookies from 'js-cookie';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 import { getMe } from '@/features/auth/api/authApi';
-import { getCookie } from '@/features/auth/utils/cookie';
+import { getCookie, removeCookie } from '@/features/auth/utils/cookie';
 
 import { UserState } from '../types/userTypes';
 
@@ -23,10 +22,19 @@ export const useUserStore = create(
           throw e;
         }
       },
+      //엑세스 토큰은 있는데 유저정보가 없는 경우 -> 로그인 상태 복구
+      restoreAuth: () => {
+        const accessToken = getCookie('accessToken');
+        const { isLoggedIn, setUser } = get();
+
+        if (accessToken && !isLoggedIn) {
+          setUser();
+        }
+      },
       //사용자의 직접적인 로그아웃
       clearUser: () => {
         set({ user: null, isLoggedIn: false });
-        Cookies.remove('accessToken');
+        removeCookie('accessToken');
       },
       //사이트 진입시 토큰 여부에 따른 강제 로그아웃
       initializeAuth: () => {

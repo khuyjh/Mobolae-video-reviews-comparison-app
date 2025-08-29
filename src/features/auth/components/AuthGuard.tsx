@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter } from 'next/navigation';
 
-import { ReactNode, useEffect, useRef } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 
 import { useUserStore } from '@/shared/stores/userStore';
@@ -17,32 +17,39 @@ interface Props {
 }
 
 const AuthGuard = ({ children }: Props) => {
-  const { isLoggedIn, initializeAuth } = useUserStore(
-    useShallow((state) => ({ isLoggedIn: state.isLoggedIn, initializeAuth: state.initializeAuth })),
+  const { isLoggedIn, initializeAuth, restoreAuth } = useUserStore(
+    useShallow((state) => ({
+      isLoggedIn: state.isLoggedIn,
+      initializeAuth: state.initializeAuth,
+      restoreAuth: state.restoreAuth,
+    })),
   );
+  const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
-  const isMount = useRef(false);
+  // const isMounted = useRef(false);
 
   const isAuthPath = AUTH_ROUTES.includes(pathname);
   //TODO: 로그인이 필요한 경로 처리
 
   useEffect(() => {
-    isMount.current = true;
+    setIsMounted(true);
     //토큰 여부를 확인해서 유저권한 제어, 마운트시 1회 실행
     initializeAuth();
+    restoreAuth();
   }, []);
 
   useEffect(() => {
     //마운트 이전 로딩화면을 보여줌으로써 하이드레이션 에러를 일으키는 것을 방지
-    if (!isMount.current) return;
+    if (!isMounted) return;
 
     if (isLoggedIn && isAuthPath) {
       router.replace('/');
     }
   }, [isLoggedIn, isAuthPath, router]);
 
-  if (!isMount.current || (isLoggedIn && isAuthPath)) {
+  console.log(!isMounted || (isLoggedIn && isAuthPath));
+  if (!isMounted || (isLoggedIn && isAuthPath)) {
     return <div className='text-white'>로딩중...</div>;
   }
 
