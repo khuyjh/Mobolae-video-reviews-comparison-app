@@ -8,7 +8,7 @@ interface ReviewDescriptionProps {
 const ReviewDescription = ({ reviewContent, Images }: ReviewDescriptionProps) => {
   return (
     <div>
-      <p className='text-xs-regular leading-[16px] whitespace-pre-wrap text-white xl:leading-[22px]'>
+      <p className='text-xs-regular xl:text-base-regular leading-[16px] whitespace-pre-wrap text-white xl:leading-[22px]'>
         {reviewContent}
       </p>
       {Images && Images.length > 0 && (
@@ -16,7 +16,7 @@ const ReviewDescription = ({ reviewContent, Images }: ReviewDescriptionProps) =>
           {Images.map((imageSrc, index) => (
             <div
               key={index}
-              className='relative h-[60px] w-[60px] flex-shrink-0 rounded-md md:h-[80px] md:w-[80px]'
+              className='relative h-[60px] w-[60px] flex-shrink-0 rounded-md md:h-[80px] md:w-[80px] xl:h-[100px] xl:w-[100px]'
             >
               <Image
                 src={imageSrc}

@@ -36,8 +36,8 @@ const ReviewMeta = ({ likeCount, isLiked, showActions, createdAt }: ReviewMetaPr
 
   return (
     <div className='flex items-center justify-between'>
-      <div className='flex items-center space-x-[15px]'>
-        <span className='text-xs-regular md:text-md-regular text-gray-600'>{createdAt}</span>
+      <div className='flex items-center space-x-[15px] md:space-x-[20px]'>
+        <span className='text-xs-regular xl:text-md-regular text-gray-600'>{createdAt}</span>
         {showActions && (
           <div className='text-xs-light xl:text-md-light flex items-center space-x-[10px]'>
             <button className='text-gray-400 hover:text-gray-300'>수정</button>

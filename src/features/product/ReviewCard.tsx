@@ -30,8 +30,8 @@ const ReviewCard = ({
   createdAt,
 }: ReviewCardProps) => {
   return (
-    <div className='bg-black-800 w-full rounded-[12px] p-5'>
-      <div className='flex flex-col md:flex-row md:gap-[30px]'>
+    <div className='bg-black-800 w-full rounded-[12px] p-5 xl:p-7.5'>
+      <div className='flex flex-col md:flex-row md:gap-[30px] xl:gap-[80px]'>
         <div className='mb-[30px] flex-shrink-0'>
           <ReviewUser />
         </div>
