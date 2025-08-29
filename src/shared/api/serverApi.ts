@@ -8,22 +8,18 @@ const serverFetch = async (endpoint: string, options?: RequestInit) => {
   const headers = new Headers(options?.headers);
   headers.set('Content-Type', 'application/json');
 
-  console.log('여기');
   if (accessToken) {
     headers.set('Authorization', `Bearer ${accessToken}`);
   }
-  console.log('여기');
 
   const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}${endpoint}`, {
     ...options,
     headers,
   });
-  console.log('여기');
 
   if (!response.ok) {
     throw new Error('Fetch API 요청 실패');
   }
-  console.log('여기');
 
   return response.json();
 };
