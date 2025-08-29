@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import ProfileBadge from '@/shared/components/card/avtatarCard';
+import ProfileBadge from '@/shared/components/card/avatarCard';
 import { buildRankingMap } from '@/shared/utils/rankingUtil';
 
 const AVATAR = '/images/profileImg.jpg';
