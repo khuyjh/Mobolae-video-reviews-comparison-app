@@ -1,4 +1,5 @@
 import { cva, type VariantProps } from 'class-variance-authority';
+import clsx from 'clsx';
 import { Shapes, X } from 'lucide-react';
 import React from 'react';
 
@@ -208,7 +209,7 @@ const _Chip = ({
 
   return (
     <div
-      className={cn(chipVariants({ size, variant, clickable, textSize }), colorClass, className)}
+      className={clsx(chipVariants({ size, variant, clickable, textSize }), colorClass, className)}
       role={clickable ? 'button' : undefined}
       tabIndex={clickable ? 0 : undefined}
       aria-pressed={variant === 'filter' ? isSelected : undefined}

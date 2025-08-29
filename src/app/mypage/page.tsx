@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import ProfileBadge from '@/shared/components/card/avtataCard';
+import ProfileBadge from '@/shared/components/card/avtatarCard';
 import { buildRankingMap } from '@/shared/utils/rankingUtil';
 
 const AVATAR = '/images/profileImg.jpg';
@@ -50,7 +50,7 @@ const MyPage = () => {
 
       {/* 리뷰페이지 카드 */}
       <ProfileBadge
-        variant='review_profile'
+        variant='reviewProfile'
         id={999}
         name='리뷰왕코'
         avatarSrc={AVATAR}
