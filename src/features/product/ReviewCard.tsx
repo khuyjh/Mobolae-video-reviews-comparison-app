@@ -1,15 +1,20 @@
 'use client';
 
-import { ReactNode } from 'react';
-
 import ReviewDescription from './ReviewDescription';
 import ReviewMeta from './ReviewMeta';
+import ReviewUser from './ReviewUser';
 
+/*
+ * reviewContent: 리뷰 본문 내용
+ * Images?: 리뷰에 첨부된 이미지 URL(임시)
+ * likeCount: 리뷰 좋아요 수
+ * isLiked: boolean: 좋아요
+ * showActions: 리뷰 수정 및 삭제 버튼
+ * createdAt: 리뷰 작성 날짜
+ */
 export interface ReviewCardProps {
-  header: ReactNode; // 헤더 컴포넌트를 children으로 받습니다.
   reviewContent: string;
-  reviewImages?: string[];
-  viewCount: number;
+  Images?: string[];
   likeCount: number;
   isLiked: boolean;
   showActions: boolean;
@@ -17,27 +22,23 @@ export interface ReviewCardProps {
 }
 
 const ReviewCard = ({
-  header,
   reviewContent,
-  reviewImages,
-  viewCount,
+  Images,
   likeCount,
   isLiked,
   showActions,
   createdAt,
 }: ReviewCardProps) => {
   return (
-    <div className='w-full max-w-4xl rounded-lg border border-gray-700 bg-gray-900 p-4 text-white'>
+    <div className='bg-black-800 w-full rounded-[12px] p-5'>
       <div className='flex flex-col md:flex-row'>
-        {/* 헤더 자리 (팀원 컴포넌트) */}
-        <div className='mb-4 md:mr-6 md:mb-0'>{header}</div>
-
-        {/* 메인 & 푸터 영역 */}
-        <div className='flex flex-1 flex-col'>
-          <ReviewDescription reviewContent={reviewContent} reviewImages={reviewImages} />
-          <div className='mt-4'>
+        <div className='mb-[40px] flex-shrink-0'>
+          <ReviewUser />
+        </div>
+        <div className='mb-[20px] flex flex-1 flex-col'>
+          <ReviewDescription reviewContent={reviewContent} Images={Images} />
+          <div>
             <ReviewMeta
-              viewCount={viewCount}
               likeCount={likeCount}
               isLiked={isLiked}
               showActions={showActions}

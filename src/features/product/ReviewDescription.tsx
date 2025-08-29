@@ -1,22 +1,20 @@
-//설명
-
 import Image from 'next/image';
 
 interface ReviewDescriptionProps {
   reviewContent: string;
-  reviewImages?: string[];
+  Images?: string[];
 }
 
-const ReviewDescription = ({ reviewContent, reviewImages }: ReviewDescriptionProps) => {
+const ReviewDescription = ({ reviewContent, Images }: ReviewDescriptionProps) => {
   return (
     <div>
-      <p className='whitespace-pre-wrap text-gray-300'>{reviewContent}</p>
-      {reviewImages && reviewImages.length > 0 && (
-        <div className='mt-4 flex space-x-2 overflow-x-auto'>
-          {reviewImages.map((image, index) => (
-            <div key={index} className='relative h-20 w-20 flex-shrink-0'>
+      <p className='text-xs-regular whitespace-pre-wrap text-white'>{reviewContent}</p>
+      {Images && Images.length > 0 && (
+        <div className='mt-[20px] flex space-x-[10px] overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'>
+          {Images.map((imageSrc, index) => (
+            <div key={index} className='relative h-[60px] w-[60px] flex-shrink-0 rounded-md'>
               <Image
-                src={image}
+                src={imageSrc}
                 alt={`리뷰 이미지 ${index + 1}`}
                 fill
                 className='rounded-md object-cover'
