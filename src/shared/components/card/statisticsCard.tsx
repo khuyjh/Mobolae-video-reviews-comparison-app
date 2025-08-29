@@ -1,5 +1,5 @@
 import { Star, Heart, MessageSquare } from 'lucide-react';
-import React, { useMemo } from 'react';
+import React from 'react';
 
 import { cn } from '@/shared/lib/cn';
 import { formatNumber } from '@/shared/utils/formatters';
@@ -68,23 +68,22 @@ const StatisticsCard = ({
   const config = iconMap[iconType];
   const formattedValue = value !== null ? formatNumber(value) : '-';
 
-  const comparisonText = useMemo(() => {
-    const { unit, moreText, lessText, sameText } = config;
+  let comparisonText: React.ReactNode;
+  const { unit, moreText, lessText, sameText } = config;
 
-    if (comparisonValue === null) {
-      return (
-        <>
-          <span className='text-white'>-</span>
-          {unit} {lessText}
-        </>
-      );
-    }
-    /* 비교값의 절댓값,포맷팅 */
+  if (comparisonValue === null) {
+    comparisonText = (
+      <>
+        <span className='text-white'>-</span>
+        {unit} {lessText}
+      </>
+    );
+  } else {
     const absValue = Math.abs(comparisonValue);
     const formattedComparison = formatNumber(absValue);
 
     if (comparisonValue === 0) {
-      return (
+      comparisonText = (
         <>
           <span className='text-white'>
             {formattedComparison}
@@ -93,23 +92,23 @@ const StatisticsCard = ({
           {sameText}
         </>
       );
+    } else {
+      const text = comparisonValue > 0 ? moreText : lessText;
+      comparisonText = (
+        <>
+          <span className='text-white'>
+            {formattedComparison}
+            {unit}
+          </span>{' '}
+          {text}
+        </>
+      );
     }
-
-    const text = comparisonValue > 0 ? moreText : lessText;
-    return (
-      <>
-        <span className='text-white'>
-          {formattedComparison}
-          {unit}
-        </span>{' '}
-        {text}
-      </>
-    );
-  }, [comparisonValue, config]);
+  }
 
   return (
     <div className={cn(CARD_CONTAINER_STYLE, className)}>
-      {/* 제목+아이콘+값*/}
+      {/* 제목+아이콘+값 */}
       <div className='mb-[5px] flex items-center justify-between space-x-2.5 md:flex-col md:items-center md:space-x-0 md:gap-y-[15px]'>
         <p className='text-md-medium md:text-base-medium xl:text-lg-medium text-white'>{title}</p>
         <div className={ICON_VALUE_CONTAINER_STYLE}>
@@ -127,6 +126,7 @@ const StatisticsCard = ({
     </div>
   );
 };
+
 /**
  * favoriteCount: 찜한 사용자 수
  * rating: 별점 평균
@@ -155,30 +155,26 @@ const Statistics = ({
   reviewComparison,
   className,
 }: StatisticsProps) => {
-  // 구조 개선: 반복되는 카드들을 배열로 관리
-  const statisticsData = useMemo(
-    () => [
-      {
-        title: '별점 평균',
-        value: rating,
-        iconType: 'star' as const,
-        comparisonValue: ratingComparison,
-      },
-      {
-        title: '찜',
-        value: favoriteCount,
-        iconType: 'heart' as const,
-        comparisonValue: favoriteComparison,
-      },
-      {
-        title: '리뷰',
-        value: reviewCount,
-        iconType: 'message' as const,
-        comparisonValue: reviewComparison,
-      },
-    ],
-    [favoriteCount, rating, reviewCount, favoriteComparison, ratingComparison, reviewComparison],
-  );
+  const statisticsData = [
+    {
+      title: '별점 평균',
+      value: rating,
+      iconType: 'star' as const,
+      comparisonValue: ratingComparison,
+    },
+    {
+      title: '찜',
+      value: favoriteCount,
+      iconType: 'heart' as const,
+      comparisonValue: favoriteComparison,
+    },
+    {
+      title: '리뷰',
+      value: reviewCount,
+      iconType: 'message' as const,
+      comparisonValue: reviewComparison,
+    },
+  ];
 
   return (
     <div
