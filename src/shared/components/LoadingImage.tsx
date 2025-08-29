@@ -1,7 +1,3 @@
-'use client';
-
-import { motion } from 'framer-motion';
-
 import LoadingIcon from '../../../public/icons/LoadingIcon.svg';
 
 const LOADING_TEXT = 'Loading...';
@@ -12,19 +8,13 @@ const LoadingImage = () => {
       <LoadingIcon />
       <div>
         {LOADING_TEXT.split('').map((letter, i) => (
-          <motion.span
-            className='inline-block'
+          <span
+            className='bounce-delay inline-block'
             key={i}
-            animate={{ y: [0, -3, 0] }}
-            transition={{
-              duration: 0.6,
-              repeat: Infinity,
-              delay: i * 0.1,
-              repeatDelay: 1,
-            }}
+            style={{ animationDelay: `${i * 100}ms` }}
           >
             {letter}
-          </motion.span>
+          </span>
         ))}
       </div>
     </div>
