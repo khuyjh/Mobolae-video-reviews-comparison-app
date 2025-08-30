@@ -1,9 +1,11 @@
 import axios, { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 import Cookies from 'js-cookie';
 
+import { BASE_URL } from '../constants/constants';
+
 // 인증 토큰을 요구하지 않는 api 요청 instance
 export const publicApiClient: AxiosInstance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_BASE_URL,
+  baseURL: BASE_URL,
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -11,7 +13,7 @@ export const publicApiClient: AxiosInstance = axios.create({
 });
 
 export const privateApiClient: AxiosInstance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_BASE_URL,
+  baseURL: BASE_URL,
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',

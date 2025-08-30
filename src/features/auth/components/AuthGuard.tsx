@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { ReactNode, useEffect, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 
+import LoadingImage from '@/shared/components/LoadingImage';
 import { useUserStore } from '@/shared/stores/userStore';
 
 //로그인 되었을 때 접근 방지할 경로
@@ -46,11 +47,14 @@ const AuthGuard = ({ children }: Props) => {
     if (isLoggedIn && isAuthPath) {
       router.replace('/');
     }
-  }, [isLoggedIn, isAuthPath, router]);
+  }, [isLoggedIn, isAuthPath, router, isMounted]);
 
-  console.log(!isMounted || (isLoggedIn && isAuthPath));
   if (!isMounted || (isLoggedIn && isAuthPath)) {
-    return <div className='text-white'>로딩중...</div>;
+    return (
+      <div className='pt-80 md:pt-120 xl:pt-80'>
+        <LoadingImage />
+      </div>
+    );
   }
 
   return <>{children}</>;
