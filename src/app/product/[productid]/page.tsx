@@ -15,10 +15,10 @@ const ProductDetialsPage = () => {
     imageSrc: productData.contentImage,
     category: { id: 1, name: '오징어 게임' },
     title: productData.title,
-    views: 125,
+    views: 5125,
     description:
-      '오징어 게임 1은 재밌는데 2부터 뭔가 싶고 3은 재미없음. 오징어 게임 1은 재밌는데 2부터 뭔가 싶고 3은 재미없음. 오징어 게임 1은 재밌는데 2부터 뭔가 싶고 3은 재미없음. 오징어 게임 1은 재밌는데 2부터 뭔가 싶고 3은 재미없음.오징어 게임 1은 재밌는데 2부터 뭔가 싶고 3은 재미없음. 오징어 게임 1은 재밌는데 2부터 뭔가 싶고 3은 재미없음. 오징어 게임 1은 재밌는데 2부터 뭔가 싶고 3은 재미없음. 오징어 게임 1은 재밌는데 2부터 뭔가 싶고 3은 재미없음.',
-    isEditable: false,
+      ' 오징어 게임 1은 재밌는데 2부터 뭔가 싶고 3은 재미없음. 오징어 게임 1은 재밌는데 2부터 뭔가 싶고 3은 재미없음. 오징어 게임 1은 재밌는데 2부터 뭔가 싶고 3은 재미없음.',
+    isEditable: true, // 내가 등록한 콘텐츠 (편집하기 유무)
   };
   /* 콘텐츠 통계 카드 */
   const statisticsProps = {
@@ -42,7 +42,7 @@ const ProductDetialsPage = () => {
     rating: 5,
   };
 
-  /* 두 번째 리뷰 카드 데이터를 별도로 정의합니다. */
+  /* 두 번째 리뷰 카드 */
   const secondReviewCardData = {
     reviewContent: '기대했던 것보다 훨씬 좋네요! 재구매 의사 있습니다.',
     Images: [
@@ -59,25 +59,28 @@ const ProductDetialsPage = () => {
     rating: 4,
   };
 
-  /* 두 리뷰 데이터를 배열에 담습니다. */
   const DUMMY_REVIEWS = [reviewCardProps, secondReviewCardData];
 
   /* ---------------------------------------------------------------- */
   return (
-    <main className='px-[20px] pt-[30px]'>
-      <div className='flex flex-col gap-[60px]'>
+    <main className='mx-auto px-[20px] pt-[30px] pb-[223px] md:max-w-[684px] md:px-[30px] md:pt-[40px] md:pb-[147px] xl:max-w-[940px] xl:pt-[60px] xl:pb-[120px]'>
+      <div className='flex flex-col gap-[60px] xl:gap-[80px]'>
         {/* 콘텐츠 상세 카드 */}
         <ProductCard {...productCardProps} />
         {/* 콘텐츠 통계 카드 */}
         <div className='flex flex-col gap-[30px]'>
-          <div className='text-lg-semibold text-white'> 콘텐츠 통계</div>
+          <div className='text-lg-semibold md:text-base-semibold xl:text-xl-semibold text-white'>
+            콘텐츠 통계
+          </div>
           <Statistics {...statisticsProps} />
         </div>
 
         {/* 콘텐츠 리뷰 + 정렬 드롭다운 */}
         <div className='flex flex-col gap-[30px]'>
           <div className='flex items-center justify-between'>
-            <span className='ext-lg-semibold text-white'>콘텐츠 리뷰</span>
+            <span className='text-lg-semibold md:text-base-semibold xl:text-xl-semibold text-white'>
+              콘텐츠 리뷰
+            </span>
             <ReviewSortDropdown />
           </div>
 
