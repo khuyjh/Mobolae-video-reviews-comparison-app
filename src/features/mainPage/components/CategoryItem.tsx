@@ -49,6 +49,7 @@ const CategoryItem: React.FC<CategoryItemProps> = ({ category, isSelected, href,
     className={`${BASE_STYLE} ${
       isSelected ? VARIANT_STYLE.selected : VARIANT_STYLE.default
     } ${className ?? ''}`}
+    // TODO: 탭 이동 허용 여부 재검토 (tabIndex={-1} 제거 여부)
     tabIndex={-1} // ArrowList에서 ↑/↓로 포커스 이동
     aria-current={isSelected ? 'true' : undefined}
   >
