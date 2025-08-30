@@ -1,5 +1,7 @@
 import { cookies } from 'next/headers';
 
+import { BASE_URL } from '../constants/constants';
+
 //fetch api 헤더에 토큰부여
 const serverFetch = async (endpoint: string, options?: RequestInit) => {
   const accessToken = (await cookies()).get('accessToken')?.value;
@@ -12,13 +14,18 @@ const serverFetch = async (endpoint: string, options?: RequestInit) => {
     headers.set('Authorization', `Bearer ${accessToken}`);
   }
 
-  const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}${endpoint}`, {
+  if (!BASE_URL) {
+    throw new Error('환경 변수 NEXT_PUBLIC_BASE_URL이 설정되지 않았습니다.');
+  }
+
+  const response = await fetch(`${BASE_URL}${endpoint}`, {
     ...options,
     headers,
   });
 
   if (!response.ok) {
-    throw new Error('Fetch API 요청 실패');
+    const errorText = await response.text().catch(() => '');
+    throw new Error(`Fetch 실패: ${response.status} ${response.statusText} ${errorText}`);
   }
 
   return response.json();
