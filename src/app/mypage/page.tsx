@@ -2,6 +2,7 @@
 
 import React from 'react';
 
+import ProfileCard from '@/features/mypage/ProfileCard';
 import ProfileBadge from '@/shared/components/card/avatarCard';
 import { buildRankingMap } from '@/shared/utils/rankingUtil';
 
@@ -33,6 +34,7 @@ const MyPage = () => {
 
   return (
     <div className='space-y-4 px-[20px]'>
+      <ProfileCard />
       {/* 메인페이지 랭킹 카드: rank 대신 id + rankingMap 전달 */}
       {items.map((item) => (
         <ProfileBadge
