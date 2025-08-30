@@ -26,7 +26,7 @@ const ReviewDescription = ({ reviewContent, Images }: ReviewDescriptionProps) =>
       {Images && Images.length > 0 && (
         <div className={IMAGE_LIST_STYLE}>
           {Images.map((imageSrc, index) => (
-            <div key={index} className={IMAGE_WRAPPER_STYLE}>
+            <div key={imageSrc} className={IMAGE_WRAPPER_STYLE}>
               <Image
                 src={imageSrc}
                 alt={`리뷰에 첨부된 이미지 ${index + 1}`}

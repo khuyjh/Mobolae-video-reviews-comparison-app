@@ -11,6 +11,7 @@ import ReviewUser from './reviewUser';
  * isLiked: boolean: 좋아요
  * showActions: 리뷰 수정 및 삭제 버튼
  * createdAt: 리뷰 작성 날짜
+ * onLikeClick: () => void - 좋아요 버튼 클릭 시 부모에게 알리는 함수
  */
 export interface ReviewCardProps {
   reviewContent: string;
@@ -22,6 +23,7 @@ export interface ReviewCardProps {
   name: string;
   avatarSrc: string;
   rating: number;
+  onLikeClick: () => void;
 }
 
 const ReviewCard = ({
@@ -34,6 +36,7 @@ const ReviewCard = ({
   name,
   avatarSrc,
   rating,
+  onLikeClick,
 }: ReviewCardProps) => {
   return (
     <div className='bg-black-800 w-full rounded-[12px] p-5 xl:p-7.5'>
@@ -51,6 +54,7 @@ const ReviewCard = ({
               isLiked={isLiked}
               showActions={showActions}
               createdAt={createdAt}
+              onLikeClick={onLikeClick}
             />
           </div>
         </div>
