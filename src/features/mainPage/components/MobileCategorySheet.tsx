@@ -1,5 +1,7 @@
 'use client';
 
+import { useSearchParams } from 'next/navigation';
+
 import React from 'react';
 
 import CategoryItem from '@/features/mainPage/components/CategoryItem';
@@ -9,14 +11,13 @@ import { SheetClose } from '@/shared/components/ui/sheet';
 import { Category } from '@/shared/types/CategoryTypes';
 
 import ArrowList from './ArrowList';
+import { buildCategoryHref } from '../services/buildCategoryHref';
 
 interface MobileCategorySheetProps {
   /** 카테고리 목록 */
   categories: Category[];
   /** 현재 선택된 카테고리 값 */
   selectedCategory: string | null;
-  /** 카테고리 선택/해제 시 실행되는 콜백 */
-  onCategorySelect: (value: string | null) => void;
 }
 
 /**
@@ -29,10 +30,13 @@ interface MobileCategorySheetProps {
 const MobileCategorySheet: React.FC<MobileCategorySheetProps> = ({
   categories,
   selectedCategory,
-  onCategorySelect,
 }) => {
-  // 현재 선택된 카테고리 라벨(없으면 "카테고리")
-  const selectedLabel =
+  // 현재 URLSearchParams를 가져와 복제 (불변성 유지)
+  const searchParamsFromHook = useSearchParams();
+  const currentSearchParams = new URLSearchParams(searchParamsFromHook.toString());
+
+  // 현재 선택된 카테고리의 label (없으면 "카테고리")
+  const selectedCategoryLabel =
     categories.find((category) => category.value === selectedCategory)?.name ?? '카테고리';
 
   return (
@@ -45,7 +49,7 @@ const MobileCategorySheet: React.FC<MobileCategorySheetProps> = ({
           role='button'
           aria-label='카테고리 바텀시트 열기'
         >
-          {selectedCategory ? selectedLabel : '카테고리'}
+          {selectedCategory ? selectedCategoryLabel : '카테고리'}
         </Chip>
       }
       title='카테고리'
@@ -53,19 +57,15 @@ const MobileCategorySheet: React.FC<MobileCategorySheetProps> = ({
       <ArrowList>
         <ul className='space-y-2' role='list'>
           {categories.map((category: Category) => {
-            const active = selectedCategory === category.value;
-            const next = active ? null : category.value;
+            const isSelected = selectedCategory === category.value;
+            const nextCategoryValue = isSelected ? null : category.value;
+            //새로운 쿼리스트링 생성성
+            const categoryHref = buildCategoryHref(currentSearchParams, nextCategoryValue);
 
             return (
               <li key={category.id}>
                 <SheetClose asChild>
-                  <div aria-current={active ? 'true' : undefined}>
-                    <CategoryItem
-                      category={category}
-                      isSelected={active}
-                      onClick={() => onCategorySelect(next)}
-                    />
-                  </div>
+                  <CategoryItem category={category} isSelected={isSelected} href={categoryHref} />
                 </SheetClose>
               </li>
             );
