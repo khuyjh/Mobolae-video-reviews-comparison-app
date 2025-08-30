@@ -14,7 +14,7 @@ interface CategorySidebarProps {
   /** 현재 선택된 카테고리 값 */
   selectedCategory: string | null;
   /** 카테고리 선택 시 호출되는 함수 */
-  onCategorySelect: (value: string) => void;
+  onCategorySelect: (value: string | null) => void;
 }
 
 /**
@@ -44,14 +44,18 @@ const CategorySidebar: React.FC<CategorySidebarProps> = ({
     <nav role='navigation' aria-label='카테고리 메뉴'>
       <ArrowList>
         <div className='space-y-2'>
-          {categories.map((category) => (
-            <CategoryItem
-              key={category.id}
-              category={category}
-              isSelected={selectedCategory === category.value}
-              onClick={() => onCategorySelect(category.value)}
-            />
-          ))}
+          {categories.map((category) => {
+            const active = selectedCategory === category.value;
+            const next = active ? null : category.value; // 재클릭 = 해제
+            return (
+              <CategoryItem
+                key={category.id}
+                category={category}
+                isSelected={active}
+                onClick={() => onCategorySelect(next)}
+              />
+            );
+          })}
         </div>
       </ArrowList>
     </nav>
