@@ -64,27 +64,24 @@ const ProductDetialsPage = () => {
 
   /* ---------------------------------------------------------------- */
   return (
-    <main className='px-5 pt-27 md:pt-[250px] xl:pt-45'>
-      <div className='flex flex-col gap-[30px] xl:gap-[80px]'>
-        {/* ... 다른 컴포넌트들은 그대로 유지 ... */}
+    <main className='px-[20px] pt-[30px]'>
+      <div className='flex flex-col gap-[60px]'>
+        {/* 콘텐츠 상세 카드 */}
         <ProductCard {...productCardProps} />
-        <div className='flex flex-col md:gap-[30px] xl:gap-[80px]'>
-          <div className='text-lg-regular md:text-xl-regular xl:text-2xl-regular text-white'>
-            통계
-          </div>
+        {/* 콘텐츠 통계 카드 */}
+        <div className='flex flex-col gap-[30px]'>
+          <div className='text-lg-semibold text-white'> 콘텐츠 통계</div>
           <Statistics {...statisticsProps} />
         </div>
 
         {/* 콘텐츠 리뷰 + 정렬 드롭다운 */}
-        <div className='flex flex-col gap-[30px] xl:gap-[80px]'>
+        <div className='flex flex-col gap-[30px]'>
           <div className='flex items-center justify-between'>
-            <span className='text-lg-regular md:text-xl-regular xl:text-2xl-regular text-white'>
-              리뷰
-            </span>
+            <span className='ext-lg-semibold text-white'>콘텐츠 리뷰</span>
             <ReviewSortDropdown />
           </div>
 
-          {/* DUMMY_REVIEWS 배열을 map()으로 렌더링합니다. */}
+          {/* 콘텐츠 리뷰 목록*/}
           {DUMMY_REVIEWS.map((review, index) => (
             <ReviewCard key={index} {...review} />
           ))}
