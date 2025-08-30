@@ -1,7 +1,8 @@
 'use client';
 
-import SortDropdown, { OrderOption } from '@/shared/components/SortDropdown';
+import { useState } from 'react';
 
+import SortDropdown, { OrderOption } from '@/shared/components/SortDropdown';
 const DROPDOWN_OPTIONS: OrderOption[] = [
   { label: '최신순', value: 'latest' },
   { label: '별점 높은순', value: 'rating_desc' },
@@ -10,15 +11,17 @@ const DROPDOWN_OPTIONS: OrderOption[] = [
 ];
 
 const ReviewSortDropdown = () => {
+  const [sortValue, setSortValue] = useState('latest');
   const handleSortChange = (value: string) => {
     console.log('정렬 기준이 변경되었습니다:', value);
+    setSortValue(value);
     // TODO: API 연결
   };
 
   return (
     <SortDropdown
       options={DROPDOWN_OPTIONS}
-      value='latest'
+      value={sortValue}
       onChange={handleSortChange}
       placeholder='정렬'
     />

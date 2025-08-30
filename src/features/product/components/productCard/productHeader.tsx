@@ -25,7 +25,7 @@ const ProductHeader = ({ category, title, views }: ProductHeaderProps) => {
     setIsLiked(!isLiked);
   };
 
-  const heartIconColor = isLiked ? 'text-main' : 'text-gray-600';
+  const heartIconColor = isLiked ? 'text-red' : 'text-gray-600';
 
   return (
     <div className='flex w-full flex-col'>
