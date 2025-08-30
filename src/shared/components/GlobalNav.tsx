@@ -40,7 +40,7 @@ export default function GlobalNav() {
       <nav className={NAV_CONTAINER}>
         {/*로고*/}
         <Link href='/' className='flex items-center'>
-          <img src='/icons/Logo.svg' alt='로고' className='h-[28px] md:h-[46px] xl:h-[56px]' />
+          <img src='/icons/Logo.svg' alt='로고' className='h-[20px] md:h-[24px] xl:h-[32px]' />
         </Link>
         {/*PC 검색창*/}
         <div className='hidden md:flex md:items-center'>
