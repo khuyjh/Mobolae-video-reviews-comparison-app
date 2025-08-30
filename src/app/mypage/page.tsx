@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { useState } from 'react';
 
 import ProfileCard from '@/features/mypage/ProfileCard';
 import ProfileBadge from '@/shared/components/card/avatarCard';
@@ -31,10 +32,29 @@ const items = [
 
 const MyPage = () => {
   const rankingMap = buildRankingMap(items);
+  const [isFollowing, setIsFollowing] = useState(false);
+
+  const handleFollowToggle = () => {
+    if (isFollowing) {
+      /*팔로우 버튼 누르면 */
+      setIsFollowing(false);
+    } else {
+      /*언 팔로우 버튼 누르면 */
+      setIsFollowing(true);
+    }
+  };
 
   return (
     <div className='space-y-4 px-[20px]'>
-      <ProfileCard />
+      <ProfileCard
+        name='surisuri마수리'
+        avatarSrc='/images/profileImg.jpg'
+        bio=''
+        followers={762}
+        following={102}
+        isFollowing={isFollowing}
+        onFollowToggle={handleFollowToggle}
+      />
       {/* 메인페이지 랭킹 카드: rank 대신 id + rankingMap 전달 */}
       {items.map((item) => (
         <ProfileBadge
