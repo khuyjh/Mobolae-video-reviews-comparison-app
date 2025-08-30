@@ -54,6 +54,20 @@
 }
 
 @layer utilities {
+  @keyframes bounce-with-delay {
+    0%,
+    40%,
+    100% {
+      transform: translateY(0);
+    }
+    20% {
+      transform: translateY(-3px);
+    }
+  }
+
+  .bounce-delay {
+    animation: bounce-with-delay 1.6s infinite ease-in-out;
+  }
 }
 
 @layer components {
