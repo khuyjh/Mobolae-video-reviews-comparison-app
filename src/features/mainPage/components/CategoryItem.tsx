@@ -1,13 +1,18 @@
-import Link from 'next/link';
+import Link, { LinkProps } from 'next/link';
 
 import React from 'react';
 
 import { Category } from '@/shared/types/CategoryTypes';
 
 /**
+ * HTML <a> 태그 속성 타입 (onClick, aria-*, data-* 등)
+ */
+type AnchorProps = React.AnchorHTMLAttributes<HTMLAnchorElement>;
+
+/**
  * 카테고리 아이템 Props 타입
  */
-interface CategoryItemProps {
+interface CategoryItemProps extends AnchorProps, Partial<LinkProps> {
   /** 카테고리 항목 */
   category: Category;
   /** 선택 여부 */
@@ -29,21 +34,19 @@ const VARIANT_STYLE = {
 };
 
 /**
- * 카테고리 아이템 컴포넌트
+ * CategoryItem 컴포넌트
  *
- * 역할:
- * - 카테고리 이름 렌더링
- * - 선택 여부에 따라 스타일 적용
- * - 지정된 하이퍼링크로 이동
- *
- * Props:
- * - category: 표시할 카테고리 정보
- * - isSelected: 선택 상태 여부
- * - href: 이동할 URL
- * - className: (선택) 외부에서 전달되는 추가 클래스
+ * - 카테고리 이름을 버튼처럼 렌더링하며, <Link>를 사용해 이동 기능 제공
+ * - 선택된 항목은 강조 스타일 적용
+ * - 외부 컴포넌트(SheetClose 등)에서 전달하는 이벤트/속성들을 내부 <a>에 전달 가능
  */
-
-const CategoryItem: React.FC<CategoryItemProps> = ({ category, isSelected, href, className }) => (
+const CategoryItem: React.FC<CategoryItemProps> = ({
+  category,
+  isSelected,
+  href,
+  className,
+  ...rest // SheetClose가 주입하는 onClick, data-*, aria-* 등
+}) => (
   <Link
     href={href}
     className={`${BASE_STYLE} ${
@@ -52,6 +55,7 @@ const CategoryItem: React.FC<CategoryItemProps> = ({ category, isSelected, href,
     // TODO: 탭 이동 허용 여부 재검토 (tabIndex={-1} 제거 여부)
     tabIndex={-1} // ArrowList에서 ↑/↓로 포커스 이동
     aria-current={isSelected ? 'true' : undefined}
+    {...rest} // 외부에서 전달된 추가 속성 주입
   >
     {category.name}
   </Link>

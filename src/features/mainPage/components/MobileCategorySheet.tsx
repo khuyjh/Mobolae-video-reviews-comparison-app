@@ -59,7 +59,7 @@ const MobileCategorySheet: React.FC<MobileCategorySheetProps> = ({
           {categories.map((category: Category) => {
             const isSelected = selectedCategory === category.value;
             const nextCategoryValue = isSelected ? null : category.value;
-            //새로운 쿼리스트링 생성성
+            //새로운 쿼리스트링 생성
             const categoryHref = buildCategoryHref(currentSearchParams, nextCategoryValue);
 
             return (
