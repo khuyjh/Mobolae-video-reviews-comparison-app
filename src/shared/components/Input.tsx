@@ -12,7 +12,7 @@ export interface InputProps extends ComponentPropsWithRef<'input'> {
 }
 
 const BASE_INPUT_STYLE =
-  'bg-black-800 border-black-700 w-full rounded-md border-1 px-5 py-4 placeholder:text-gray-600 focus:border-gray-400 md:max-w-110 xl:max-w-160 xl:py-[22px]';
+  'bg-black-800 border-black-700 w-full rounded-md border-1 px-5 py-4 placeholder:text-gray-600 focus:border-2 focus:border-main focus:outline-none md:max-w-110 xl:max-w-160 xl:py-[22px]';
 
 const Input = ({ className, label, error, helperText, ...props }: InputProps) => {
   const inputId = props.id;
