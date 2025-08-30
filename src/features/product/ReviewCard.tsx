@@ -28,7 +28,6 @@ export interface ReviewCardProps {
 }
 
 const ReviewCard = ({
-  id,
   reviewContent,
   Images,
   likeCount,
