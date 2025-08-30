@@ -119,8 +119,9 @@ const StatisticsCard = ({
 
       {/* 비교 텍스트 */}
       <p className='text-xs-light xl:text-md-light text-gray-400 md:text-center'>
-        같은 카테고리의 제품들보다&nbsp;
+        같은 카테고리의 제품들&nbsp;
         <br className='hidden md:block' />
+        보다&nbsp;
         {comparisonText}
       </p>
     </div>

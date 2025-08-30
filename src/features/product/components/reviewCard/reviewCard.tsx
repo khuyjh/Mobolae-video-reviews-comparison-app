@@ -1,8 +1,8 @@
 'use client';
 
-import ReviewMeta from './components/reviewCard/reviewMeta';
-import ReviewUser from './components/reviewCard/reviewUser';
-import ReviewDescription from './ReviewDescription';
+import ReviewDescription from './reviewDescription';
+import ReviewMeta from './reviewMeta';
+import ReviewUser from './reviewUser';
 
 /*
  * reviewContent: 리뷰 본문 내용
@@ -14,7 +14,6 @@ import ReviewDescription from './ReviewDescription';
  * onLikeClick: () => void - 좋아요 버튼 클릭 시 부모에게 알리는 함수
  */
 export interface ReviewCardProps {
-  id: string;
   reviewContent: string;
   Images?: string[];
   likeCount: number;

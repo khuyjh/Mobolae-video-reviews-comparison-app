@@ -7,7 +7,7 @@ import { toCategoryChip } from '@/shared/utils/categoryUtil';
 
 import KakaotalkIcon from '../../../../../public/icons/kakaotalk.svg';
 import ShareIcon from '../../../../../public/icons/share.svg';
-import { Chip } from '../../chip';
+import { Chip } from '../../../../shared/components/chip';
 
 const ICON_BUTTON_STYLES = 'bg-black-800 cursor-pointer rounded-[6px] p-[5px]';
 const ICON_SIZE = 'h-6 w-6 xl:h-7 xl:w-7';
@@ -25,7 +25,7 @@ const ProductHeader = ({ category, title, views }: ProductHeaderProps) => {
     setIsLiked(!isLiked);
   };
 
-  const heartIconColor = isLiked ? 'text-main' : 'text-gray-600';
+  const heartIconColor = isLiked ? 'text-red' : 'text-gray-600';
 
   return (
     <div className='flex w-full flex-col'>
