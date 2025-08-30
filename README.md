@@ -1,1 +1,1 @@
-dev branch preview deploy: https://dev-codeit-advanced-project.vercel.app/
+dev branch preview deploy: https://dev-mobolae.vercel.app/
