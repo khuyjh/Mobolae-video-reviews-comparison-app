@@ -16,7 +16,8 @@
 
   --color-white: #f1f1f5;
 
-  --color-main: #c40c0c;
+  --color-main: #2fefdb;
+  --color-main-dark: #02c2ae;
 
   --color-yellow: #ffc83c;
   --color-green: #05d58b;
@@ -54,6 +55,7 @@
 }
 
 @layer utilities {
+  /* keyframes */
   @keyframes bounce-with-delay {
     0%,
     40%,
@@ -67,6 +69,11 @@
 
   .bounce-delay {
     animation: bounce-with-delay 1.6s infinite ease-in-out;
+  }
+
+  /* bg-image */
+  .bg-main-gradient {
+    @apply from-main to-main-dark bg-gradient-to-r;
   }
 }
 
