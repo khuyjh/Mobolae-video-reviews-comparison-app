@@ -1,8 +1,8 @@
 'use client';
 
-import ReviewDescription from './ReviewDescription';
-import ReviewMeta from './ReviewMeta';
-import ReviewUser from './ReviewUser';
+import ReviewDescription from './reviewDescription';
+import ReviewMeta from './reviewMeta';
+import ReviewUser from './reviewUser';
 
 /*
  * reviewContent: 리뷰 본문 내용
