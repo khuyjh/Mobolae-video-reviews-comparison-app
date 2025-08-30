@@ -3,7 +3,7 @@
 import React from 'react';
 import { useState } from 'react';
 
-import ProfileCard from '@/features/mypage/ProfileCard';
+import ProfileCard from '@/features/mypage/components/ProfileCard';
 import ProfileBadge from '@/shared/components/card/avatarCard';
 import { buildRankingMap } from '@/shared/utils/rankingUtil';
 
@@ -35,13 +35,7 @@ const MyPage = () => {
   const [isFollowing, setIsFollowing] = useState(false);
 
   const handleFollowToggle = () => {
-    if (isFollowing) {
-      /*팔로우 버튼 누르면 */
-      setIsFollowing(false);
-    } else {
-      /*언 팔로우 버튼 누르면 */
-      setIsFollowing(true);
-    }
+    setIsFollowing((prev) => !prev);
   };
 
   return (
