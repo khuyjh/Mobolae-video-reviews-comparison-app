@@ -18,6 +18,12 @@ const nextConfig: NextConfig = {
         hostname: 'sprint-fe-project.s3.ap-northeast-2.amazonaws.com',
         pathname: '/**', // 경로 패턴, 모든 이미지 허용
       },
+      //TODO: 아래 도메인 api 연결 후 삭제 (목데이터 전용)
+      {
+        protocol: 'https',
+        hostname: 'picsum.photos',
+        pathname: '/**', // 목업 이미지 허용
+      },
     ],
   },
 };

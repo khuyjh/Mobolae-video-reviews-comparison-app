@@ -7,12 +7,12 @@ import { cn } from '../lib/cn';
 
 export interface InputProps extends ComponentPropsWithRef<'input'> {
   label?: string;
-  error?: FieldError;
+  error?: FieldError | undefined;
   helperText?: string;
 }
 
 const BASE_INPUT_STYLE =
-  'bg-black-800 border-black-700 w-full rounded-md border-1 px-5 py-4 placeholder:text-gray-600 focus:border-gray-400 md:max-w-110 xl:max-w-160 xl:py-[22px]';
+  'bg-black-800 border-black-700 w-full rounded-md border-1 px-5 py-4 placeholder:text-gray-600 focus:border-2 focus:border-main focus:outline-none md:max-w-110 xl:max-w-160 xl:py-[22px]';
 
 const Input = ({ className, label, error, helperText, ...props }: InputProps) => {
   const inputId = props.id;
@@ -30,6 +30,7 @@ const Input = ({ className, label, error, helperText, ...props }: InputProps) =>
           BASE_INPUT_STYLE,
           {
             'border-red': error,
+            'mb-[10px]': helperText || error,
           },
           className,
         )}
@@ -38,9 +39,9 @@ const Input = ({ className, label, error, helperText, ...props }: InputProps) =>
       />
 
       {error ? (
-        <p className='text-red text-xs-regular xl:text-md-regular mt-[10px]'>{error.message}</p>
+        <p className='text-red text-xs-regular xl:text-md-regular'>{error.message}</p>
       ) : (
-        <p className='text-xs-regular xl:text-md-regular mt-[10px] text-gray-600'>{helperText}</p>
+        <p className='text-xs-regular xl:text-md-regular text-gray-600'>{helperText}</p>
       )}
     </div>
   );

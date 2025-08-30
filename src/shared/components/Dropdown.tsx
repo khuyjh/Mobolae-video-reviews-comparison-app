@@ -22,6 +22,9 @@ interface SelectDropdownProps {
   onChange: (value: string | number | boolean) => void;
   placeholder?: string;
   options: Option[];
+  className?: string; // 드롭다운 컨테이너 커스텀 스타일 props
+  triggerClassName?: string; // 트리거 부분 커스텀 스타일 props
+  contentClassName?: string; // 내려오는 패널 부분 커스텀 스타일 props
 }
 
 // 드롭다운 내부 css값
@@ -32,14 +35,22 @@ const SELECTCONTENT_STYLE =
 const SELECTITEM_STYLE =
   'mt-[5px] first:mt-0 data-[highlighted]:bg-black-700 data-[state=checked]:bg-black-700 rounded-md !px-[20px] !py-[6px] text-gray-600 text-sm xl:text-base data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50 data-[highlighted]:text-white data-[state=checked]:text-white';
 
-const Dropdown = ({ initialValue, onChange, placeholder, options }: SelectDropdownProps) => {
+const Dropdown = ({
+  initialValue,
+  onChange,
+  placeholder,
+  options,
+  className,
+  triggerClassName,
+  contentClassName,
+}: SelectDropdownProps) => {
   // 내부 상태는 문자열로 보관 (Radix 규칙)
   const [value, setValue] = useState<string | undefined>(
     initialValue ? String(initialValue.value) : undefined,
   );
 
   return (
-    <div className='w-[355px] md:w-[360px] xl:w-[400px]'>
+    <div className={cn('w-full max-w-[355px] md:w-[360px] xl:max-w-[400px]', className)}>
       <Select
         value={value}
         onValueChange={(v) => {
@@ -51,10 +62,14 @@ const Dropdown = ({ initialValue, onChange, placeholder, options }: SelectDropdo
           onChange(raw); // 필요하면 여기서 Number/Boolean 변환
         }}
       >
-        <SelectTrigger className={cn(SELECTTRIGGER_STYLE)}>
+        <SelectTrigger className={cn('w-full', SELECTTRIGGER_STYLE, triggerClassName)}>
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
-        <SelectContent sideOffset={4} collisionPadding={0} className={cn(SELECTCONTENT_STYLE)}>
+        <SelectContent
+          sideOffset={4}
+          collisionPadding={0}
+          className={cn(SELECTCONTENT_STYLE, 'w-[--radix-select-trigger-width]', contentClassName)}
+        >
           {options.map((c) => (
             <SelectItem
               key={String(c.value)}
@@ -71,4 +86,5 @@ const Dropdown = ({ initialValue, onChange, placeholder, options }: SelectDropdo
 };
 
 export default Dropdown;
+
 // TODO 팀 폰트 클래스 적용시 shadcn 기본 색상 설정이 이기는 문제에 대해 알아보기, 팀 폰트 클래스로 변경 시도해보기

@@ -1,0 +1,28 @@
+export interface BaseUser {
+  id: number;
+  nickname: string;
+  description: string;
+  image: null | string;
+  createdAt: string;
+  updatedAt: string;
+  teamId: '16-7';
+}
+
+export interface DetailUser extends BaseUser {
+  isFollowing: boolean;
+  followersCount: number;
+  followeesCount: number;
+  reviewCount: number;
+  averageRating: number;
+  mostFavoriteCategory: { name: string; id: number } | null;
+}
+
+export interface UserState {
+  user: DetailUser | null;
+  isLoggedIn: boolean;
+  setUser: () => void;
+  updateUser: (updatedUser: DetailUser) => void;
+  restoreAuth: () => void;
+  initializeAuth: () => void;
+  clearUser: () => void;
+}
