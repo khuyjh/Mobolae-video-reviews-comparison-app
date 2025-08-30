@@ -4,6 +4,7 @@ import CategoryItem from '@/features/mainPage/components/CategoryItem';
 import { Category } from '@/shared/types/CategoryTypes';
 
 import ArrowList from './ArrowList';
+import { buildCategoryHref } from '../services/buildCategoryHref';
 
 /**
  * PC/태블릿용 사이드바 카테고리 메뉴 Props 타입
@@ -13,26 +14,22 @@ interface CategorySidebarProps {
   categories: Category[];
   /** 현재 선택된 카테고리 값 */
   selectedCategory: string | null;
-  /** 카테고리 선택 시 호출되는 함수 */
-  onCategorySelect: (value: string | null) => void;
+  /**
+   * 현재 페이지의 질의문자열
+   * - 서버 단계와 클라이언트 단계 모두에서 하이퍼링크 목적지를 계산하기 위해 사용
+   */
+  searchParams: URLSearchParams;
 }
 
 /**
- * PC/태블릿용 사이드바 카테고리 메뉴
- *
- * 특징:
- * - <aside> 태그 사용으로 시맨틱한 마크업
- * - 세로로 정렬된 카테고리 목록
- * - 항상 화면에 표시됨
- *
- * @param categories - 표시할 카테고리 목록
- * @param selectedCategory - 현재 선택된 카테고리 값
- * @param onCategorySelect - 카테고리 선택 시 호출할 함수
+ * 데스크톱/태블릿용 사이드바 카테고리 메뉴
+ * - 시맨틱 마크업: <aside> + <nav>
+ * - 항목은 항상 하이퍼링크로 렌더링(검색 엔진 최적화, 최초 콘텐츠 페인트 이득)
  */
 const CategorySidebar: React.FC<CategorySidebarProps> = ({
   categories,
   selectedCategory,
-  onCategorySelect,
+  searchParams,
 }) => (
   <aside
     aria-labelledby='category-heading'
@@ -46,14 +43,10 @@ const CategorySidebar: React.FC<CategorySidebarProps> = ({
         <div className='space-y-2'>
           {categories.map((category) => {
             const active = selectedCategory === category.value;
-            const next = active ? null : category.value; // 재클릭 = 해제
+            const next = active ? null : category.value;
+            const href = buildCategoryHref(searchParams, next);
             return (
-              <CategoryItem
-                key={category.id}
-                category={category}
-                isSelected={active}
-                onClick={() => onCategorySelect(next)}
-              />
+              <CategoryItem key={category.id} category={category} isSelected={active} href={href} />
             );
           })}
         </div>
