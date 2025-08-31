@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 
 import { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -12,15 +12,14 @@ import CategorySidebar from './CategorySidebar';
 import MobileCategorySheet from './MobileCategorySheet';
 
 /**
- * 카테고리 메뉴
- *
- * - PC/Tablet: 사이드바 슬롯(#desktop-category-slot)에 렌더링
- * - Mobile: 바텀시트 슬롯(#mobile-category-slot)에 렌더링
- * - 선택 상태는 로컬 state가 아니라 URL 쿼리 파라미터(category)를 단일 소스로 관리
+ * 카테고리 메뉴 (포털 인계 컨트롤러)
+ * - 데스크톱 또는 태블릿 화면: 데스크톱용 슬롯에 사이드바를 렌더링
+ * - 모바일 화면: 모바일용 슬롯에 바텀 시트를 렌더링
+ * - 선택 상태는 인터넷 주소의 질의 문자열에서만 파생
+ * - 이 컴포넌트는 상태를 조작하지 않고 포털로 주입만 수행
  */
 const CategoryMenu = () => {
-  const router = useRouter();
-  const searchParams = useSearchParams();
+  const searchParamsInClient = useSearchParams();
   const isDesktopUp = useMediaQuery('(min-width: 768px)');
 
   /** 마운트 여부 확인 (SSR/CSR 초기 불일치 방지) */
@@ -28,7 +27,13 @@ const CategoryMenu = () => {
   useEffect(() => setMounted(true), []);
 
   /** 현재 선택된 카테고리 값 (URL에서만 파생) */
-  const selectedCategory = searchParams.get('category') ?? null;
+  const selectedCategory = searchParamsInClient.get('category') ?? null;
+
+  /** 하이퍼링크 목적지 계산을 위해 URLSearchParams 인스턴스 생성 */
+  const searchParamsForLinks = useMemo(
+    () => new URLSearchParams(searchParamsInClient.toString()),
+    [searchParamsInClient],
+  );
 
   /** 현재 뷰포트에 따라 렌더링할 슬롯 DOM 결정 */
   const target = useMemo(() => {
@@ -37,34 +42,18 @@ const CategoryMenu = () => {
     return document.getElementById(id);
   }, [mounted, isDesktopUp]);
 
-  /**
-   * 카테고리 선택/해제 핸들러
-   *
-   * - 클릭 시 URL 쿼리 파라미터를 갱신
-   * - 같은 카테고리를 다시 누르면 해제(null)
-   * - 상품 리스트 무한스크롤 초기화를 위해 cursor는 항상 제거
-   * - router.replace() 사용 → 히스토리에 필터 상태가 쌓이지 않도록
-   */
-  const handleCategorySelect = (value: string | null) => {
-    const params = new URLSearchParams(searchParams.toString());
-
-    if (value === null) params.delete('category');
-    else params.set('category', value);
-
-    params.delete('cursor'); // 페이지네이션 리셋
-    router.replace(`?${params.toString()}`, { scroll: false });
-  };
-
   if (!mounted || !target) return null;
 
-  const viewProps = {
-    categories: CATEGORIES,
-    selectedCategory,
-    onCategorySelect: handleCategorySelect,
-  };
-
   return createPortal(
-    isDesktopUp ? <CategorySidebar {...viewProps} /> : <MobileCategorySheet {...viewProps} />,
+    isDesktopUp ? (
+      <CategorySidebar
+        categories={CATEGORIES}
+        selectedCategory={selectedCategory}
+        searchParams={searchParamsForLinks}
+      />
+    ) : (
+      <MobileCategorySheet categories={CATEGORIES} selectedCategory={selectedCategory} />
+    ),
     target,
   );
 };
