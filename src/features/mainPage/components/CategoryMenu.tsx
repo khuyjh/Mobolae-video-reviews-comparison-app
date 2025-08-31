@@ -50,13 +50,6 @@ const CategoryMenu = () => {
 
   if (!mounted || !target) return null;
 
-  console.log(
-    'selectedCategoryId:',
-    selectedCategoryId,
-    'current param:',
-    searchParamsInClient.get('category'),
-  );
-
   return createPortal(
     isDesktopUp ? (
       <CategorySidebar
