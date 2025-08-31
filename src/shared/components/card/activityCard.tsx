@@ -3,24 +3,13 @@ import React from 'react';
 
 import { Chip } from '@/shared/components/chip';
 import { cn } from '@/shared/lib/cn';
+import { toCategoryChip } from '@/shared/utils/categoryUtil';
 import { formatNumber } from '@/shared/utils/formatters';
 
-/*
- * title: 상단 텍스트
- * variant: 하단 UI
- * value: 아이콘 -> 값
- * iconType: 아이콘
- * chipLabel: 칩 -> 텍스트
- * chipClassName: 칩 -> 스타일
- * className: 커스텀
- */
 interface ActivityCardProps {
-  title: React.ReactNode;
-  variant: 'iconValue' | 'chip';
-  value?: string | number;
-  iconType?: 'star' | 'message';
-  chipLabel?: string;
-  chipClassName?: string;
+  rating: number | null;
+  reviewCount: number | null;
+  topCategoryId: number | null;
   className?: string;
 }
 
@@ -30,62 +19,58 @@ const CARD_BASE_STYLE =
 const TOP_BASE_STYLE =
   'text-md-medium leading-5 text-center xl:text-base-medium xl:leading-6 text-gray-400 w-[52px] h-[40px] md:w-[80px] md:h-[40px] xl:w-[91px] xl:h-[38px] flex items-center justify-center [&_br]:block md:[&_br]:hidden';
 
-const ICON_MAP = {
-  star: { component: <Star fill='currentColor' />, colorClass: 'text-yellow' },
-  message: { component: <MessageSquare fill='currentColor' />, colorClass: 'text-blue-500' },
-};
-
 const ICON_VALUE_CONTAINER_STYLE = 'flex items-center space-x-[5px]';
-const ICON_CONTAINER_STYLE = 'flex items-center justify-center';
-const ICON_SIZE_STYLE = 'h-[20px] w-[20px] xl:h-[24px] xl:w-[24px]';
+const ICON_CONTAINER_STYLE =
+  'flex items-center justify-center h-[20px] w-[20px] xl:h-[24px] xl:w-[24px]';
 const VALUE_STYLE = 'text-xl-regular xl:text-2xl-regular text-white';
 
-const ActivityCard = ({
-  title,
-  variant,
-  value,
-  iconType,
-  chipLabel,
-  chipClassName,
-  className,
-}: ActivityCardProps) => {
-  const renderContent = () => {
-    /* 아이콘 + 값 */
-    if (variant === 'iconValue' && iconType && value !== undefined) {
-      const { component: IconComponent, colorClass } = ICON_MAP[iconType];
-      return (
-        <div className={ICON_VALUE_CONTAINER_STYLE}>
-          {/* 아이콘 부분 */}
-          <div className={cn(ICON_CONTAINER_STYLE, ICON_SIZE_STYLE, colorClass)}>
-            {IconComponent}
-          </div>
-          <span className={VALUE_STYLE}>{formatNumber(value)}</span>
-        </div>
-      );
-    }
-
-    /* 칩 */
-    if (variant === 'chip' && chipLabel) {
-      return (
-        <Chip variant='category' size='category' className={chipClassName}>
-          {chipLabel}
-        </Chip>
-      );
-    }
-
-    return null;
-  };
+const ActivityCard = ({ rating, reviewCount, topCategoryId, className }: ActivityCardProps) => {
+  const categoryChip =
+    topCategoryId !== null ? (
+      <Chip {...toCategoryChip({ id: topCategoryId, name: '' })} />
+    ) : (
+      <Chip variant='category'>-</Chip>
+    );
 
   return (
-    <div
-      className={cn(CARD_BASE_STYLE, className)}
-      role='group'
-      aria-label={typeof title === 'string' ? title : undefined}
-    >
-      {/* 상단 텍스트 */}
-      <p className={TOP_BASE_STYLE}>{title}</p>
-      {/* 하단 컨텐츠 */}
-      {renderContent()}
+    <div className={cn('grid w-full grid-cols-3 gap-[10px] xl:gap-[20px]', className)}>
+      {/* 별점 평균 */}
+      <div className={CARD_BASE_STYLE}>
+        <p className={TOP_BASE_STYLE}>
+          남긴&nbsp;
+          <br />
+          별점 평균
+        </p>
+        <div className={ICON_VALUE_CONTAINER_STYLE}>
+          <div className={cn(ICON_CONTAINER_STYLE, 'text-yellow')}>
+            <Star fill='currentColor' />
+          </div>
+          <span className={VALUE_STYLE}>{rating !== null ? formatNumber(rating) : '-'}</span>
+        </div>
+      </div>
+
+      {/* 리뷰 개수 */}
+      <div className={CARD_BASE_STYLE}>
+        <p className={TOP_BASE_STYLE}>남긴 리뷰</p>
+        <div className={ICON_VALUE_CONTAINER_STYLE}>
+          <div className={cn(ICON_CONTAINER_STYLE, 'text-blue-600')}>
+            <MessageSquare fill='currentColor' />
+          </div>
+          <span className={VALUE_STYLE}>
+            {reviewCount !== null ? formatNumber(reviewCount) : '-'}
+          </span>
+        </div>
+      </div>
+
+      {/* 관심 카테고리 */}
+      <div className={CARD_BASE_STYLE}>
+        <p className={TOP_BASE_STYLE}>
+          관심&nbsp;
+          <br />
+          카테고리
+        </p>
+        {categoryChip}
+      </div>
     </div>
   );
 };
