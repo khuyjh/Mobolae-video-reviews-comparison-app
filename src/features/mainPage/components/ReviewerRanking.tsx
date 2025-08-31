@@ -35,18 +35,22 @@ const ReviewerRankingList: React.FC<ReviewerRankingListProps> = ({
     [reviewers],
   );
 
+  // 상위 5명만 제한
+  const topN = 5;
+  const top = useMemo(() => sorted.slice(0, topN), [sorted]);
+
   // 등수 매핑: userId → rank
   // 예: {1: 1위, 2: 2위, ...}
   const rankingMap = useMemo(
-    () => new Map(sorted.map((reviewer, i) => [reviewer.userId, i + 1])),
-    [sorted],
+    () => new Map(top.map((reviewer, i) => [reviewer.userId, i + 1])),
+    [top],
   );
 
   // --- 가로 스크롤 버전 ---
   if (direction === 'row') {
     return (
       <div className='flex w-full snap-x snap-mandatory flex-nowrap gap-5 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'>
-        {sorted.map((reviewer) => (
+        {top.map((reviewer) => (
           <Link
             key={reviewer.userId}
             href={buildReviewerHref(reviewer.userId)}
@@ -70,7 +74,7 @@ const ReviewerRankingList: React.FC<ReviewerRankingListProps> = ({
   // --- 세로 리스트 버전 ---
   return (
     <div className='space-y-5'>
-      {sorted.map((r) => (
+      {top.map((r) => (
         <Link key={r.userId} href={buildReviewerHref(r.userId)} className='block'>
           <ProfileBadge
             variant='ranking'
