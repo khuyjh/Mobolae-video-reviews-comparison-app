@@ -7,15 +7,20 @@ import { useEffect, useState } from 'react';
 
 import { kakaoSignInRequest } from '@/features/auth/api/authApi';
 import KakaoError from '@/features/auth/components/KakaoError';
+import { setCookie } from '@/features/auth/utils/cookie';
+import moveToKakao from '@/features/auth/utils/moveToKakao';
+import LoadingImage from '@/shared/components/LoadingImage';
+import { useUserStore } from '@/shared/stores/userStore';
 
 const KakaoCallbackPage = () => {
+  const setUser = useUserStore((state) => state.setUser);
   const [hasError, setHasError] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
 
   useEffect(() => {
     const code = searchParams.get('code');
-    const state = searchParams.get('state');
+    // const state = searchParams.get('state'); 이후 리다이렉트 로직에서 처리
     const kakaoError = searchParams.get('error');
 
     if (kakaoError) {
@@ -23,7 +28,6 @@ const KakaoCallbackPage = () => {
       return;
     }
 
-    //회원가입 된 유저인지 확인
     if (code) {
       const kakaoLogin = async () => {
         try {
@@ -31,24 +35,38 @@ const KakaoCallbackPage = () => {
             redirectUri: `${window.location.origin}/oauth/kakao`,
             token: code,
           });
-          console.log(res);
+          const { accessToken } = res;
+
+          if (accessToken) {
+            setCookie('accessToken', accessToken);
+          }
+
+          setUser();
+          console.log(res.user?.nickname, '님 환영합니다'); //토스트 로그인 처리
+          router.replace('/');
         } catch (e) {
           console.log(e);
-          if (isAxiosError(e) && e.status === 404) {
-            console.log('여기');
-            router.replace(`/oauth/signup/kakao?code=${code}`);
-          }
+          if (isAxiosError(e) && e.status === 403) {
+            //회원가입 된 유저인지 확인, 아니라면 회원가입으로 이동
+            moveToKakao('/oauth/signup/kakao');
+          } else if (isAxiosError(e) && e.status === 400)
+            //잘못된 인가 코드
+            setHasError(true);
           throw e;
         }
       };
 
       kakaoLogin();
     }
-  }, [searchParams, router]);
+  }, []);
 
   if (hasError) return <KakaoError />;
 
-  return <p className='text-white'>카카오 로그인 처리중...</p>;
+  return (
+    <div className='flex h-dvh items-center justify-center'>
+      <LoadingImage loadingText='간편 로그인 처리중...' />
+    </div>
+  );
 };
 
 export default KakaoCallbackPage;

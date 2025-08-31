@@ -34,7 +34,7 @@ const KakaoSignUpForm = ({ kakaoCode }: Props) => {
   const onSubmit: SubmitHandler<KakaoSignUpSchema> = async (data) => {
     try {
       const res = await kakaoSignUpRequest({
-        redirectUri: `${window.location.origin}/oauth/kakao`,
+        redirectUri: `${window.location.origin}/oauth/signup/kakao`,
         token: kakaoCode,
         ...data,
       });
@@ -50,7 +50,7 @@ const KakaoSignUpForm = ({ kakaoCode }: Props) => {
     } catch (e) {
       if (isAxiosError(e)) {
         const message = e.response?.data.message;
-        console.log(message); //추후에 토스트 메시지로 활용, 이메일 중복/닉네임 중복
+        console.log(message); //추후에 토스트 메시지로 활용, 닉네임 중복
       }
     }
   };

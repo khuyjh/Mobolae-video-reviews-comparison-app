@@ -49,7 +49,7 @@ export const kakaoSignUpRequest = async (data: KakaoSignUpData): Promise<AuthRes
     const res = await publicApiClient.post('/auth/signUp/kakao', data);
     return res.data;
   } catch (e) {
-    console.log('카카오 가편 회원가입 요청 에러');
+    console.log('카카오 간편 회원가입 요청 에러');
     throw e;
   }
 };
