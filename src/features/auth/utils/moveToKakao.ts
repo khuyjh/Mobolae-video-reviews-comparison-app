@@ -5,6 +5,7 @@ const moveToKakao = (redirectUri: string, pathname = '') => {
   const currentOrigin = window.location.origin;
 
   if (!process.env.NEXT_PUBLIC_KAKAO_APP_KEY) {
+    console.log('App Key missing');
     return;
   }
 
