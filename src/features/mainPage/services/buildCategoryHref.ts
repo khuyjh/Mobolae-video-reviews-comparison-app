@@ -8,14 +8,14 @@
  */
 export function buildCategoryHref(
   currentSearchParameters: URLSearchParams,
-  nextCategory: string | null,
+  nextCategoryId: number | null,
 ): string {
   const updatedSearchParameters = new URLSearchParams(currentSearchParameters);
 
-  if (nextCategory === null) {
+  if (nextCategoryId === null) {
     updatedSearchParameters.delete('category');
   } else {
-    updatedSearchParameters.set('category', nextCategory);
+    updatedSearchParameters.set('category', String(nextCategoryId));
   }
 
   // 무한 스크롤, 페이지네이션 등을 초기화하기 위한 규칙

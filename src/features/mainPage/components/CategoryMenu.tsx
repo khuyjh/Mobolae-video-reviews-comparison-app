@@ -27,7 +27,13 @@ const CategoryMenu = () => {
   useEffect(() => setMounted(true), []);
 
   /** 현재 선택된 카테고리 값 (URL에서만 파생) */
-  const selectedCategory = searchParamsInClient.get('category') ?? null;
+  const selectedCategoryId: number | null = (() => {
+    const idStr = searchParamsInClient.get('category');
+    if (idStr === null) return null;
+
+    const id = parseInt(idStr, 10);
+    return Number.isFinite(id) ? id : null;
+  })();
 
   /** 하이퍼링크 목적지 계산을 위해 URLSearchParams 인스턴스 생성 */
   const searchParamsForLinks = useMemo(
@@ -44,15 +50,22 @@ const CategoryMenu = () => {
 
   if (!mounted || !target) return null;
 
+  console.log(
+    'selectedCategoryId:',
+    selectedCategoryId,
+    'current param:',
+    searchParamsInClient.get('category'),
+  );
+
   return createPortal(
     isDesktopUp ? (
       <CategorySidebar
         categories={CATEGORIES}
-        selectedCategory={selectedCategory}
+        selectedCategoryId={selectedCategoryId}
         searchParams={searchParamsForLinks}
       />
     ) : (
-      <MobileCategorySheet categories={CATEGORIES} selectedCategory={selectedCategory} />
+      <MobileCategorySheet categories={CATEGORIES} selectedCategoryId={selectedCategoryId} />
     ),
     target,
   );

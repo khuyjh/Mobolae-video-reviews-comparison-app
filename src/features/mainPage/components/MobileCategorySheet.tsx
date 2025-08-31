@@ -17,7 +17,7 @@ interface MobileCategorySheetProps {
   /** 카테고리 목록 */
   categories: Category[];
   /** 현재 선택된 카테고리 값 */
-  selectedCategory: string | null;
+  selectedCategoryId: number | null;
 }
 
 /**
@@ -29,7 +29,7 @@ interface MobileCategorySheetProps {
  */
 const MobileCategorySheet: React.FC<MobileCategorySheetProps> = ({
   categories,
-  selectedCategory,
+  selectedCategoryId,
 }) => {
   // 현재 URLSearchParams를 가져와 복제 (불변성 유지)
   const searchParamsFromHook = useSearchParams();
@@ -37,7 +37,7 @@ const MobileCategorySheet: React.FC<MobileCategorySheetProps> = ({
 
   // 현재 선택된 카테고리의 label (없으면 "카테고리")
   const selectedCategoryLabel =
-    categories.find((category) => category.value === selectedCategory)?.name ?? '카테고리';
+    categories.find((category) => Number(category.id) === selectedCategoryId)?.name ?? '카테고리';
 
   return (
     <MobileBottomSheet
@@ -49,7 +49,7 @@ const MobileCategorySheet: React.FC<MobileCategorySheetProps> = ({
           role='button'
           aria-label='카테고리 바텀시트 열기'
         >
-          {selectedCategory ? selectedCategoryLabel : '카테고리'}
+          {selectedCategoryId ? selectedCategoryLabel : '카테고리'}
         </Chip>
       }
       title='카테고리'
@@ -57,8 +57,8 @@ const MobileCategorySheet: React.FC<MobileCategorySheetProps> = ({
       <ArrowList>
         <ul className='space-y-2' role='list'>
           {categories.map((category: Category) => {
-            const isSelected = selectedCategory === category.value;
-            const nextCategoryValue = isSelected ? null : category.value;
+            const isSelected = selectedCategoryId === Number(category.id);
+            const nextCategoryValue = isSelected ? null : Number(category.id);
             //새로운 쿼리스트링 생성
             const categoryHref = buildCategoryHref(currentSearchParams, nextCategoryValue);
 

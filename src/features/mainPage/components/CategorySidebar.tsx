@@ -13,7 +13,7 @@ interface CategorySidebarProps {
   /** 카테고리 목록 */
   categories: Category[];
   /** 현재 선택된 카테고리 값 */
-  selectedCategory: string | null;
+  selectedCategoryId: number | null;
   /**
    * 현재 페이지의 질의문자열
    * - 서버 단계와 클라이언트 단계 모두에서 하이퍼링크 목적지를 계산하기 위해 사용
@@ -28,7 +28,7 @@ interface CategorySidebarProps {
  */
 const CategorySidebar: React.FC<CategorySidebarProps> = ({
   categories,
-  selectedCategory,
+  selectedCategoryId,
   searchParams,
 }) => (
   <aside
@@ -42,9 +42,9 @@ const CategorySidebar: React.FC<CategorySidebarProps> = ({
       <ArrowList>
         <div className='space-y-2'>
           {categories.map((category) => {
-            const active = selectedCategory === category.value;
-            const next = active ? null : category.value;
-            const href = buildCategoryHref(searchParams, next);
+            const active = selectedCategoryId === Number(category.id);
+            const nextId = active ? null : Number(category.id);
+            const href = buildCategoryHref(searchParams, nextId);
             return (
               <CategoryItem key={category.id} category={category} isSelected={active} href={href} />
             );
