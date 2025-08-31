@@ -44,7 +44,7 @@ const initialReviews = [
   },
 ];
 
-const ProductDetialsPage = () => {
+const ProductDetailsPage = () => {
   const productData = mockContents[0];
   const [reviews, setReviews] = useState(initialReviews);
 
@@ -92,17 +92,17 @@ const ProductDetialsPage = () => {
         {/* 콘텐츠 상세 카드 */}
         <ProductCard {...productCardProps} />
         {/* 콘텐츠 통계 카드 */}
-        <div className={SUBSECTION_GAP}>
-          <div className={SECTION_TITLE}>콘텐츠 통계</div>
+        <section className={SUBSECTION_GAP}>
+          <h2 className={SECTION_TITLE}>콘텐츠 통계</h2>
           <Statistics {...statisticsProps} />
-        </div>
+        </section>
 
         {/* 콘텐츠 리뷰 + 정렬 드롭다운 */}
         <div className={SUBSECTION_GAP}>
-          <div className='flex items-center justify-between'>
-            <span className={SECTION_TITLE}>콘텐츠 리뷰</span>
+          <section className='flex items-center justify-between'>
+            <h2 className={SECTION_TITLE}>콘텐츠 리뷰</h2>
             <ReviewSortDropdown />
-          </div>
+          </section>
 
           {/* 콘텐츠 리뷰 목록*/}
           {reviews.map((review) => (
@@ -118,4 +118,4 @@ const ProductDetialsPage = () => {
   );
 };
 
-export default ProductDetialsPage;
+export default ProductDetailsPage;
