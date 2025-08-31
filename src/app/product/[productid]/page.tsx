@@ -1,274 +1,158 @@
 'use client';
 
-import { Fragment } from 'react';
+import { useInfiniteQuery } from '@tanstack/react-query';
+import { useMemo } from 'react';
 
 import { mockContents, mockReviewers } from '@/features/mainPage/mock/contents';
 import ProductCard from '@/features/product/components/productCard/productCard';
 import ReviewCard from '@/features/product/components/reviewCard/reviewCard';
 import ReviewSortDropdown from '@/features/product/components/reviewSortDropdown';
 import Statistics from '@/features/product/components/statisticsCard';
-import { useInfiniteList } from '@/shared/hooks/useInfiniteList';
-import { useInfiniteScroll } from '@/shared/hooks/useInfiniteScroll';
+import { InfinityScroll } from '@/shared/components/infinityScroll';
+import useMediaQuery from '@/shared/hooks/useMediaQuery';
 
 const MAIN_LAYOUT =
   'mx-auto px-[20px] pt-[30px] pb-[223px] md:max-w-[684px] md:px-[30px] md:pt-[40px] md:pb-[147px] xl:max-w-[940px] xl:pt-[60px] xl:pb-[120px]';
+
 const SUBSECTION_GAP = 'flex flex-col gap-[30px]';
 const SECTION_TITLE = 'text-lg-semibold md:text-base-semibold xl:text-xl-semibold text-white';
 
-interface Review {
-  id: number;
-  reviewContent: string;
-  Images: string[];
-  likeCount: number;
-  isLiked: boolean;
-  showActions: boolean;
-  createdAt: string;
-  name: string;
-  avatarSrc: string;
-  rating: number;
-}
+const mockApi = async ({ pageParam = 0 }) => {
+  const pageSize = 10;
+  const start = pageParam * pageSize;
+  const end = start + pageSize;
 
-const allMockReviews: Review[] = [
-  // ... (Mock 데이터 배열)
-  {
-    id: 1,
+  const mockReviewData = Array.from({ length: 50 }, (_, i) => ({
+    id: `review-${i}`,
     reviewContent:
-      '영화리뷰 남기는 설명칸영화리뷰 남기는 설명칸영화리뷰 남기는 설명칸영화리뷰 남기는 설명칸영화리뷰 남기는 설명칸인데.',
-    Images: [],
-    likeCount: 5,
-    isLiked: true,
+      i % 2 === 0
+        ? '짧은 리뷰 내용'
+        : '이것은 매우 긴 리뷰 내용입니다. 이미지도 추가될 수 있어요. 높이가 불규칙한 상황을 시뮬레이션하기 위한 더미 텍스트입니다.',
+    Images: i % 3 === 0 ? ['https://picsum.photos/400/300'] : [],
+    likeCount: Math.floor(Math.random() * 20),
+    isLiked: false,
     showActions: false,
     createdAt: '2025.08.30',
-    name: mockReviewers[0].name,
-    avatarSrc: mockReviewers[0].profileImageUrl,
-    rating: 5,
-  },
-  {
-    id: 2,
-    reviewContent: '기대했던 것보다 훨씬 좋네요! 재구매 의사 있습니다.',
-    Images: ['https://picsum.photos/id/1020/400/300', 'https://picsum.photos/id/1033/400/300'],
-    likeCount: 3,
-    isLiked: false,
-    showActions: false,
-    createdAt: '2025.08.29',
-    name: mockReviewers[1].name,
-    avatarSrc: mockReviewers[1].profileImageUrl,
-    rating: 4,
-  },
-  {
-    id: 3,
-    reviewContent: '기대했던 것보다 훨씬 좋네요! 재구매 의사 있습니다.',
-    Images: ['https://picsum.photos/id/1020/400/300', 'https://picsum.photos/id/1033/400/300'],
-    likeCount: 3,
-    isLiked: false,
-    showActions: false,
-    createdAt: '2025.08.29',
-    name: mockReviewers[1].name,
-    avatarSrc: mockReviewers[1].profileImageUrl,
-    rating: 4,
-  },
-  {
-    id: 4,
-    reviewContent: '기대했던 것보다 훨씬 좋네요! 재구매 의사 있습니다.',
-    Images: ['https://picsum.photos/id/1020/400/300', 'https://picsum.photos/id/1033/400/300'],
-    likeCount: 3,
-    isLiked: false,
-    showActions: false,
-    createdAt: '2025.08.29',
-    name: mockReviewers[1].name,
-    avatarSrc: mockReviewers[1].profileImageUrl,
-    rating: 4,
-  },
-  {
-    id: 5,
-    reviewContent: '기대했던 것보다 훨씬 좋네요! 재구매 의사 있습니다.',
-    Images: ['https://picsum.photos/id/1020/400/300', 'https://picsum.photos/id/1033/400/300'],
-    likeCount: 3,
-    isLiked: false,
-    showActions: false,
-    createdAt: '2025.08.29',
-    name: mockReviewers[1].name,
-    avatarSrc: mockReviewers[1].profileImageUrl,
-    rating: 4,
-  },
-  {
-    id: 6,
-    reviewContent: '기대했던 것보다 훨씬 좋네요! 재구매 의사 있습니다.',
-    Images: ['https://picsum.photos/id/1020/400/300', 'https://picsum.photos/id/1033/400/300'],
-    likeCount: 3,
-    isLiked: false,
-    showActions: false,
-    createdAt: '2025.08.29',
-    name: mockReviewers[1].name,
-    avatarSrc: mockReviewers[1].profileImageUrl,
-    rating: 4,
-  },
-  {
-    id: 7,
-    reviewContent: '기대했던 것보다 훨씬 좋네요! 재구매 의사 있습니다.',
-    Images: ['https://picsum.photos/id/1020/400/300', 'https://picsum.photos/id/1033/400/300'],
-    likeCount: 3,
-    isLiked: false,
-    showActions: false,
-    createdAt: '2025.08.29',
-    name: mockReviewers[1].name,
-    avatarSrc: mockReviewers[1].profileImageUrl,
-    rating: 4,
-  },
-  {
-    id: 8,
-    reviewContent: '기대했던 것보다 훨씬 좋네요! 재구매 의사 있습니다.',
-    Images: ['https://picsum.photos/id/1020/400/300', 'https://picsum.photos/id/1033/400/300'],
-    likeCount: 3,
-    isLiked: false,
-    showActions: false,
-    createdAt: '2025.08.29',
-    name: mockReviewers[1].name,
-    avatarSrc: mockReviewers[1].profileImageUrl,
-    rating: 4,
-  },
-  {
-    id: 9,
-    reviewContent: '기대했던 것보다 훨씬 좋네요! 재구매 의사 있습니다.',
-    Images: ['https://picsum.photos/id/1020/400/300', 'https://picsum.photos/id/1033/400/300'],
-    likeCount: 3,
-    isLiked: false,
-    showActions: false,
-    createdAt: '2025.08.29',
-    name: mockReviewers[1].name,
-    avatarSrc: mockReviewers[1].profileImageUrl,
-    rating: 4,
-  },
-  {
-    id: 10,
-    reviewContent: '기대했던 것보다 훨씬 좋네요! 재구매 의사 있습니다.',
-    Images: ['https://picsum.photos/id/1020/400/300', 'https://picsum.photos/id/1033/400/300'],
-    likeCount: 3,
-    isLiked: false,
-    showActions: false,
-    createdAt: '2025.08.29',
-    name: mockReviewers[1].name,
-    avatarSrc: mockReviewers[1].profileImageUrl,
-    rating: 4,
-  },
-];
-const PAGE_SIZE = 3;
+    name: mockReviewers[i % mockReviewers.length].name,
+    avatarSrc: mockReviewers[i % mockReviewers.length].profileImageUrl,
+    rating: Math.floor(Math.random() * 5) + 1,
+  }));
 
-const fetchMockReviews = async ({
-  pageParam = 0,
-}: {
-  pageParam?: number;
-}): Promise<{ list: Review[]; nextCursor: number | null }> => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      const startIndex = pageParam;
-      const endIndex = pageParam + PAGE_SIZE;
-      const list = allMockReviews.slice(startIndex, endIndex);
-      const nextCursor = list.length === PAGE_SIZE ? endIndex : null;
-      resolve({ list, nextCursor });
-    }, 500);
-  });
+  const data = mockReviewData.slice(start, end);
+  await new Promise((resolve) => setTimeout(resolve, 500));
+
+  return {
+    reviews: data,
+    nextCursor: end < mockReviewData.length ? pageParam + 1 : undefined,
+  };
 };
+
+const initialSSRItems = Array.from({ length: 10 }, (_, i) => ({
+  id: `review-${i}`,
+  reviewContent: i % 2 === 0 ? '짧은 리뷰 내용' : '이것은 매우 긴 리뷰 내용입니다.',
+  Images: i % 3 === 0 ? ['https://picsum.photos/400/300'] : [],
+  likeCount: Math.floor(Math.random() * 20),
+  isLiked: false,
+  showActions: false,
+  createdAt: '2025.08.30',
+  name: mockReviewers[i % mockReviewers.length].name,
+  avatarSrc: mockReviewers[i % mockReviewers.length].profileImageUrl,
+  rating: Math.floor(Math.random() * 5) + 1,
+}));
 
 const ProductDetailsPage = () => {
   const productData = mockContents[0];
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isError, isLoading, error } =
-    useInfiniteList<Review>({
-      queryKey: ['mockReviews'],
-      queryFn: fetchMockReviews,
-      initialPageParam: 0,
-    });
 
-  const loadMoreRef = useInfiniteScroll({
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery({
+    queryKey: ['reviews'],
+    queryFn: mockApi,
+    initialPageParam: 0,
+    getNextPageParam: (lastPage) => lastPage.nextCursor,
+    initialData: {
+      pages: [{ reviews: initialSSRItems, nextCursor: 1 }],
+      pageParams: [0],
+    },
   });
 
-  const handleLikeClick = (reviewId: number) => {
-    // 좋아요 기능은 API가 필요합니다.
-  };
+  const allReviews = useMemo(() => data?.pages.flatMap((page) => page.reviews) ?? [], [data]);
 
-  /* ProductCard에 전달할 props를 명시적으로 정의 */
-  const productCardProps = {
-    imageSrc: productData.contentImage,
-    category: { id: 1, name: '오징어 게임' }, // Mock 카테고리
-    title: productData.title,
-    views: 5125, // Mock 조회수
-    description:
-      '오징어 게임 1은 재밌는데 2부터 뭔가 싶고 3은 재미없음. 오징어 게임 1은 재밌는데 2부터 뭔가 싶고 3은 재미없음. 오징어 게임 1은 재밌는데 2부터 뭔가 싶고 3은 재미없음.',
-    isEditable: true,
-  };
+  const isTablet = useMediaQuery('(min-width: 768px) and (max-width: 1279px)');
+  const isPC = useMediaQuery('(min-width: 1280px)');
 
-  /* Statistics에 전달할 props를 명시적으로 정의 */
-  const statisticsProps = {
-    favoriteCount: productData.favoriteCount,
-    rating: productData.rating,
-    reviewCount: productData.reviewCount,
-    favoriteComparison: 20, // Mock 비교 값
-    ratingComparison: 0.5, // Mock 비교 값
-    reviewComparison: 15, // Mock 비교 값
-  };
+  let itemHeightEstimate;
+  let itemSpacing;
 
-  if (isLoading) return <div>로딩 중...</div>;
-  if (isError) return <div>에러 발생: {error.message}</div>;
-
-  const isEmpty = data?.pages.every((page) => page.list.length === 0);
-  if (isEmpty) {
-    return (
-      <main className={MAIN_LAYOUT}>
-        <div className='flex flex-col gap-[60px] xl:gap-[80px]'>
-          <ProductCard {...productCardProps} />
-          <div className={SUBSECTION_GAP}>
-            <div className={SECTION_TITLE}>콘텐츠 통계</div>
-            <Statistics {...statisticsProps} />
-          </div>
-          <div className={SUBSECTION_GAP}>
-            <div className='flex items-center justify-between'>
-              <span className={SECTION_TITLE}>콘텐츠 리뷰</span>
-              <ReviewSortDropdown />
-            </div>
-            <div>데이터가 없습니다.</div>
-          </div>
-        </div>
-      </main>
-    );
+  if (isPC) {
+    itemHeightEstimate = 225;
+    itemSpacing = 20;
+  } else if (isTablet) {
+    itemHeightEstimate = 175;
+    itemSpacing = 15;
+  } else {
+    itemHeightEstimate = 250;
+    itemSpacing = 15;
   }
+
+  const onLikeClick = (reviewId: string) => {
+    console.log(`Liked review: ${reviewId}`);
+    // TODO: 실제 API 연결 시 mutation 적용
+  };
 
   return (
     <main className={MAIN_LAYOUT}>
       <div className='flex flex-col gap-[60px] xl:gap-[80px]'>
-        <ProductCard {...productCardProps} />
-        <div className={SUBSECTION_GAP}>
-          <div className={SECTION_TITLE}>콘텐츠 통계</div>
-          <Statistics {...statisticsProps} />
-        </div>
+        {/* 상품 카드 */}
+        <ProductCard
+          imageSrc={productData.contentImage}
+          category={{ id: 1, name: '오징어 게임' }}
+          title={productData.title}
+          views={5125}
+          description=' 오징어 게임 1은 재밌는데 2부터 뭔가 싶고 3은 재미없음.'
+          isEditable={true}
+        />
 
+        {/* 통계 섹션 */}
+        <section className={SUBSECTION_GAP}>
+          <h2 className={SECTION_TITLE}>콘텐츠 통계</h2>
+          <Statistics
+            {...{
+              favoriteCount: productData.favoriteCount,
+              rating: productData.rating,
+              reviewCount: productData.reviewCount,
+              favoriteComparison: 20,
+              ratingComparison: 0.5,
+              reviewComparison: 15,
+            }}
+          />
+        </section>
+
+        {/* 리뷰 섹션 */}
         <div className={SUBSECTION_GAP}>
-          <div className='flex items-center justify-between'>
-            <span className={SECTION_TITLE}>콘텐츠 리뷰</span>
+          <section className='flex items-center justify-between'>
+            <h2 className={SECTION_TITLE}>콘텐츠 리뷰</h2>
             <ReviewSortDropdown />
-          </div>
+          </section>
 
-          {data?.pages.map((page) => (
-            <Fragment key={page.list[0]?.id}>
-              {page.list.map((review) => (
+          <InfinityScroll
+            items={allReviews}
+            renderItem={(review, index) => (
+              <div key={review.id} style={{ marginBottom: `${itemSpacing}px` }}>
                 <ReviewCard
-                  key={review.id}
                   {...review}
-                  onLikeClick={() => handleLikeClick(review.id)}
+                  data-index={index}
+                  onLikeClick={() => onLikeClick(review.id)}
                 />
-              ))}
-            </Fragment>
-          ))}
-
-          <div ref={loadMoreRef} style={{ height: '10px' }}>
-            {isFetchingNextPage && <div>추가 데이터 로딩 중...</div>}
-          </div>
-
-          {!hasNextPage && (
-            <div style={{ textAlign: 'center', margin: '20px 0' }}>마지막 페이지입니다.</div>
-          )}
+              </div>
+            )}
+            hasNextPage={hasNextPage ?? false}
+            fetchNextPage={fetchNextPage}
+            isLoading={isFetchingNextPage}
+            itemHeightEstimate={itemHeightEstimate}
+            itemSpacing={itemSpacing}
+            scrollKey='product-reviews'
+            maxItems={500}
+            initialSSRItems={initialSSRItems}
+          />
         </div>
       </div>
     </main>
