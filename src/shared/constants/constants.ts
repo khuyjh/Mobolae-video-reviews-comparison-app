@@ -1,4 +1,4 @@
-import { Category } from '@/shared/types/CategoryTypes';
+import { Category } from '@/shared/types/categoryTypes';
 
 /**
  * 카테고리 목록 데이터

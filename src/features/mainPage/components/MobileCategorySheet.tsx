@@ -8,7 +8,7 @@ import CategoryItem from '@/features/mainPage/components/CategoryItem';
 import { Chip } from '@/shared/components/chip';
 import MobileBottomSheet from '@/shared/components/MobileBottomSheet';
 import { SheetClose } from '@/shared/components/ui/sheet';
-import { Category } from '@/shared/types/CategoryTypes';
+import { Category } from '@/shared/types/categoryTypes';
 
 import ArrowList from './ArrowList';
 import { buildCategoryHref } from '../services/buildCategoryHref';

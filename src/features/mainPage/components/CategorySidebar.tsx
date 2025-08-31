@@ -1,7 +1,7 @@
 import React from 'react';
 
 import CategoryItem from '@/features/mainPage/components/CategoryItem';
-import { Category } from '@/shared/types/CategoryTypes';
+import { Category } from '@/shared/types/categoryTypes';
 
 import ArrowList from './ArrowList';
 import { buildCategoryHref } from '../services/buildCategoryHref';

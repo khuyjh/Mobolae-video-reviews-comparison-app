@@ -2,7 +2,7 @@ import Link, { LinkProps } from 'next/link';
 
 import React from 'react';
 
-import { Category } from '@/shared/types/CategoryTypes';
+import { Category } from '@/shared/types/categoryTypes';
 
 /**
  * HTML <a> 태그 속성 타입 (onClick, aria-*, data-* 등)
