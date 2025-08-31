@@ -73,7 +73,7 @@ const ReviewerRankingList: React.FC<ReviewerRankingListProps> = ({
 
   // --- 세로 리스트 버전 ---
   return (
-    <div className='space-y-5'>
+    <div className='space-y-[30px]'>
       {top.map((r) => (
         <Link key={r.userId} href={buildReviewerHref(r.userId)} className='block'>
           <ProfileBadge
@@ -113,9 +113,9 @@ export const ReviewerRankingHorizontal: React.FC<{ reviewers?: Reviewer[] }> = (
 export const ReviewerRankingSidebar: React.FC<{ reviewers?: Reviewer[] }> = ({
   reviewers = mockReviewers as Reviewer[],
 }) => (
-  <aside className='mt-12 h-fit px-8 lg:min-w-[250px]'>
+  <aside className='border-black-800 h-fit border-l px-[30px] py-[45px] xl:min-w-[250px]'>
     <div className='sticky top-24'>
-      <h2 className='mb-3 text-lg font-semibold text-white'>리뷰어 랭킹</h2>
+      <h2 className='text-base-regular mb-[30px] text-white'>리뷰어 랭킹</h2>
       <ReviewerRankingList reviewers={reviewers} direction='col' />
     </div>
   </aside>
