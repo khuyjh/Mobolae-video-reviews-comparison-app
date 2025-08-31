@@ -28,7 +28,9 @@ const KakaoCallbackPage = () => {
       return;
     }
 
-    if (code) {
+    if (!code) {
+      setHasError(true);
+    } else {
       const kakaoLogin = async () => {
         try {
           const res = await kakaoSignInRequest({
