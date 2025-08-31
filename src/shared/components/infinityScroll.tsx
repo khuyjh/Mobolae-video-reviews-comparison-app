@@ -1,6 +1,19 @@
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
 import { useRef, useEffect, useState } from 'react';
 
+/**
+ * items: 표시할 아이템 배열
+ * renderItem: 각 아이템을 렌더링하는 함수
+ * hasNextPage: 다음 페이지를 불러오는 함수
+ * fetchNextPage: 다음 페이지를 불러오는 함수
+ * isLoading: 현재 로딩 중인지 여부
+ * itemHeightEstimate: 각 아이템의 예상 높이
+ * itemSpacing: 아이템 간 간격
+ * maxItems: 최대 표시할 아이템 개수 (기본값: 1000)
+ * initialSSRItems: SSR 렌더링용 초기 아이템들
+ * scrollKey: 스크롤 위치 저장에 사용
+ */
+
 interface InfinityScrollProps<T> {
   items: T[];
   renderItem: (item: T, index: number) => React.ReactNode;
@@ -27,6 +40,7 @@ export function InfinityScroll<T>({
   scrollKey,
 }: InfinityScrollProps<T>) {
   const parentRef = useRef<HTMLDivElement>(null);
+  /* 실제 화면에 표시할 아이템 */
   const [displayItems, setDisplayItems] = useState<T[]>([]);
 
   useEffect(() => {
@@ -37,6 +51,7 @@ export function InfinityScroll<T>({
     }
   }, [items, maxItems]);
 
+  /* 스크롤 위치 저장 및 복원 */
   useEffect(() => {
     const key = `scroll-pos:${scrollKey ?? `${location.pathname}${location.search}`}`;
 
@@ -61,6 +76,7 @@ export function InfinityScroll<T>({
     };
   }, [scrollKey]);
 
+  /* 가상화 설정 */
   const rowVirtualizer = useWindowVirtualizer({
     count: hasNextPage ? displayItems.length + 1 : displayItems.length,
     estimateSize: () => itemHeightEstimate + itemSpacing,
@@ -69,7 +85,7 @@ export function InfinityScroll<T>({
   });
 
   const virtualItems = rowVirtualizer.getVirtualItems();
-
+  /* 무한 스크롤 로직 */
   useEffect(() => {
     const [lastItem] = [...virtualItems].reverse();
     if (!lastItem) return;

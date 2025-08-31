@@ -1,6 +1,6 @@
 'use client';
 
-import { useInfiniteQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { useMemo } from 'react';
 
 import { mockContents, mockReviewers } from '@/features/mainPage/mock/contents';
@@ -15,19 +15,42 @@ const MAIN_LAYOUT =
   'mx-auto px-[20px] pt-[30px] pb-[223px] md:max-w-[684px] md:px-[30px] md:pt-[40px] md:pb-[147px] xl:max-w-[940px] xl:pt-[60px] xl:pb-[120px]';
 
 const SUBSECTION_GAP = 'flex flex-col gap-[30px]';
+
 const SECTION_TITLE = 'text-lg-semibold md:text-base-semibold xl:text-xl-semibold text-white';
 
-const mockApi = async ({ pageParam = 0 }) => {
-  const pageSize = 10;
-  const start = pageParam * pageSize;
-  const end = start + pageSize;
+interface ReviewItem {
+  id: string;
+  reviewContent: string;
+  Images: string[];
+  likeCount: number;
+  isLiked: boolean;
+  showActions: boolean;
+  createdAt: string;
+  name: string;
+  avatarSrc: string;
+  rating: number;
+}
 
+interface ApiResponse {
+  list: ReviewItem[];
+  nextCursor?: number;
+}
+
+interface InfiniteQueryData {
+  pages: ApiResponse[];
+  pageParams: (number | undefined)[];
+}
+/*---------------------------Mock----------------------------------------- */
+const mockApi = async ({ pageParam }: { pageParam?: number }): Promise<ApiResponse> => {
+  const pageSize = 5;
+  const start = pageParam ?? 0;
+  const end = start + pageSize;
   const mockReviewData = Array.from({ length: 50 }, (_, i) => ({
     id: `review-${i}`,
     reviewContent:
       i % 2 === 0
         ? '짧은 리뷰 내용'
-        : '이것은 매우 긴 리뷰 내용입니다. 이미지도 추가될 수 있어요. 높이가 불규칙한 상황을 시뮬레이션하기 위한 더미 텍스트입니다.',
+        : '이것은 매우 긴 리뷰 내용입니다. 이미지도 추가될 수 있어요.높이가 불규칙한 상황이 일어날 수 있습니다. 이 카드는 이미지의 유무와 텍스트가 몇 줄이냐에 따라 높이가 다 달라지거든요. 그래서 무한스크롤 구현하는데 빡셌어요.',
     Images: i % 3 === 0 ? ['https://picsum.photos/400/300'] : [],
     likeCount: Math.floor(Math.random() * 20),
     isLiked: false,
@@ -39,46 +62,58 @@ const mockApi = async ({ pageParam = 0 }) => {
   }));
 
   const data = mockReviewData.slice(start, end);
+
   await new Promise((resolve) => setTimeout(resolve, 500));
 
   return {
-    reviews: data,
-    nextCursor: end < mockReviewData.length ? pageParam + 1 : undefined,
+    list: data,
+    nextCursor: end < mockReviewData.length ? end : undefined,
   };
 };
 
-const initialSSRItems = Array.from({ length: 10 }, (_, i) => ({
-  id: `review-${i}`,
-  reviewContent: i % 2 === 0 ? '짧은 리뷰 내용' : '이것은 매우 긴 리뷰 내용입니다.',
-  Images: i % 3 === 0 ? ['https://picsum.photos/400/300'] : [],
-  likeCount: Math.floor(Math.random() * 20),
-  isLiked: false,
-  showActions: false,
-  createdAt: '2025.08.30',
-  name: mockReviewers[i % mockReviewers.length].name,
-  avatarSrc: mockReviewers[i % mockReviewers.length].profileImageUrl,
-  rating: Math.floor(Math.random() * 5) + 1,
-}));
+const initialSSRData: ApiResponse = {
+  list: Array.from({ length: 10 }, (_, i) => ({
+    id: `review-${i}`,
+    reviewContent: i % 2 === 0 ? '짧은 리뷰 내용' : '이것은 매우 긴 리뷰 내용입니다.',
+    Images: i % 3 === 0 ? ['https://picsum.photos/400/300'] : [],
+    likeCount: Math.floor(Math.random() * 20),
+    isLiked: false,
+    showActions: false,
+    createdAt: '2025.08.30',
+    name: mockReviewers[i % mockReviewers.length].name,
+    avatarSrc: mockReviewers[i % mockReviewers.length].profileImageUrl,
+    rating: Math.floor(Math.random() * 5) + 1,
+  })),
+  nextCursor: 10,
+};
+
+/* -------------------------------------------------------- */
 
 const ProductDetailsPage = () => {
   const productData = mockContents[0];
 
+  const queryClient = useQueryClient();
+
+  /* 무한 스크롤 쿼리 설정 */
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery({
     queryKey: ['reviews'],
     queryFn: mockApi,
-    initialPageParam: 0,
+    initialPageParam: undefined,
     getNextPageParam: (lastPage) => lastPage.nextCursor,
+
     initialData: {
-      pages: [{ reviews: initialSSRItems, nextCursor: 1 }],
-      pageParams: [0],
+      pages: [initialSSRData],
+      pageParams: [initialSSRData.nextCursor],
     },
   });
 
-  const allReviews = useMemo(() => data?.pages.flatMap((page) => page.reviews) ?? [], [data]);
+  const allReviews = useMemo(() => data?.pages.flatMap((page) => page.list) ?? [], [data]);
 
+  /* 반응형 화면 크기 감지 */
   const isTablet = useMediaQuery('(min-width: 768px) and (max-width: 1279px)');
   const isPC = useMediaQuery('(min-width: 1280px)');
 
+  /* 화면 크기별 아이템 높이 설정 */
   let itemHeightEstimate;
   let itemSpacing;
 
@@ -93,15 +128,36 @@ const ProductDetailsPage = () => {
     itemSpacing = 15;
   }
 
+  /* 좋아요 클릭 핸들러 */
   const onLikeClick = (reviewId: string) => {
     console.log(`Liked review: ${reviewId}`);
-    // TODO: 실제 API 연결 시 mutation 적용
+
+    queryClient.setQueryData<InfiniteQueryData>(['reviews'], (oldData) => {
+      if (!oldData) return oldData;
+
+      return {
+        ...oldData,
+        pages: oldData.pages.map((page) => ({
+          ...page,
+          list: page.list.map((review) => {
+            if (review.id === reviewId) {
+              return {
+                ...review,
+                isLiked: !review.isLiked,
+                likeCount: review.isLiked ? review.likeCount - 1 : review.likeCount + 1,
+              };
+            }
+            return review;
+          }),
+        })),
+      };
+    });
   };
 
   return (
     <main className={MAIN_LAYOUT}>
       <div className='flex flex-col gap-[60px] xl:gap-[80px]'>
-        {/* 상품 카드 */}
+        {/* 상세 섹션*/}
         <ProductCard
           imageSrc={productData.contentImage}
           category={{ id: 1, name: '오징어 게임' }}
@@ -133,6 +189,7 @@ const ProductDetailsPage = () => {
             <ReviewSortDropdown />
           </section>
 
+          {/* 무한 스크롤 리뷰 리스트 */}
           <InfinityScroll
             items={allReviews}
             renderItem={(review, index) => (
@@ -151,7 +208,7 @@ const ProductDetailsPage = () => {
             itemSpacing={itemSpacing}
             scrollKey='product-reviews'
             maxItems={500}
-            initialSSRItems={initialSSRItems}
+            initialSSRItems={initialSSRData.list}
           />
         </div>
       </div>
