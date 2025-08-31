@@ -2,6 +2,7 @@ import localFont from 'next/font/local';
 
 import AuthGuard from '@/features/auth/components/AuthGuard';
 import GlobalNav from '@/shared/components/GlobalNav';
+import ScrollToTop from '@/shared/components/scrollToTop';
 import QueryProvider from '@/shared/providers/QueryProvider';
 
 import type { Metadata } from 'next';
@@ -57,6 +58,7 @@ export default function RootLayout({
           <AuthGuard>
             <GlobalNav />
             {children}
+            <ScrollToTop />
           </AuthGuard>
         </body>
       </QueryProvider>
