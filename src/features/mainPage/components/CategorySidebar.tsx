@@ -33,7 +33,7 @@ const CategorySidebar: React.FC<CategorySidebarProps> = ({
 }) => (
   <aside
     aria-labelledby='category-heading'
-    className='bg-black-900 h-fit px-[10px] py-[45px] md:max-w-[220px] xl:min-w-[220px]'
+    className='bg-black-900 h-fit w-full min-w-[180px] px-[10px] py-[45px] md:max-w-[220px] xl:min-w-[220px]'
   >
     <h3 id='category-heading' className='text-md-regular xl:text-base-regular mb-5 px-5 text-white'>
       카테고리

@@ -25,7 +25,7 @@ interface CategoryItemProps extends AnchorProps, Partial<LinkProps> {
 
 /** 공통 기본 스타일 */
 const BASE_STYLE =
-  'nav-item text-md-medium xl:text-base-medium w-full cursor-pointer rounded-lg border px-5 py-[15px] text-left transition-all duration-200';
+  'nav-item block text-md-medium xl:text-base-medium w-full cursor-pointer  rounded-lg border px-5 py-[15px] text-left transition-all duration-200';
 
 /** 상태별 스타일 */
 const VARIANT_STYLE = {
