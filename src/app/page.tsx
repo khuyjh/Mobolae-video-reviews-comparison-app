@@ -70,7 +70,7 @@ const Home = () => {
         </section>
 
         {/* 우측: 랭킹 사이드바 (lg↑) */}
-        <div className='sticky hidden flex-none lg:block'>
+        <div className='hidden flex-none lg:block'>
           <ReviewerRankingSidebar />
         </div>
       </div>
