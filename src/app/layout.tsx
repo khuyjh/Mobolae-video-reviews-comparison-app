@@ -3,7 +3,7 @@ import localFont from 'next/font/local';
 import AuthGuard from '@/features/auth/components/AuthGuard';
 import GlobalNav from '@/shared/components/GlobalNav';
 import ScrollToTop from '@/shared/components/scrollToTop';
-import { ToastProvider } from '@/shared/components/toast';
+import { ToastProvider } from '@/shared/components/toastProvider';
 import QueryProvider from '@/shared/providers/QueryProvider';
 
 import type { Metadata } from 'next';
