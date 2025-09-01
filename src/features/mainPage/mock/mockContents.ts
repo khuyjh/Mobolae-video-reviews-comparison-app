@@ -1,12 +1,7 @@
-// src/features/mainPage/mock/contents.ts
+import { ContentApi, ContentListResponse, ContentItem } from '@/shared/types/content';
+import { toContentItem } from '@/shared/utils/mapApiToItem';
 
-import { ContentApi, ContentListResponse } from '@/shared/types/content';
-
-// TODO: 목데이터 전용 이미지 도메인 (실제 API/CDN 연결 시 제거)
-// - https://picsum.photos (seed 방식 사용)
-// - https://i.pravatar.cc (리뷰어 아바타)
-
-// 샘플 데이터 생성 함수 (seed 방식)
+// 샘플 생성기 (seed 이미지 + 날짜 분포)
 const makeContent = (
   id: number,
   name: string,
@@ -16,8 +11,8 @@ const makeContent = (
   categoryId: number,
   writerId: number,
 ): ContentApi => {
-  const now = new Date();
-  const createdAt = new Date(now.getTime() - id * 86400000).toISOString(); // id일 전으로 생성일 분포
+  const now = Date.now();
+  const createdAt = new Date(now - id * 24 * 60 * 60 * 1000).toISOString(); // id일 전
   return {
     id,
     name,
@@ -85,26 +80,30 @@ const titles = [
   '피노키오',
 ];
 
-// 단일 콘텐츠 객체들 (API 타입)
-const baseContents: ContentApi[] = titles.map((title, idx) =>
-  makeContent(
-    idx + 1,
+// API 타입 배열 (categoryId: 1~7)
+const baseContents: ContentApi[] = titles.map((title, idx) => {
+  const id = idx + 1;
+  return makeContent(
+    id,
     title,
     1000 + Math.floor(Math.random() * 7000), // favoriteCount
     500 + Math.floor(Math.random() * 5000), // reviewCount
     Number((3 + Math.random() * 2).toFixed(1)), // rating 3.0~5.0
-    (idx % 5) + 1, // categoryId 1~5 분포
-    (idx % 10) + 1, // writerId 1~10 분포
-  ),
-);
+    (idx % 7) + 1, // 1~7 (CATEGORIES와 일치)
+    (idx % 10) + 1, // writerId 1~10
+  );
+});
 
-// 실제 API 응답 모양을 흉내낸 객체
+//  페이지/카드용(UI) 배열
+export const mockContents: ContentItem[] = baseContents.map(toContentItem);
+
+//  API 응답 모사
 export const mockContentApiResponse: ContentListResponse = {
   nextCursor: null,
   list: baseContents,
 };
 
-// 리뷰어 목데이터 (목업 전용)
+// (옵션) 리뷰어 목데이터
 export const mockReviewers = [
   {
     userId: 1,
