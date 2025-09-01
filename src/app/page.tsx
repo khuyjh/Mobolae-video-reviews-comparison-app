@@ -32,7 +32,7 @@ import { mockContents } from '@/features/mainPage/mock/contents';
  */
 const Home = () => {
   return (
-    <main className='mx-auto w-full max-w-[1540px] px-5 py-6 md:px-[30px]'>
+    <main className='mx-auto w-full max-w-[1540px] px-5 md:px-[30px]'>
       <FloatingButton />
 
       {/* 모바일: 메인 위 가로형 랭킹 */}
@@ -70,7 +70,7 @@ const Home = () => {
         </section>
 
         {/* 우측: 랭킹 사이드바 (lg↑) */}
-        <div className='sticky hidden flex-none lg:block'>
+        <div className='hidden flex-none lg:block'>
           <ReviewerRankingSidebar />
         </div>
       </div>
