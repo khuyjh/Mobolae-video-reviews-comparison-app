@@ -40,6 +40,7 @@ interface InfiniteQueryData {
   pages: ApiResponse[];
   pageParams: (number | undefined)[];
 }
+
 /*---------------------------Mock----------------------------------------- */
 const mockApi = async ({ pageParam }: { pageParam?: number }): Promise<ApiResponse> => {
   const pageSize = 5;
@@ -50,7 +51,7 @@ const mockApi = async ({ pageParam }: { pageParam?: number }): Promise<ApiRespon
     reviewContent:
       i % 2 === 0
         ? '짧은 리뷰 내용'
-        : '이것은 매우 긴 리뷰 내용입니다. 이미지도 추가될 수 있어요.높이가 불규칙한 상황이 일어날 수 있습니다. 이 카드는 이미지의 유무와 텍스트가 몇 줄이냐에 따라 높이가 다 달라지거든요. 그래서 무한스크롤 구현하는데 빡셌어요.',
+        : '이것은 매우 긴 리뷰 내용입니다. 이미지도 추가될 수 있어요. 높이가 불규칙한 상황이 일어날 수 있습니다. 이 카드는 이미지의 유무와 텍스트가 몇 줄이냐에 따라 높이가 다 달라지거든요. 그래서 무한스크롤 구현하는데 빡셌어요.',
     Images: i % 3 === 0 ? ['https://picsum.photos/400/300'] : [],
     likeCount: Math.floor(Math.random() * 20),
     isLiked: false,
@@ -86,12 +87,10 @@ const initialSSRData: ApiResponse = {
   })),
   nextCursor: 10,
 };
-
 /* -------------------------------------------------------- */
 
 const ProductDetailsPage = () => {
   const productData = mockContents[0];
-
   const queryClient = useQueryClient();
 
   /* 무한 스크롤 쿼리 설정 */
@@ -100,7 +99,6 @@ const ProductDetailsPage = () => {
     queryFn: mockApi,
     initialPageParam: undefined,
     getNextPageParam: (lastPage) => lastPage.nextCursor,
-
     initialData: {
       pages: [initialSSRData],
       pageParams: [initialSSRData.nextCursor],
@@ -113,7 +111,7 @@ const ProductDetailsPage = () => {
   const isTablet = useMediaQuery('(min-width: 768px) and (max-width: 1279px)');
   const isPC = useMediaQuery('(min-width: 1280px)');
 
-  /* 화면 크기별 아이템 높이 설정 */
+  /* 화면 크기별 아이템 높이 추정값 */
   let itemHeightEstimate;
   let itemSpacing;
 
@@ -130,8 +128,6 @@ const ProductDetailsPage = () => {
 
   /* 좋아요 클릭 핸들러 */
   const onLikeClick = (reviewId: string) => {
-    console.log(`Liked review: ${reviewId}`);
-
     queryClient.setQueryData<InfiniteQueryData>(['reviews'], (oldData) => {
       if (!oldData) return oldData;
 
@@ -139,16 +135,15 @@ const ProductDetailsPage = () => {
         ...oldData,
         pages: oldData.pages.map((page) => ({
           ...page,
-          list: page.list.map((review) => {
-            if (review.id === reviewId) {
-              return {
-                ...review,
-                isLiked: !review.isLiked,
-                likeCount: review.isLiked ? review.likeCount - 1 : review.likeCount + 1,
-              };
-            }
-            return review;
-          }),
+          list: page.list.map((review) =>
+            review.id === reviewId
+              ? {
+                  ...review,
+                  isLiked: !review.isLiked,
+                  likeCount: review.isLiked ? review.likeCount - 1 : review.likeCount + 1,
+                }
+              : review,
+          ),
         })),
       };
     });
@@ -157,7 +152,7 @@ const ProductDetailsPage = () => {
   return (
     <main className={MAIN_LAYOUT}>
       <div className='flex flex-col gap-[60px] xl:gap-[80px]'>
-        {/* 상세 섹션*/}
+        {/* 상세 섹션 */}
         <ProductCard
           imageSrc={productData.contentImage}
           category={{ id: 1, name: '오징어 게임' }}
@@ -193,7 +188,12 @@ const ProductDetailsPage = () => {
           <InfinityScroll
             items={allReviews}
             renderItem={(review, index) => (
-              <div key={review.id} style={{ marginBottom: `${itemSpacing}px` }}>
+              <div
+                key={review.id}
+                style={{
+                  marginBottom: index === allReviews.length - 1 ? 0 : itemSpacing,
+                }}
+              >
                 <ReviewCard
                   {...review}
                   data-index={index}
@@ -205,10 +205,8 @@ const ProductDetailsPage = () => {
             fetchNextPage={fetchNextPage}
             isLoading={isFetchingNextPage}
             itemHeightEstimate={itemHeightEstimate}
-            itemSpacing={itemSpacing}
             scrollKey='product-reviews'
             maxItems={500}
-            initialSSRItems={initialSSRData.list}
           />
         </div>
       </div>
