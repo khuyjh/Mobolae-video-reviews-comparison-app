@@ -15,7 +15,11 @@ import { signUpRequest } from '../../api/authApi';
 import { signUpSchema, SignUpSchema } from '../../schemas/authSchema';
 import { setCookie } from '../../utils/cookie';
 
-const SignUpForm = () => {
+interface Props {
+  redirectUrl?: string;
+}
+
+const SignUpForm = ({ redirectUrl }: Props) => {
   const {
     register,
     handleSubmit,
@@ -32,7 +36,6 @@ const SignUpForm = () => {
     },
   });
   const setUser = useUserStore((state) => state.setUser);
-
   const router = useRouter();
 
   const onSubmit: SubmitHandler<SignUpSchema> = async (data) => {
@@ -46,7 +49,11 @@ const SignUpForm = () => {
 
       setUser();
       console.log(res.user?.nickname, '님 환영합니다'); //토스트 로그인 처리
-      router.replace('/');
+      if (redirectUrl) {
+        router.replace(redirectUrl);
+      } else {
+        router.replace('/');
+      }
     } catch (e) {
       if (axios.isAxiosError(e)) {
         const message = e.response?.data.message;

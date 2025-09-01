@@ -7,9 +7,12 @@ import { useShallow } from 'zustand/shallow';
 
 import LoadingImage from '@/shared/components/LoadingImage';
 import { useUserStore } from '@/shared/stores/userStore';
-
-//로그인 되었을 때 접근 방지할 경로
+/*
+AUTH_ROUTES: 로그인 되었을 때 접근 방지할 경로
+NEED_AUTH_ROUTES: 로그인 되지 않았을 때 접근 방지할 경로
+*/
 const AUTH_ROUTES = ['/signin', '/signup', '/oauth/kakao', '/oauth/signup/kakao'];
+const NEED_AUTH_ROUTES = ['/compare', '/mypage'];
 
 interface Props {
   children: ReactNode;
@@ -26,10 +29,9 @@ const AuthGuard = ({ children }: Props) => {
   const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
-  // const isMounted = useRef(false);
 
   const isAuthPath = AUTH_ROUTES.includes(pathname);
-  //TODO: 로그인이 필요한 경로 처리
+  const isNeedAuthPath = NEED_AUTH_ROUTES.includes(pathname);
 
   useEffect(() => {
     setIsMounted(true);
@@ -45,9 +47,13 @@ const AuthGuard = ({ children }: Props) => {
     if (isLoggedIn && isAuthPath) {
       router.replace('/');
     }
-  }, [isLoggedIn, isAuthPath, router, isMounted]);
 
-  if (!isMounted || (isLoggedIn && isAuthPath)) {
+    if (!isLoggedIn && isNeedAuthPath) {
+      router.replace('/');
+    }
+  }, [isLoggedIn, isAuthPath, isNeedAuthPath, router, isMounted]);
+
+  if (!isMounted || (isLoggedIn && isAuthPath) || (!isLoggedIn && isNeedAuthPath)) {
     return (
       <div className='flex h-dvh items-center justify-center'>
         <LoadingImage loadingText='Loading...' />
