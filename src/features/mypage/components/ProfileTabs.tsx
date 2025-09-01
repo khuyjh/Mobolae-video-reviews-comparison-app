@@ -29,8 +29,9 @@ export default function ProfileTabs({ value, onChange }: Props) {
           value={value} // 현재 선택 값
           onChange={onChange} // 값 변경 시 전달
           placeholder='탭 선택'
-          labelClassName='text-white !text-lg-semibold' // 라벨 스타일 커스텀
-          buttonClassName='justify-start' // 버튼 내부 정렬 커스텀
+          labelClassName='text-white text-left !text-lg-semibold' // 라벨 스타일 커스텀
+          buttonClassName='!justify-between' // 버튼 내부 정렬 커스텀
+          className='!w-[145px]'
         />
       </div>
 
