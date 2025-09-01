@@ -14,3 +14,6 @@ export const CATEGORIES: Category[] = [
   { id: '6', name: '키즈', value: 'KIDS' },
   { id: '7', name: '예능', value: 'ENTERTAINMENT' },
 ];
+
+// api url/key
+export const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;

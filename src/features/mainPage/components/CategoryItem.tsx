@@ -12,7 +12,19 @@ interface CategoryItemProps {
   isSelected: boolean;
   /** 클릭 이벤트 핸들러 */
   onClick: () => void;
+  /** ↑/↓ 네비게이션 대상 지정을 위해 외부에서 클래스 주입 */
+  className?: string;
 }
+
+/** 공통 기본 스타일 */
+const BASE_STYLE =
+  'nav-item text-md-medium xl:text-base-medium w-full cursor-pointer rounded-lg border px-5 py-[15px] text-left transition-all duration-200';
+
+/** 상태별 스타일 */
+const VARIANT_STYLE = {
+  selected: 'bg-black-800 border-black-700 text-white',
+  default: 'border-black-900 bg-black-900 text-gray-600 hover:bg-black-800 hover:text-gray-400',
+};
 
 /**
  * 개별 카테고리 버튼 컴포넌트
@@ -27,16 +39,21 @@ interface CategoryItemProps {
  * @param isSelected - 현재 선택된 상태인지 여부
  * @param onClick - 클릭 시 실행할 함수
  */
-const CategoryItem: React.FC<CategoryItemProps> = ({ category, isSelected, onClick }) => (
+const CategoryItem: React.FC<CategoryItemProps> = ({
+  category,
+  isSelected,
+  onClick,
+  className,
+}) => (
   <button
-    onClick={onClick}
-    className={`text-md-medium xl:text-base-medium w-full rounded-lg border px-5 py-[15px] text-left transition-all duration-200 ${
-      isSelected
-        ? 'bg-black-800 border-black-700 text-white'
-        : 'border-black-900 bg-black-900 hover:bg-black-800 text-gray-600 hover:text-gray-400'
-    } `}
     type='button'
-    aria-pressed={isSelected}
+    onClick={onClick}
+    className={`${BASE_STYLE} ${
+      isSelected ? VARIANT_STYLE.selected : VARIANT_STYLE.default
+    } ${className ?? ''}`}
+    tabIndex={-1} // ArrowList에서 ↑/↓로 포커스 이동
+    role='option'
+    aria-selected={isSelected}
   >
     {category.name}
   </button>
