@@ -9,9 +9,7 @@ import LoadingImage from '@/shared/components/LoadingImage';
 import { useUserStore } from '@/shared/stores/userStore';
 
 //로그인 되었을 때 접근 방지할 경로
-const AUTH_ROUTES = ['/signin', '/signup', '/oauth/signup/kakao'];
-
-//로그인 되지 않았을 때 접근 가능한 경로
+const AUTH_ROUTES = ['/signin', '/signup', '/oauth/kakao', '/oauth/signup/kakao'];
 
 interface Props {
   children: ReactNode;
@@ -51,8 +49,8 @@ const AuthGuard = ({ children }: Props) => {
 
   if (!isMounted || (isLoggedIn && isAuthPath)) {
     return (
-      <div className='pt-80 md:pt-120 xl:pt-80'>
-        <LoadingImage />
+      <div className='flex h-dvh items-center justify-center'>
+        <LoadingImage loadingText='Loading...' />
       </div>
     );
   }
