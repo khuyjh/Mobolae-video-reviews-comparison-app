@@ -26,6 +26,9 @@ const SIZE_STYLE = {
   L: 'md:max-w-[590px] xl:max-w-155',
 };
 
+const CLOSE_BUTTON_STYLE =
+  "flex justify-end transition-opacity hover:opacity-70 focus:outline-hidden disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-6 md:[&_svg:not([class*='size-'])]:size-9 xl:[&_svg:not([class*='size-h'])]:size-10";
+
 const BaseModal = ({
   children,
   className,
@@ -39,11 +42,7 @@ const BaseModal = ({
     <Dialog open={isOpen} onOpenChange={closeOnOutsideClick ? onClose : undefined}>
       <DialogTitle className='sr-only'>{title}</DialogTitle>
       <DialogContent className={cn('bg-black-900 text-white', SIZE_STYLE[size], className)}>
-        <button
-          type='button'
-          className="flex justify-end transition-opacity hover:opacity-70 focus:outline-hidden disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-6 md:[&_svg:not([class*='size-'])]:size-9 xl:[&_svg:not([class*='size-h'])]:size-10"
-          onClick={onClose}
-        >
+        <button type='button' className={CLOSE_BUTTON_STYLE} onClick={onClose}>
           <XIcon className='text-white' />
           <span className='sr-only'>Close</span>
         </button>
