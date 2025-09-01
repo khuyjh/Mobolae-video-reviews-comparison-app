@@ -3,7 +3,7 @@
 
 import React, { useMemo } from 'react';
 
-import { mockContentApiResponse } from '@/features/mainPage/mock/contents'; // 임시 목데이터
+import { mockContentApiResponse } from '@/features/mainPage/mock/mockContents'; // 임시 목데이터
 import { toContentItem } from '@/shared/utils/mapApiToItem';
 
 import ContentGrid from './ContentGrid';

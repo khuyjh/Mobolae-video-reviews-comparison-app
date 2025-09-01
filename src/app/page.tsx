@@ -6,7 +6,7 @@ import {
   ReviewerRankingSidebar,
 } from '@/features/mainPage/components/ReviewerRanking';
 import TopShowcase from '@/features/mainPage/components/TopShowcase';
-import { mockContents } from '@/features/mainPage/mock/contents';
+import { mockContents } from '@/features/mainPage/mock/mockContents';
 
 /**
  * Home 페이지 컴포넌트

@@ -4,7 +4,7 @@ import Link from 'next/link';
 
 import React, { useMemo } from 'react';
 
-import { mockReviewers } from '@/features/mainPage/mock/contents';
+import { mockReviewers } from '@/features/mainPage/mock/mockContents';
 import ProfileBadge from '@/shared/components/card/avatarCard';
 
 import type { Reviewer } from '@/shared/types/reviewer';
