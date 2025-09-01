@@ -1,5 +1,4 @@
 // src/shared/types/content.ts
-export type Order = 'recent' | 'rating' | 'reviewCount';
 
 //  API 응답 타입 (Swagger 스펙)
 export type ContentApi = {
