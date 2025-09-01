@@ -100,7 +100,7 @@ const ReviewerRankingList: React.FC<ReviewerRankingListProps> = ({
 export const ReviewerRankingHorizontal: React.FC<{ reviewers?: Reviewer[] }> = ({
   reviewers = mockReviewers as Reviewer[],
 }) => (
-  <section className='mt-8 md:mt-10 lg:hidden'>
+  <section>
     <h2 className='text-md-regular mb-3 text-white'>리뷰어 랭킹</h2>
     <ReviewerRankingList reviewers={reviewers} direction='row' />
   </section>
