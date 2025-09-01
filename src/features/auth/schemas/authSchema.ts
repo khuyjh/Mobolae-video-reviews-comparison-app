@@ -32,3 +32,10 @@ export const signInSchema = z.object({
 });
 
 export type SignInSchema = z.infer<typeof signInSchema>;
+
+//간편 회원가입
+export const kakaoSignUpSchema = z.object({
+  nickname: requiredString.max(20, { message: '닉네임은 최대 20자까지 가능합니다.' }),
+});
+
+export type KakaoSignUpSchema = z.infer<typeof kakaoSignUpSchema>;

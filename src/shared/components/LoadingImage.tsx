@@ -1,13 +1,15 @@
 import LoadingIcon from '../../../public/icons/LoadingIcon.svg';
 
-const LOADING_TEXT = 'Loading...';
+interface Props {
+  loadingText: string;
+}
 
-const LoadingImage = () => {
+const LoadingImage = ({ loadingText }: Props) => {
   return (
     <div className='text-xl-regular flex h-21 flex-col items-center justify-between text-gray-600'>
       <LoadingIcon />
       <div>
-        {LOADING_TEXT.split('').map((letter, i) => (
+        {loadingText.split('').map((letter, i) => (
           <span
             className='bounce-delay inline-block'
             key={i}
