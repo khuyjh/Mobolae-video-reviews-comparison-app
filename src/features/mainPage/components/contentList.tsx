@@ -56,10 +56,17 @@ export default function ContentList() {
   );
 
   return (
-    <main className='mx-auto w-full max-w-[1540px] px-5 md:px-[30px]'>
-      <div className='mb-6 flex flex-wrap items-center justify-between gap-3'>
+    <main className='mx-auto w-full'>
+      <div className='mb-[15px] flex w-full flex-col justify-between space-y-[30px] md:mb-[30px] md:flex-row md:space-y-0'>
         {title && <h2 className='text-xl-semibold text-white'>{title}</h2>}
-        <SortDropdown options={PRODUCT_ORDER_OPTIONS} value={order} onChange={handleChangeOrder} />
+        <div className='flex w-full items-center justify-between md:w-fit'>
+          <div id='mobile-category-slot' className='md:hidden' />
+          <SortDropdown
+            options={PRODUCT_ORDER_OPTIONS}
+            value={order}
+            onChange={handleChangeOrder}
+          />
+        </div>
       </div>
 
       <ContentGrid items={items} />

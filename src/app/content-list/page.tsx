@@ -1,8 +1,7 @@
 // src/app/content-list/page.tsx
-import { div } from 'framer-motion/client';
 import React from 'react';
 
-import ContentList from '@/features/mainPage/components/contentList';
+import ContentList from '@/features/mainPage/components/ContentList';
 
 /**
  * ContentList 테스트 페이지
