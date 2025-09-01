@@ -26,13 +26,13 @@ const CompareButton = ({
         // 이 부분은 스타일 구분을 위해 상수화 하지 않았습니다. 추후 수정 가능
         // 기본 스타일값
         'rounded-lg leading-none font-semibold transition-colors',
-        'focus-visible:ring-2 focus-visible:ring-emerald-400/60 focus-visible:outline-none',
+        'focus-visible:ring-main focus-visible:ring-2 focus-visible:outline-none',
         // 크기
         'h-[50px] md:h-[60px] xl:h-[70px]',
         'w-full max-w-[335px] md:w-[164px] md:max-w-none xl:w-[200px]',
         // 상태
         enabled
-          ? 'text-black-900 cursor-pointer bg-emerald-500 hover:bg-emerald-400 active:scale-[0.99]'
+          ? 'text-black-900 bg-main-gradient cursor-pointer hover:brightness-120 active:scale-[0.99]'
           : 'bg-black-800 text-gray-600 disabled:cursor-not-allowed disabled:opacity-60',
         className,
       )}

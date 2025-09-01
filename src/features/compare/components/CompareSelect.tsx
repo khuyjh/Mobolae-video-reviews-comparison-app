@@ -99,7 +99,7 @@ const CompareSelect = forwardRef<HTMLInputElement, Props>(function CompareSelect
   const ChipColor = {
     left: {
       chip: ' bg-green-50 text-green-500',
-      ring: 'focus-within:ring-emerald-400/70', // 필요 시 입력창 포커스 컬러 변경용
+      ring: 'focus-within:ring-main', // 필요 시 입력창 포커스 컬러 변경용
     },
     right: {
       chip: ' bg-pink-50 text-pink-500',
@@ -169,7 +169,7 @@ const CompareSelect = forwardRef<HTMLInputElement, Props>(function CompareSelect
         className={cn(
           'relative flex w-full items-center',
           'bg-black-800 border-black-700 rounded-lg border',
-          'focus-within:ring-2 focus-within:ring-emerald-400/70',
+          'focus-within:ring-main focus-within:ring-2',
           'h-[52px] md:h-[60px] xl:h-[70px]',
           'px-[16px]',
         )}
@@ -220,7 +220,7 @@ const CompareSelect = forwardRef<HTMLInputElement, Props>(function CompareSelect
             aria-controls={listboxId}
             aria-autocomplete='list'
             className={cn(
-              'h-full w-full rounded-xl bg-transparent text-zinc-200 outline-none',
+              'h-full w-full rounded-xl bg-transparent text-white outline-none',
               'placeholder:text-gray-600',
               inputClassName,
             )}
@@ -248,7 +248,7 @@ const CompareSelect = forwardRef<HTMLInputElement, Props>(function CompareSelect
                 <li
                   role='status'
                   aria-live='polite'
-                  className='text-md-regular md:text-base-regular rounded-lg px-[16px] py-[12px] text-zinc-500 select-none'
+                  className='text-md-regular md:text-base-regular rounded-lg px-[16px] py-[12px] text-gray-600 select-none'
                 >
                   일치하는 결과가 없습니다
                 </li>
