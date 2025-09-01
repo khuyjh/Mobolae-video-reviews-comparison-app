@@ -11,7 +11,6 @@ import { useEffect, useState } from 'react';
  * maxItems: 최대 표시할 아이템 개수 (기본값: 1000)
  * scrollKey: 스크롤 위치 저장에 사용
  */
-
 interface InfinityScrollProps<T> {
   items: T[];
   renderItem: (item: T, index: number) => React.ReactNode;
@@ -49,7 +48,6 @@ export function InfinityScroll<T>({
     if (typeof window === 'undefined') return;
 
     const key = `scroll-pos:${scrollKey ?? `${location.pathname}${location.search}`}`;
-
     let ticking = false;
 
     const onScroll = () => {
@@ -63,7 +61,6 @@ export function InfinityScroll<T>({
     };
 
     window.addEventListener('scroll', onScroll, { passive: true });
-
     return () => {
       window.removeEventListener('scroll', onScroll);
     };
@@ -99,7 +96,6 @@ export function InfinityScroll<T>({
       >
         {virtualItems.map((virtualItem) => {
           const isLoaderRow = virtualItem.index > displayItems.length - 1;
-
           if (isLoaderRow) {
             return hasNextPage ? (
               <div
