@@ -1,5 +1,5 @@
 import CategoryMenu from '@/features/mainPage/components/CategoryMenu';
-import ContentList from '@/features/mainPage/components/ContentList';
+import ContentList from '@/features/mainPage/components/contentList';
 import FloatingButton from '@/features/mainPage/components/FloatingButton';
 import MostReviewed from '@/features/mainPage/components/MostReviewed';
 import {
