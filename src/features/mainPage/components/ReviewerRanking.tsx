@@ -23,6 +23,7 @@ type ReviewerRankingListProps = {
  * ReviewerRankingList
  * - reviewers 데이터를 받아 랭킹 순서대로 ProfileBadge를 렌더링하는 리스트 컴포넌트
  * - direction에 따라 'row'(가로 스크롤) / 'col'(세로 리스트) 배치 지원
+ * - TODO: 팔로워 동률일 경우 처리
  */
 const ReviewerRankingList: React.FC<ReviewerRankingListProps> = ({
   reviewers,
@@ -74,15 +75,15 @@ const ReviewerRankingList: React.FC<ReviewerRankingListProps> = ({
   // --- 세로 리스트 버전 ---
   return (
     <div className='space-y-[30px]'>
-      {top.map((r) => (
-        <Link key={r.userId} href={buildReviewerHref(r.userId)} className='block'>
+      {top.map((reviewer) => (
+        <Link key={reviewer.userId} href={buildReviewerHref(reviewer.userId)} className='block'>
           <ProfileBadge
             variant='ranking'
-            id={r.userId}
-            name={r.name}
-            avatarSrc={r.profileImageUrl}
-            followers={r.followers ?? 0}
-            review={r.review ?? 0}
+            id={reviewer.userId}
+            name={reviewer.name}
+            avatarSrc={reviewer.profileImageUrl}
+            followers={reviewer.followers ?? 0}
+            review={reviewer.review ?? 0}
             rankingMap={rankingMap}
           />
         </Link>
@@ -100,7 +101,7 @@ export const ReviewerRankingHorizontal: React.FC<{ reviewers?: Reviewer[] }> = (
   reviewers = mockReviewers as Reviewer[],
 }) => (
   <section className='mt-8 md:mt-10 lg:hidden'>
-    <h2 className='mb-3 text-lg font-semibold text-white'>리뷰어 랭킹</h2>
+    <h2 className='text-md-regular mb-3 text-white'>리뷰어 랭킹</h2>
     <ReviewerRankingList reviewers={reviewers} direction='row' />
   </section>
 );
