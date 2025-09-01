@@ -69,7 +69,7 @@ const ContentList = () => {
       const next = new URLSearchParams(searchParams);
       next.set('order', nextOrder);
       next.delete('cursor'); // 페이지네이션 초기화
-      router.push(`${pathname}?${next.toString()}`, { scroll: false });
+      router.replace(`${pathname}?${next.toString()}`, { scroll: false });
     },
     [searchParams, router, pathname],
   );
