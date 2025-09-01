@@ -1,12 +1,11 @@
-// src/shared/utils/filterContents.ts
 import type { ContentApi } from '@/shared/types/content';
 
 /**
  * 콘텐츠 리스트를 조건(category, keyword)에 맞게 필터링하는 함수
  *
- * list - 전체 콘텐츠 배열
- * options - 필터 옵션 (category: 카테고리 ID, keyword: 검색 키워드)
- * 필터링된 콘텐츠 배열을 리턴
+ * - list - 전체 콘텐츠 배열
+ * - options - 필터 옵션 (category: 카테고리 ID, keyword: 검색 키워드)
+ * - 필터링된 콘텐츠 배열을 리턴
  */
 export const filterContents = (
   list: ContentApi[],

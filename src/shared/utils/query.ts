@@ -12,10 +12,10 @@ const isProductOrderKey = (value: string | null): value is ProductOrderKey =>
   !!value && ORDER_VALUES.includes(value as ProductOrderKey);
 
 /**
- * URL 쿼리(category, keyword, order)를 읽어 안전하게 변환
+ * URL 쿼리(category, keyword, order)를 읽어 안전하게 변환하는 함수
  * - category: 숫자로 변환, 잘못된 값은 null
  * - keyword: 없으면 빈 문자열
- * - order: 허용된 값만 인정, 아니면 'recent'
+ * - order: 허용된 값만 인정, 기본값 'recent'
  */
 export const readQuery = (searchParams: ReadonlyURLSearchParams) => {
   const rawCategory = searchParams.get('category');
@@ -24,6 +24,7 @@ export const readQuery = (searchParams: ReadonlyURLSearchParams) => {
     ? (searchParams.get('order') as ProductOrderKey)
     : 'recent';
 
+  // 숫자 변환 실패(NaN) 대비
   const category = rawCategory ? Number(rawCategory) : null;
 
   return {

@@ -1,15 +1,13 @@
-// src/shared/utils/sortContents.ts
 import { ProductOrderKey } from '../types/SortDropdownTypes';
 
 import type { ContentApi } from '@/shared/types/content';
 
 /**
  * 콘텐츠 리스트를 정렬하는 함수
- * @param list 정렬할 콘텐츠 배열
- * @param order 정렬 기준 ('rating' | 'reviewCount' | 'recent')
- * @returns 정렬된 새로운 배열
+ * - list: 정렬할 콘텐츠 배열
+ * - order:  정렬 기준 ('rating' | 'reviewCount' | 'recent')
  */
-export function sortContents(list: ContentApi[], order: ProductOrderKey): ContentApi[] {
+const sortContents = (list: ContentApi[], order: ProductOrderKey): ContentApi[] => {
   // 원본 배열 훼손 방지를 위해 얕은 복사본 생성
   const copy = [...list];
 
@@ -33,4 +31,6 @@ export function sortContents(list: ContentApi[], order: ProductOrderKey): Conten
       // [최신 생성일 순] (createdAt 내림차순)
       return copy.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   }
-}
+};
+
+export default sortContents;

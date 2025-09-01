@@ -1,5 +1,3 @@
-// src/shared/types/content.ts
-
 //  API 응답 타입 (Swagger 스펙)
 export type ContentApi = {
   id: number;
