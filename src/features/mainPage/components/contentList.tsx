@@ -1,9 +1,10 @@
 // src/features/content/components/ContentList.tsx
 'use client';
 
-import React from 'react';
+import React, { useMemo } from 'react';
 
-import { mockContents } from '@/features/mainPage/mock/contents'; // 임시 목데이터
+import { mockContentApiResponse } from '@/features/mainPage/mock/contents'; // 임시 목데이터
+import { toContentItem } from '@/shared/utils/mapApiToItem';
 
 import ContentGrid from './ContentGrid';
 
@@ -13,10 +14,13 @@ import ContentGrid from './ContentGrid';
  * - 이후 정렬/검색/카테고리/무한스크롤이 붙을 예정
  */
 export default function ContentList() {
+  //  ContentListResponse -> ContentItem[] 로 변환
+  const items = useMemo(() => mockContentApiResponse.list.map(toContentItem), []);
+
   return (
     <main className='mx-auto w-full max-w-[1540px] px-5 md:px-[30px]'>
       <h2 className='text-xl-semibold mb-6 text-white'>콘텐츠 리스트</h2>
-      <ContentGrid items={mockContents} />
+      <ContentGrid items={items} />
     </main>
   );
 }
