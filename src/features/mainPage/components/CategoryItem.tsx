@@ -49,6 +49,7 @@ const CategoryItem: React.FC<CategoryItemProps> = ({
 }) => (
   <Link
     href={href}
+    replace
     className={`${BASE_STYLE} ${
       isSelected ? VARIANT_STYLE.selected : VARIANT_STYLE.default
     } ${className ?? ''}`}
