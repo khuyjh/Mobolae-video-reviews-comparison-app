@@ -1,4 +1,5 @@
 // src/app/content-list/page.tsx
+import { div } from 'framer-motion/client';
 import React from 'react';
 
 import ContentList from '@/features/mainPage/components/contentList';
@@ -10,5 +11,9 @@ import ContentList from '@/features/mainPage/components/contentList';
  * - Home 페이지와 분리해서 UI/동작을 독립적으로 검증할 수 있다.
  */
 export default function ContentListPage() {
-  return <ContentList />;
+  return (
+    <div className='max-w-[1540px] px-5 pt-[60px] md:px-[30px] xl:px-[60px]'>
+      <ContentList />;
+    </div>
+  );
 }

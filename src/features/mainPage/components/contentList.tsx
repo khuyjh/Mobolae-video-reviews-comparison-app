@@ -18,13 +18,13 @@ export default function ContentList() {
   const items = useMemo(() => sortedApi.map(toContentItem), [sortedApi]);
 
   return (
-    <main className='mx-auto w-full max-w-[1540px] px-5 md:px-[30px]'>
+    <section className='mx-auto w-full'>
       <div className='mb-6 flex items-center justify-between'>
         <h2 className='text-xl-semibold text-white'>콘텐츠 리스트</h2>
         <SortDropdown options={PRODUCT_ORDER_OPTIONS} value={order} onChange={setOrder} />
       </div>
 
       <ContentGrid items={items} />
-    </main>
+    </section>
   );
 }
