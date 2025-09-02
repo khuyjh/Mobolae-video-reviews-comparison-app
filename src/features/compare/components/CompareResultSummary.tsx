@@ -1,7 +1,5 @@
 // 비교 결과 문구 출력 컴포넌트
 // 역할: 누가 승리/무승부인지, “3개 중 2개 우세” 같은 요약 문구만 표시
-import { cn } from '@/shared/lib/cn';
-
 import { WINNER_CONFIG, WinnerCode } from '../types/compareTypes';
 
 type ResultSummaryProps = {
@@ -15,7 +13,7 @@ type ResultSummaryProps = {
 // 공통 스타일 토큰
 const SUMMARY_TEXT = 'text-xl-semibold md:text-xl-semibold lg:text-2xl-semibold font-semibold';
 const CAPTION_STYLE = 'text-xs-medium md:text-xs-medium lg:text-base-medium mt-2 text-gray-400';
-const DESCRIPTION_COLOR = 'text-white';
+const DESCRIPTION_STYLE = 'text-white align-middle';
 
 const CompareResultSummary = ({ aName, bName, aWins, bWins, ties }: ResultSummaryProps) => {
   const total = aWins + bWins + ties;
@@ -38,14 +36,16 @@ const CompareResultSummary = ({ aName, bName, aWins, bWins, ties }: ResultSummar
       </>
     ) : (
       <>
-        <span title={winnerName} className={color}>
-          <span className='inline-block max-w-[220px] truncate whitespace-nowrap md:max-w-none'>
-            {winnerName}
+        <span title={winnerName} className={`${color} align-middle`}>
+          <span className='max-w-[220px] truncate whitespace-nowrap md:max-w-none'>
+            {winnerName}{' '}
           </span>
         </span>
-        <span className={DESCRIPTION_COLOR}> 콘텐츠가</span>
+        {/* 앞 공백 제거하고 뒤에 공백을 명시적으로 추가 */}
+        <span className={DESCRIPTION_STYLE}>콘텐츠가</span>{' '}
+        {/* 모바일/태블릿에선 줄바꿈, 데스크탑에선 안 보임 */}
         <br className='lg:hidden' />
-        <span className={DESCRIPTION_COLOR}>승리하였습니다!</span>
+        <span className={DESCRIPTION_STYLE}>승리하였습니다!</span>
       </>
     );
 

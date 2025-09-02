@@ -19,7 +19,6 @@ const ComparePage = () => {
   const b = useCompareStore((s) => s.b);
   const setA = useCompareStore((s) => s.setA);
   const setB = useCompareStore((s) => s.setB);
-  const resetRequested = useCompareStore((s) => s.resetRequest);
 
   return (
     <main className='mx-auto max-w-4xl p-[24px]'>
@@ -33,7 +32,6 @@ const ComparePage = () => {
           scheme='left'
           onChange={(v) => {
             setA(v);
-            resetRequested();
           }}
           options={MOCK_CANDIDATES}
           placeholder='콘텐츠명을 입력해 주세요'
@@ -47,7 +45,6 @@ const ComparePage = () => {
           scheme='right'
           onChange={(v) => {
             setB(v);
-            resetRequested();
           }}
           options={MOCK_CANDIDATES}
           placeholder='콘텐츠명을 입력해 주세요'
