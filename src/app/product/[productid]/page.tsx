@@ -1,217 +1,55 @@
-'use client';
+import { notFound } from 'next/navigation';
 
-import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
-import { useMemo } from 'react';
-
-import { mockContents, mockReviewers } from '@/features/mainPage/mock/contents';
 import ProductCard from '@/features/product/components/productCard/productCard';
-import ReviewCard from '@/features/product/components/reviewCard/reviewCard';
-import ReviewSortDropdown from '@/features/product/components/reviewSortDropdown';
+import ReviewListClient from '@/features/product/components/ReviewListClient';
 import Statistics from '@/features/product/components/statisticsCard';
-import { InfinityScroll } from '@/shared/components/infinityScroll';
-import useMediaQuery from '@/shared/hooks/useMediaQuery';
+import serverApi from '@/shared/api/serverApi';
 
-const MAIN_LAYOUT =
-  'mx-auto px-[20px] pt-[30px] pb-[223px] md:max-w-[684px] md:px-[30px] md:pt-[40px] md:pb-[147px] xl:max-w-[940px] xl:pt-[60px] xl:pb-[120px]';
+export default async function ProductPage({ params }: { params: { productid: string } }) {
+  // 🚨 params.id 대신 params.productid를 사용합니다.
+  const productId = params.productid;
 
-const SUBSECTION_GAP = 'flex flex-col gap-[30px]';
-
-const SECTION_TITLE = 'text-lg-semibold md:text-base-semibold xl:text-xl-semibold text-white';
-
-interface ReviewItem {
-  id: string;
-  reviewContent: string;
-  Images: string[];
-  likeCount: number;
-  isLiked: boolean;
-  showActions: boolean;
-  createdAt: string;
-  name: string;
-  avatarSrc: string;
-  rating: number;
-}
-
-interface ApiResponse {
-  list: ReviewItem[];
-  nextCursor?: number;
-}
-
-interface InfiniteQueryData {
-  pages: ApiResponse[];
-  pageParams: (number | undefined)[];
-}
-
-/*---------------------------Mock----------------------------------------- */
-const mockApi = async ({ pageParam }: { pageParam?: number }): Promise<ApiResponse> => {
-  const pageSize = 5;
-  const start = pageParam ?? 0;
-  const end = start + pageSize;
-  const mockReviewData = Array.from({ length: 50 }, (_, i) => ({
-    id: `review-${i}`,
-    reviewContent:
-      i % 2 === 0
-        ? '짧은 리뷰 내용'
-        : '이것은 매우 긴 리뷰 내용입니다. 이미지도 추가될 수 있어요. 높이가 불규칙한 상황이 일어날 수 있습니다. 이 카드는 이미지의 유무와 텍스트가 몇 줄이냐에 따라 높이가 다 달라지거든요. 그래서 무한스크롤 구현하는데 빡셌어요.',
-    Images: i % 3 === 0 ? ['https://picsum.photos/400/300'] : [],
-    likeCount: Math.floor(Math.random() * 20),
-    isLiked: false,
-    showActions: false,
-    createdAt: '2025.08.30',
-    name: mockReviewers[i % mockReviewers.length].name,
-    avatarSrc: mockReviewers[i % mockReviewers.length].profileImageUrl,
-    rating: Math.floor(Math.random() * 5) + 1,
-  }));
-
-  const data = mockReviewData.slice(start, end);
-
-  await new Promise((resolve) => setTimeout(resolve, 500));
-
-  return {
-    list: data,
-    nextCursor: end < mockReviewData.length ? end : undefined,
-  };
-};
-
-const initialSSRData: ApiResponse = {
-  list: Array.from({ length: 10 }, (_, i) => ({
-    id: `review-${i}`,
-    reviewContent: i % 2 === 0 ? '짧은 리뷰 내용' : '이것은 매우 긴 리뷰 내용입니다.',
-    Images: i % 3 === 0 ? ['https://picsum.photos/400/300'] : [],
-    likeCount: Math.floor(Math.random() * 20),
-    isLiked: false,
-    showActions: false,
-    createdAt: '2025.08.30',
-    name: mockReviewers[i % mockReviewers.length].name,
-    avatarSrc: mockReviewers[i % mockReviewers.length].profileImageUrl,
-    rating: Math.floor(Math.random() * 5) + 1,
-  })),
-  nextCursor: 10,
-};
-/* -------------------------------------------------------- */
-
-const ProductDetailsPage = () => {
-  const productData = mockContents[0];
-  const queryClient = useQueryClient();
-
-  /* 무한 스크롤 쿼리 설정 */
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery({
-    queryKey: ['reviews'],
-    queryFn: mockApi,
-    initialPageParam: undefined,
-    getNextPageParam: (lastPage) => lastPage.nextCursor,
-    initialData: {
-      pages: [initialSSRData],
-      pageParams: [initialSSRData.nextCursor],
-    },
-  });
-
-  const allReviews = useMemo(() => data?.pages.flatMap((page) => page.list) ?? [], [data]);
-
-  /* 반응형 화면 크기 감지 */
-  const isTablet = useMediaQuery('(min-width: 768px) and (max-width: 1279px)');
-  const isPC = useMediaQuery('(min-width: 1280px)');
-
-  /* 화면 크기별 아이템 높이 추정값 */
-  let itemHeightEstimate;
-  let itemSpacing;
-
-  if (isPC) {
-    itemHeightEstimate = 225;
-    itemSpacing = 20;
-  } else if (isTablet) {
-    itemHeightEstimate = 175;
-    itemSpacing = 15;
-  } else {
-    itemHeightEstimate = 250;
-    itemSpacing = 15;
+  // URL에 id가 없거나 유효하지 않은 경우를 대비 (선택사항이지만 권장)
+  if (!productId || isNaN(Number(productId))) {
+    notFound();
   }
 
-  /* 좋아요 클릭 핸들러 */
-  const onLikeClick = (reviewId: string) => {
-    queryClient.setQueryData<InfiniteQueryData>(['reviews'], (oldData) => {
-      if (!oldData) return oldData;
-
-      return {
-        ...oldData,
-        pages: oldData.pages.map((page) => ({
-          ...page,
-          list: page.list.map((review) =>
-            review.id === reviewId
-              ? {
-                  ...review,
-                  isLiked: !review.isLiked,
-                  likeCount: review.isLiked ? review.likeCount - 1 : review.likeCount + 1,
-                }
-              : review,
-          ),
-        })),
-      };
-    });
-  };
+  const productData = await serverApi.get(`/products/${productId}`);
+  const initialReviewsData = await serverApi.get(
+    `/products/${productId}/reviews?sort=latest&page=1`,
+  );
 
   return (
-    <main className={MAIN_LAYOUT}>
+    <main className='mx-auto px-[20px] pt-[30px] pb-[223px] md:max-w-[684px] md:px-[30px] md:pt-[40px] md:pb-[147px] xl:max-w-[940px] xl:pt-[60px] xl:pb-[120px]'>
       <div className='flex flex-col gap-[60px] xl:gap-[80px]'>
-        {/* 상세 섹션 */}
+        {/* 상세 섹션 - 서버 컴포넌트로 렌더링 */}
         <ProductCard
           imageSrc={productData.contentImage}
-          category={{ id: 1, name: '오징어 게임' }}
+          category={{ id: productData.categoryId, name: productData.categoryName }}
           title={productData.title}
-          views={5125}
-          description=' 오징어 게임 1은 재밌는데 2부터 뭔가 싶고 3은 재미없음.'
+          views={productData.views}
+          description={productData.description}
           isEditable={true}
         />
 
-        {/* 통계 섹션 */}
-        <section className={SUBSECTION_GAP}>
-          <h2 className={SECTION_TITLE}>콘텐츠 통계</h2>
+        {/* 통계 섹션 - 서버 컴포넌트로 렌더링 */}
+        <section className='flex flex-col gap-[30px]'>
+          <h2 className='text-lg-semibold md:text-base-semibold xl:text-xl-semibold text-white'>
+            콘텐츠 통계
+          </h2>
           <Statistics
-            {...{
-              favoriteCount: productData.favoriteCount,
-              rating: productData.rating,
-              reviewCount: productData.reviewCount,
-              favoriteComparison: 20,
-              ratingComparison: 0.5,
-              reviewComparison: 15,
-            }}
+            favoriteCount={productData.favoriteCount}
+            rating={productData.rating}
+            reviewCount={productData.reviewCount}
+            favoriteComparison={productData.favoriteComparison}
+            ratingComparison={productData.ratingComparison}
+            reviewComparison={productData.reviewComparison}
           />
         </section>
 
-        {/* 리뷰 섹션 */}
-        <div className={SUBSECTION_GAP}>
-          <section className='flex items-center justify-between'>
-            <h2 className={SECTION_TITLE}>콘텐츠 리뷰</h2>
-            <ReviewSortDropdown />
-          </section>
-
-          {/* 무한 스크롤 리뷰 리스트 */}
-          <InfinityScroll
-            items={allReviews}
-            renderItem={(review, index) => (
-              <div
-                key={review.id}
-                style={{
-                  marginBottom: index === allReviews.length - 1 ? 0 : itemSpacing,
-                }}
-              >
-                <ReviewCard
-                  {...review}
-                  data-index={index}
-                  onLikeClick={() => onLikeClick(review.id)}
-                />
-              </div>
-            )}
-            hasNextPage={hasNextPage ?? false}
-            fetchNextPage={fetchNextPage}
-            isLoading={isFetchingNextPage}
-            itemHeightEstimate={itemHeightEstimate}
-            scrollKey='product-reviews'
-            maxItems={500}
-          />
-        </div>
+        {/* 리뷰 섹션 - 클라이언트 컴포넌트에 초기 데이터 전달 */}
+        <ReviewListClient productId={productId} initialReviews={initialReviewsData} />
       </div>
     </main>
   );
-};
-
-export default ProductDetailsPage;
+}
