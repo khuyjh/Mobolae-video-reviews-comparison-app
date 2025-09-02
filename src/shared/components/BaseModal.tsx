@@ -43,7 +43,7 @@ const BaseModal = ({
   return (
     <Dialog open={isOpen} onOpenChange={closeOnOutsideClick ? onClose : undefined}>
       <DialogContent className={cn('bg-black-900 text-white', SIZE_STYLE[size], className)}>
-      <DialogTitle className='sr-only'>{title}</DialogTitle>
+        <DialogTitle className='sr-only'>{title}</DialogTitle>
         <button type='button' className={CLOSE_BUTTON_STYLE} onClick={onClose}>
           <XIcon className='text-white' />
           <span className='sr-only'>Close</span>
