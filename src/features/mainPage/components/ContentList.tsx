@@ -12,23 +12,25 @@ import { toContentItem } from '@/shared/utils/mapApiToItem';
 import { readQuery } from '@/shared/utils/query';
 
 import VirtualizedContentGrid from './VirtualizedContentGrid';
-import { serverListContents } from '../mock/mockContents'; // ★ 방금 추가한 함수 import
+import { serverListContents } from '../mock/mockContents';
 
 const PAGE_SIZE = 24;
 
 /**
- * 콘텐츠 리스트 컴포넌트
- * 쿼리 파싱 → (서버 가짜 API) 필터/정렬/커서 → 카드 변환 → 가상화 + 무한스크롤
+ * ContentList
+ * - URL 쿼리(category/keyword/order)를 단일 소스로 사용
+ * - useInfiniteQuery로 커서 기반 페이지네이션
+ * - 응답을 UI 모델로 변환 후 VirtualizedContentGrid로 가상화 렌더
  */
 const ContentList = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
 
-  // 쿼리 파싱: 기본값 { category:null, keyword:'', order:'recent' }
+  /** URL → 안전 파싱 (기본값: { category:null, keyword:'', order:'recent' }) */
   const { category, keyword, order } = useMemo(() => readQuery(searchParams), [searchParams]);
 
-  // 상단 타이틀
+  /** 상단 타이틀 (검색어/카테고리 상황에 따라 가변) */
   const title = useMemo(() => {
     if (keyword && keyword.trim()) return `‘${keyword}’로 검색한 콘텐츠`;
     if (category !== null) {
@@ -38,42 +40,41 @@ const ContentList = () => {
     return null;
   }, [keyword, category]);
 
-  // 무한스크롤 쿼리
+  /** 무한 스크롤 쿼리 (커서 기반) */
   const { data, isFetchingNextPage, fetchNextPage, hasNextPage, status, refetch } =
     useInfiniteQuery({
-      queryKey: ['contents', { category, keyword, order }],
-      initialPageParam: 0 as number, // cursor
-      queryFn: ({ pageParam }) => {
-        const res = serverListContents({
+      queryKey: ['contents', { category, keyword, order }], // 조건별 캐시 키
+      initialPageParam: 0 as number, // 첫 커서
+      queryFn: ({ pageParam }) =>
+        serverListContents({
           category,
           keyword,
           order,
           cursor: pageParam ?? 0,
           limit: PAGE_SIZE,
-        });
-        return Promise.resolve(res); // 비동기 시뮬 (실제 API로 교체 시 fetch로 대체)
-      },
-      getNextPageParam: (lastPage) => {
-        // nextCursor가 null이면 더 없음
-        return lastPage.nextCursor ?? undefined;
-      },
+        }),
+      getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined, // 다음 커서 없으면 종료
     });
 
-  // 플랫 아이템 (UI 변환)
+  /** pages → 단일 배열로 평탄화 + UI 전용 모델 매핑 */
   const items = useMemo(() => {
     const pages = data?.pages ?? [];
     return pages.flatMap((p) => p.list.map(toContentItem));
   }, [data]);
 
-  // 정렬 변경 시: cursor 제거 + URL 갱신 (뒤로가기 스크롤 보존)
+  /**
+   * 정렬 변경
+   * - URL에만 반영 (cursor 초기화)
+   * - queryKey 갱신으로 자동 리패치
+   * - scroll:false로 뒤로가기 시 스크롤 보존
+   */
   const handleChangeOrder = useCallback(
     (nextOrder: ProductOrderKey) => {
       const next = new URLSearchParams(searchParams);
       next.set('order', nextOrder);
       next.delete('cursor'); // 커서 초기화
       router.replace(`${pathname}?${next.toString()}`, { scroll: false });
-      // 쿼리키가 바뀌니 자동 리패치
-      // (만약 강제 리패치가 필요하면 refetch() 호출 가능)
+      // 필요 시 강제 refetch 가능: refetch();
     },
     [searchParams, router, pathname],
   );
@@ -92,7 +93,7 @@ const ContentList = () => {
         </div>
       </div>
 
-      {/* 가상화 + 무한스크롤 */}
+      {/* 가상화 + 무한스크롤 (행 단위) */}
       <VirtualizedContentGrid
         items={items}
         hasNextPage={!!hasNextPage}

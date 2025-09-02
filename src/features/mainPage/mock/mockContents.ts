@@ -1,14 +1,14 @@
 // src/features/mainPage/mock/mockContents.ts
 'use client';
 
-import { ContentApi, ContentListResponse, ContentItem } from '@/shared/types/content';
+import { ContentApi, ContentItem, ContentListResponse } from '@/shared/types/content';
 import { filterContents } from '@/shared/utils/filterContents';
 import { toContentItem } from '@/shared/utils/mapApiToItem';
 import sortContents from '@/shared/utils/sortContents';
 
 import type { ProductOrderKey } from '@/shared/types/SortDropdownTypes';
 
-/* ------------------------ 시드 고정 PRNG (재현 가능한 난수) ------------------------ */
+/** 재현 가능한 난수 생성기(시드 고정) */
 function mulberry32(seed: number) {
   return function () {
     let t = (seed += 0x6d2b79f5);
@@ -19,12 +19,11 @@ function mulberry32(seed: number) {
 }
 const rng = mulberry32(20250902);
 
-/* ------------------------------ 카테고리/타이틀 풀 ------------------------------ */
-// 카테고리 개수(프로젝트의 CATEGORIES 개수와 맞추면 더 깔끔)
-const CATEGORY_COUNT = 12;
+/** 카테고리 개수(실 서비스 CATEGORIES 길이와 맞추는 것을 권장) */
+const CATEGORY_COUNT = 7;
 
-// 베이스 타이틀(장르/수식어를 곱으로 늘려 5천개 커버)
-const baseNamesA = [
+/** 타이틀 풀 */
+const TITLES_A = [
   '오징어 게임',
   '더 글로리',
   'DP',
@@ -72,42 +71,32 @@ const baseNamesA = [
   '너목들',
   '피노키오',
 ];
-const baseNamesB = ['시즌1', '시즌2', '리부트', '스페셜', '디렉터스컷', '리마스터', '프로젝트'];
-const baseNamesC = ['극장판', '확장판', '콜렉션', '파트1', '파트2', '파이널'];
+const TITLES_B = ['시즌1', '시즌2', '리부트', '스페셜', '디렉터스컷', '리마스터', '프로젝트'];
+const TITLES_C = ['극장판', '확장판', '콜렉션', '파트1', '파트2', '파이널'];
 
-/* ------------------------------ 대량 생성 파라미터 ------------------------------ */
+/** 총 아이템 수 */
 const TOTAL_ITEMS = 5000;
 
-// 시간 분포(최신 ~ 과거로 자연스럽게)
+/** 생성 시각 분포(최신→과거) */
 const now = Date.now();
-const hourGap = 6; // 항목 간 6h 간격
-const createdAtOf = (i: number) => new Date(now - i * hourGap * 60 * 60 * 1000).toISOString();
+const HOUR_GAP = 6;
+const createdAtOf = (i: number) => new Date(now - i * HOUR_GAP * 60 * 60 * 1000).toISOString();
 
-// 평점/좋아요/리뷰수 분포(시드 난수 섞음)
-const ratingOf = (i: number) => {
-  // 2.5 ~ 5.0 범위
-  const base = 2.5 + rng() * 2.5;
-  return Number(base.toFixed(1));
-};
-const reviewCountOf = (i: number) => {
-  // 0 ~ 4000
-  return Math.floor(rng() * 4000);
-};
-const favoriteCountOf = (i: number) => {
-  // 100 ~ 10000
-  return 100 + Math.floor(rng() * 9900);
-};
+/** 점수/카운트 분포 */
+const ratingOf = () => Number((2.5 + rng() * 2.5).toFixed(1)); // 2.5~5.0
+const reviewCountOf = () => Math.floor(rng() * 4000); // 0~4000
+const favoriteCountOf = () => 100 + Math.floor(rng() * 9900); // 100~10000
 
-/* --------------------------------- 생성기 함수 --------------------------------- */
+/** 제목 생성 */
 const makeTitle = (id: number) => {
-  // 다양한 조합으로 제목 생성
-  const a = baseNamesA[id % baseNamesA.length];
-  const pick = rng();
-  if (pick < 0.33) return `${a} ${baseNamesB[id % baseNamesB.length]} #${id}`;
-  if (pick < 0.66) return `${a} ${baseNamesC[id % baseNamesC.length]} #${id}`;
+  const a = TITLES_A[id % TITLES_A.length];
+  const r = rng();
+  if (r < 0.33) return `${a} ${TITLES_B[id % TITLES_B.length]} #${id}`;
+  if (r < 0.66) return `${a} ${TITLES_C[id % TITLES_C.length]} #${id}`;
   return `${a} #${id}`;
 };
 
+/** 단일 콘텐츠 생성 */
 const makeContent = (
   id: number,
   name: string,
@@ -119,10 +108,10 @@ const makeContent = (
   return {
     id,
     name,
-    image: `https://picsum.photos/seed/mobo/400/300`,
-    favoriteCount: favoriteCountOf(id),
-    reviewCount: reviewCountOf(id),
-    rating: ratingOf(id),
+    image: `https://picsum.photos/seed/mobo/400/300`, // 시드 고유화
+    favoriteCount: favoriteCountOf(),
+    reviewCount: reviewCountOf(),
+    rating: ratingOf(),
     categoryId,
     writerId,
     createdAt,
@@ -131,19 +120,25 @@ const makeContent = (
   };
 };
 
-/* ------------------------------- 원본 API 배열 ------------------------------- */
+/** 원본 API 데이터(목) */
 const baseContents: ContentApi[] = Array.from({ length: TOTAL_ITEMS }).map((_, idx) => {
   const id = idx + 1;
-  const title = makeTitle(id);
-  const categoryId = (idx % CATEGORY_COUNT) + 1; // 1 ~ CATEGORY_COUNT
-  const writerId = (idx % 27) + 1; // 1 ~ 27
-  return makeContent(id, title, categoryId, writerId);
+  return makeContent(
+    id,
+    makeTitle(id),
+    (idx % CATEGORY_COUNT) + 1, // 1..CATEGORY_COUNT
+    (idx % 27) + 1, // 1..27
+  );
 });
 
-/* --------------------------------- UI 변환본 --------------------------------- */
+/** UI 변환본(카드용) */
 export const mockContents: ContentItem[] = baseContents.map(toContentItem);
 
-/* ----------------------------- 커서 페이지네이션 ----------------------------- */
+/**
+ * 단순 커서 페이지네이션 응답
+ * @param cursor 시작 인덱스
+ * @param limit 개수
+ */
 export function getMockContentApiResponse(
   cursor: number | null = 0,
   limit = 12,
@@ -156,8 +151,9 @@ export function getMockContentApiResponse(
   };
 }
 
-/* ------------------------------- 서버 시뮬레이션 ------------------------------ */
-// 필터 + 정렬 + 커서 (테스트용 지연 포함)
+/**
+ * 서버 시뮬레이션: 필터 + 정렬 + 커서 (테스트 지연 포함)
+ */
 export async function serverListContents(params: {
   category: number | null;
   keyword: string;
@@ -167,34 +163,30 @@ export async function serverListContents(params: {
 }): Promise<ContentListResponse> {
   const { category, keyword, order, cursor, limit } = params;
 
-  // 1) 필터
   const filtered = filterContents(baseContents, { category, keyword });
-
-  // 2) 정렬
   const sorted = sortContents(filtered, order);
 
-  // 3) 커서 페이지네이션
   const start = cursor ?? 0;
   const end = Math.min(start + limit, sorted.length);
-  const payload: ContentListResponse = {
+
+  // 테스트용 지연
+  await new Promise((r) => setTimeout(r, 300));
+
+  return {
     list: sorted.slice(start, end),
     nextCursor: end < sorted.length ? end : null,
   };
-
-  // 4) 테스트 지연
-  await new Promise((r) => setTimeout(r, 300));
-  return payload;
 }
 
-/* ------------------------------ 초기 응답(샘플) ------------------------------ */
+/** 샘플 초기 응답 */
 export const mockContentApiResponse: ContentListResponse = getMockContentApiResponse(0, 50);
 
-/* -------------------------------- 리뷰어 목업 -------------------------------- */
+/** 리뷰어 목업 */
 export const mockReviewers = Array.from({ length: 40 }).map((_, i) => ({
   userId: i + 1,
   name: `리뷰어#${i + 1}`,
   profileImageUrl: `https://i.pravatar.cc/40?img=${(i % 70) + 1}`,
   followers: 300 + Math.floor(rng() * 5000),
   review: 30 + Math.floor(rng() * 1200),
-  rating: Number((3 + rng() * 2).toFixed(1)), // 3.0 ~ 5.0
+  rating: Number((3 + rng() * 2).toFixed(1)),
 }));
