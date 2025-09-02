@@ -7,6 +7,16 @@ export const WINNER_TEXT_COLOR = {
   TIE: 'text-gray-400',
 } as const;
 
+/** 승패 코드 공통 타입 */
+export type WinnerCode = 'A' | 'B' | 'TIE';
+
+/** 문구 + 색상을 한 번에 관리 (컴포넌트에서 이걸 주로 사용) */
+export const WINNER_CONFIG: Record<WinnerCode, { text: string; color: string }> = {
+  A: { text: '콘텐츠 1 승리', color: WINNER_TEXT_COLOR.A },
+  B: { text: '콘텐츠 2 승리', color: WINNER_TEXT_COLOR.B },
+  TIE: { text: '무승부', color: WINNER_TEXT_COLOR.TIE },
+} as const;
+
 // 사용자가 드롭다운에서 고르는 “후보” 타입 (Select 전용)
 export type CompareCandidate = {
   id: string | number;
@@ -31,7 +41,7 @@ export type CompareRow = {
   label: string;
   valueA: number;
   valueB: number;
-  winner: 'A' | 'B' | 'TIE';
+  winner: WinnerCode; // 'A' | 'B' | 'TIE' 대신 WinnerCode 사용
 };
 
 // 승자 결정 헬퍼(반드시 리턴 타입을 유니언 리터럴로)

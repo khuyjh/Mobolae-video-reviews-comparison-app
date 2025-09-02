@@ -2,7 +2,8 @@
 // 역할: 누가 승리/무승부인지, “3개 중 2개 우세” 같은 요약 문구만 표시
 import { cn } from '@/shared/lib/cn';
 
-import { WINNER_TEXT_COLOR } from '../types/compareTypes';
+import { WINNER_CONFIG, WinnerCode } from '../types/compareTypes';
+
 type ResultSummaryProps = {
   aName: string;
   bName: string;
@@ -19,44 +20,44 @@ const DESCRIPTION_COLOR = 'text-white';
 const CompareResultSummary = ({ aName, bName, aWins, bWins, ties }: ResultSummaryProps) => {
   const total = aWins + bWins + ties;
 
-  const isDraw = aWins === bWins;
-  // 2) 승자 계산(컴포넌트 안에서 '한 번만')
-  const winnerIsA = aWins > bWins; // true면 콘텐츠 1(왼쪽) 승
-  // const winnerSide: WinnerSide = winnerIsA ? 'A' : 'B';
-  const winnerName = winnerIsA ? aName : bName;
+  // 1) 승패 쪽 계산 (A/B/TIE)
+  const side: WinnerCode = aWins === bWins ? 'TIE' : aWins > bWins ? 'A' : 'B';
+
+  // 2) 공용 설정에서 색/문구를 가져옵니다.
+  const { color } = WINNER_CONFIG[side];
+
+  // 3) 승자 이름/카운트 계산 (무승부면 둘 다 사용 안 함)
+  const winnerName = side === 'A' ? aName : side === 'B' ? bName : '';
   const winnerCount = Math.max(aWins, bWins);
 
-  if (isDraw) {
-    return (
-      <div className='mb-[40px] text-center md:mb-[80px]'>
-        <h3 className={`${cn(SUMMARY_TEXT)} text-white`}>
-          {/* 1행 */}
-          <span>무승부</span>
-          <span>입니다!</span>
-        </h3>
-      </div>
+  const resultHeading =
+    side === 'TIE' ? (
+      <>
+        <span className={color}>무승부</span>
+        <span className='ml-[4px] text-gray-400'>입니다!</span>
+      </>
+    ) : (
+      <>
+        <span title={winnerName} className={color}>
+          <span className='inline-block max-w-[220px] truncate whitespace-nowrap md:max-w-none'>
+            {winnerName}
+          </span>
+        </span>
+        <span className={DESCRIPTION_COLOR}> 콘텐츠가</span>
+        <br className='lg:hidden' />
+        <span className={DESCRIPTION_COLOR}>승리하였습니다!</span>
+      </>
     );
-  }
+
+  const captionText =
+    side === 'TIE'
+      ? `${total}가지 항목 중 ${ties}개가 동일합니다.`
+      : `${total}가지 항목 중 ${winnerCount}개 항목에서 우세합니다.`;
 
   return (
     <div className='mb-[40px] text-center md:mb-[80px]'>
-      <h3 className={SUMMARY_TEXT}>
-        {/* 1행: [승자명] */}
-        <span className={WINNER_TEXT_COLOR[winnerIsA ? 'A' : 'B']} title={winnerName}>
-          {winnerName}
-        </span>
-        <span className={DESCRIPTION_COLOR}> 콘텐츠가 </span>
-
-        {/*모바일/태블릿에서는 줄바꿈, 데스크탑(lg+)에서는 같은 줄 */}
-        <br className='lg:hidden' />
-
-        {/* 2행(모바일/태블릿) 또는 같은 줄(데스크탑) */}
-        <span className={DESCRIPTION_COLOR}>승리하였습니다!</span>
-      </h3>
-
-      <p className={CAPTION_STYLE}>
-        {total}가지 항목 중 {winnerCount}개 항목에서 우세합니다.
-      </p>
+      <h3 className={SUMMARY_TEXT}>{resultHeading}</h3>
+      <p className={CAPTION_STYLE}>{captionText}</p>
     </div>
   );
 };
