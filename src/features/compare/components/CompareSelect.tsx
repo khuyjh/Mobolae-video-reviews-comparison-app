@@ -10,17 +10,13 @@ import { forwardRef, useEffect, useId, useMemo, useRef, useState } from 'react';
 
 import { cn } from '@/shared/lib/cn';
 
-export type CompareOption = {
-  id: string | number;
-  name: string;
-  disabled?: boolean;
-};
+import type { CompareCandidate } from '@/features/compare/types/compareTypes';
 
-type Props = {
+export type CompareSelectProps = {
   label?: string;
-  value: CompareOption | null; // Chip 한번에 1개로 제한
-  onChange: (next: CompareOption | null) => void; // Chip 선택/삭제
-  options: CompareOption[]; // 전체 후보
+  value: CompareCandidate | null; // Chip 선택 값 한번에 1개로 제한
+  onChange: (v: CompareCandidate | null) => void; // Chip 선택/해제 콜백
+  options: CompareCandidate[]; // 후보 목록
   placeholder?: string;
   disabled?: boolean;
   // 칩 색상용 prop (기본은 left 녹색)
@@ -29,16 +25,16 @@ type Props = {
   className?: string; // 외곽 컨테이너 스타일
   inputClassName?: string; // 인풋 스타일
   dropdownClassName?: string; // 드롭다운 패널 스타일
-  filterFn?: (opt: CompareOption, query: string) => boolean;
+  filterFn?: (opt: CompareCandidate, query: string) => boolean; // 검색 규칙 커스터마이징용 없으면 기본 커스텀 필터 사용
 };
 
 /** 커스텀 필터 (기본: 공백/영문 대소문자 무시 매칭) */
-const defaultFilter: Props['filterFn'] = (opt, q) => {
+const defaultFilter = (opt: CompareCandidate, q: string) => {
   const norm = (s: string) => s.toLowerCase().replace(/\s+/g, '');
   return norm(opt.name).includes(norm(q));
 };
 
-const CompareSelect = forwardRef<HTMLInputElement, Props>(function CompareSelect(
+const CompareSelect = forwardRef<HTMLInputElement, CompareSelectProps>(function CompareSelect(
   {
     label,
     value,
@@ -88,7 +84,7 @@ const CompareSelect = forwardRef<HTMLInputElement, Props>(function CompareSelect
     if (open) setActiveIndex(0);
   }, [open, query]);
 
-  const handleSelect = (opt: CompareOption) => {
+  const handleSelect = (opt: CompareCandidate) => {
     if (opt.disabled) return;
     onChange(opt);
     setOpen(false);

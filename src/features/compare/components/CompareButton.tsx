@@ -1,26 +1,51 @@
 // 비교하기 버튼 (입력창 2개 selected시 활성화)
 'use client';
 
-import { ButtonHTMLAttributes } from 'react';
-
 import { cn } from '@/shared/lib/cn';
 
-type CompareButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'type'> & {
-  /** 기본 라벨을 바꾸고 싶으면 children값 수정합니다 */
+import { useCompareStore } from '../model/useCompareStore';
+
+type CompareButtonProps = {
+  className?: string;
+  /** 부모에서 강제로 비활성화할 수 있는 플래그 (선택) */
+  disabled?: boolean;
+  /** 레이블 커스텀 (기본: "비교하기") */
+  label?: string;
 };
 
+/**
+ * CompareButton
+ * - 전역 상태(a, b)가 모두 채워졌고, 부모가 강제 disabled하지 않았을 때만 enabled
+ * - enabled/disabled에 따라 색/호버/커서를 분기하여 시각적으로도 명확하게 표현
+ * - 클릭 시 store.requestCompare() 호출하여 결과창 렌더링
+ */
+
 const CompareButton = ({
-  disabled,
+  disabled: disabledProp,
   className,
-  children = '비교하기',
-  ...rest
+  label = '비교하기',
 }: CompareButtonProps) => {
-  const enabled = !disabled;
+  //  개별 selector로 구독(객체 리턴 금지: React 19 dev 무한루프 방지)- zustand 도입 이후 오류가 나서 수정한 부분
+  const a = useCompareStore((s) => s.a);
+  const b = useCompareStore((s) => s.b);
+  const requestCompare = useCompareStore((s) => s.requestCompare);
+
+  //  파생 상태: 실제 활성화 여부
+  // - 부모가 disabledProp=true면 무조건 비활성
+  // - 둘 중 하나라도 미선택이면 비활성
+  const enabled = !!a && !!b && !disabledProp;
+
+  const handleClick = () => {
+    // button[disabled]면 브라우저가 클릭 자체를 막지만 확실하게 막기 위한 용도
+    if (!enabled) return;
+    requestCompare();
+  };
 
   return (
     <button
       type='button'
-      disabled={disabled}
+      onClick={handleClick}
+      disabled={!enabled} // 비활성화 상태 실제 클릭 방지
       className={cn(
         // 레이아웃- 그리드 정렬 같은 건 부모에서 넣도록 className으로 받습니다
         // 이 부분은 스타일 구분을 위해 상수화 하지 않았습니다. 추후 수정 가능
@@ -36,9 +61,8 @@ const CompareButton = ({
           : 'bg-black-800 text-gray-600 disabled:cursor-not-allowed disabled:opacity-60',
         className,
       )}
-      {...rest}
     >
-      {children}
+      {label}
     </button>
   );
 };
