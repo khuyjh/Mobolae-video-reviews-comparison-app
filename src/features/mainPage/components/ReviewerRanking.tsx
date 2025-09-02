@@ -4,7 +4,7 @@ import Link from 'next/link';
 
 import React, { useMemo } from 'react';
 
-import { mockReviewers } from '@/features/mainPage/mock/contents';
+import { mockReviewers } from '@/features/mainPage/mock/mockContents';
 import ProfileBadge from '@/shared/components/card/avatarCard';
 
 import type { Reviewer } from '@/shared/types/reviewer';
@@ -100,7 +100,7 @@ const ReviewerRankingList: React.FC<ReviewerRankingListProps> = ({
 export const ReviewerRankingHorizontal: React.FC<{ reviewers?: Reviewer[] }> = ({
   reviewers = mockReviewers as Reviewer[],
 }) => (
-  <section className='mt-8 md:mt-10 lg:hidden'>
+  <section>
     <h2 className='text-md-regular mb-3 text-white'>리뷰어 랭킹</h2>
     <ReviewerRankingList reviewers={reviewers} direction='row' />
   </section>

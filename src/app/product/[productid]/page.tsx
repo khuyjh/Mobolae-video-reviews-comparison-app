@@ -3,7 +3,7 @@
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { useMemo } from 'react';
 
-import { mockContents, mockReviewers } from '@/features/mainPage/mock/contents';
+import { mockContents, mockReviewers } from '@/features/mainPage/mock/mockContents';
 import ProductCard from '@/features/product/components/productCard/productCard';
 import ReviewCard from '@/features/product/components/reviewCard/reviewCard';
 import ReviewSortDropdown from '@/features/product/components/reviewSortDropdown';
