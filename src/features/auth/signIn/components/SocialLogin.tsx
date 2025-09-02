@@ -3,9 +3,13 @@
 import KakaoIcon from '../../../../../public/icons/KakaoIcon.svg';
 import moveToKakao from '../../utils/moveToKakao';
 
-const SocialLogin = () => {
+interface Props {
+  redirectUrl?: string;
+}
+
+const SocialLogin = ({ redirectUrl }: Props) => {
   const handleClickKakaoLogin = () => {
-    moveToKakao('/oauth/kakao');
+    moveToKakao('/oauth/kakao', redirectUrl);
   };
 
   return (

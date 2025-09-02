@@ -8,13 +8,15 @@ import KakaoSignUpForm from '@/features/auth/oauth/components/KakaoSignUpForm';
 const KakaoSignUpPage = () => {
   const searchParams = useSearchParams();
   const code = searchParams.get('code');
+  const redirectUrl = searchParams.get('state');
+  const kakaoError = searchParams.get('error');
 
-  //로그인 플로우를 통해 접근하지 않고 직접 url입력 접근 등의 경우 차단
-  if (!code) return <KakaoError />;
+  //에러 발생 또는 로그인 플로우를 통해 접근하지 않고 직접 url입력 접근 등의 경우 차단
+  if (!code || kakaoError) return <KakaoError />;
 
   return (
     <section>
-      <KakaoSignUpForm kakaoCode={code} />
+      <KakaoSignUpForm kakaoCode={code} redirectUrl={redirectUrl ? redirectUrl : ''} />
     </section>
   );
 };
