@@ -76,7 +76,7 @@ export default function ProfileCard({
 }
 
 const CARD_CONTAINER =
-  'bg-black-800 border border-black-700 w-full md:w-[509px] xl:w-[340px] rounded-[12px] px-[30px] py-[20px] md:py-[30px] xl:py-[20px] xl:pt-[40px] xl:pb-[30px]';
+  'bg-black-800 border border-black-700 w-full md:w-[509px] mx-auto xl:w-[340px] rounded-[12px] px-[30px] py-[20px] md:py-[30px] xl:py-[20px] xl:pt-[40px] xl:pb-[30px]';
 
 const IMG_WRAPPER =
   'mx-auto h-[120px] w-[120px] xl:w-[180px] xl:h-[180px] overflow-hidden rounded-full';
@@ -94,5 +94,5 @@ const BUTTON_BASE = 'text-base-semibold w-full rounded-[8px] py-[15px] transitio
 
 const BTN_EDIT = 'bg-main text-black-800 hover:opacity-90';
 const BTN_LOGOUT = 'border border-black-700 text-gray-400 hover:bg-black-700/40';
-const BTN_FOLLOW = 'bg-main-gradient text-black-800 hover:opacity-90';
+const BTN_FOLLOW = 'bg-main-gradient text-black-800 hover:brightness-120';
 const BTN_UNFOLLOW = 'border border-black-700 text-gray-400 hover:bg-black-700/40';
