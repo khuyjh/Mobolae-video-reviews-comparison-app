@@ -72,7 +72,7 @@ const Home = async ({ searchParams }: PageProps) => {
         </section>
 
         {/* 우측: 랭킹 사이드바 (lg↑) */}
-        <div className='hidden flex-none lg:block'>
+        <div className='border-black-800 hidden flex-none border-l lg:block'>
           <ReviewerRankingSidebar />
         </div>
       </div>
