@@ -81,6 +81,7 @@
 }
 
 @layer base {
+  @import 'react-toastify/dist/ReactToastify.css';
   * {
     @apply border-border outline-ring/50;
   }
