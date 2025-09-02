@@ -1,5 +1,5 @@
 import CategoryMenu from '@/features/mainPage/components/CategoryMenu';
-import ContentList from '@/features/mainPage/components/contentList';
+import ContentList from '@/features/mainPage/components/ContentList';
 import FloatingButton from '@/features/mainPage/components/FloatingButton';
 import MostReviewed from '@/features/mainPage/components/MostReviewed';
 import {
@@ -9,18 +9,28 @@ import {
 import TopShowcase from '@/features/mainPage/components/TopShowcase';
 import { mockContents } from '@/features/mainPage/mock/mockContents';
 
-import type { ProductOrderKey } from '@/shared/types/SortDropdownTypes';
-
-type HomeProps = {
-  searchParams: {
-    category?: string;
-    keyword?: string;
-    order?: ProductOrderKey;
-  };
+type PageProps = {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
-export default function Home({ searchParams }: HomeProps) {
-  const { category, keyword } = searchParams;
+const Home = async ({ searchParams }: PageProps) => {
+  const sp = await searchParams;
+
+  // category, keyword 타입을 안전하게 string으로 변환
+  const category =
+    typeof sp.category === 'string'
+      ? sp.category
+      : Array.isArray(sp.category)
+        ? sp.category[0]
+        : undefined;
+
+  const keyword =
+    typeof sp.keyword === 'string'
+      ? sp.keyword
+      : Array.isArray(sp.keyword)
+        ? sp.keyword[0]
+        : undefined;
+
   const hasFilter = Boolean(category || (keyword && keyword.trim()));
 
   return (
@@ -71,4 +81,6 @@ export default function Home({ searchParams }: HomeProps) {
       <CategoryMenu />
     </main>
   );
-}
+};
+
+export default Home;
