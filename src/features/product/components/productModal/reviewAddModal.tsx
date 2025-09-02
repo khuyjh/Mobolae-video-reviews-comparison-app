@@ -67,7 +67,7 @@ const ReviewAddModal = ({ isOpen, onClose, rating }: Props) => {
     });
 
     if (duplicatesFound) {
-      toast.warn(
+      toast.error(
         <>
           이미 존재하는 파일은
           <br />
