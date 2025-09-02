@@ -54,9 +54,44 @@ export const mockContents = [
 
 // 리뷰어 목데이터
 export const mockReviewers = [
-  { id: 1, name: '무비덕', profileImageUrl: 'https://i.pravatar.cc/40?img=1' },
-  { id: 2, name: '더라마요정', profileImageUrl: 'https://i.pravatar.cc/40?img=2' },
-  { id: 3, name: '시네필', profileImageUrl: 'https://i.pravatar.cc/40?img=3' },
-  { id: 4, name: '빙의장인', profileImageUrl: 'https://i.pravatar.cc/40?img=4' },
-  { id: 5, name: '감성장전', profileImageUrl: 'https://i.pravatar.cc/40?img=5' },
+  {
+    userId: 1,
+    name: '무비덕',
+    profileImageUrl: 'https://i.pravatar.cc/40?img=1',
+    followers: 1520,
+    review: 340,
+    rating: 4.8,
+  },
+  {
+    userId: 2,
+    name: '더라마요정',
+    profileImageUrl: 'https://i.pravatar.cc/40?img=2',
+    followers: 980,
+    review: 210,
+    rating: 4.6,
+  },
+  {
+    userId: 3,
+    name: '시네필',
+    profileImageUrl: 'https://i.pravatar.cc/40?img=3',
+    followers: 1870,
+    review: 420,
+    rating: 4.9,
+  },
+  {
+    userId: 4,
+    name: '빙의장인',
+    profileImageUrl: 'https://i.pravatar.cc/40?img=4',
+    followers: 740,
+    review: 180,
+    rating: 4.3,
+  },
+  {
+    userId: 5,
+    name: '감성장전',
+    profileImageUrl: 'https://i.pravatar.cc/40?img=5',
+    followers: 1230,
+    review: 260,
+    rating: 4.5,
+  },
 ];
