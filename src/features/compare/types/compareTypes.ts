@@ -1,5 +1,12 @@
 // 비교하기 페이지에서 쓰이는 타입들
 
+// 승자 텍스트 색상 상수화
+export const WINNER_TEXT_COLOR = {
+  A: 'text-green-500',
+  B: 'text-pink-500',
+  TIE: 'text-gray-400',
+} as const;
+
 // 사용자가 드롭다운에서 고르는 “후보” 타입 (Select 전용)
 export type CompareCandidate = {
   id: string | number;
@@ -11,11 +18,11 @@ export type CompareCandidate = {
 export type CompareMetrics = {
   id: string | number;
   rating: number; // 별점 0~5
-  reviewCount: number; // 리뷰 수
-  favoriteCount: number; // 찜 수
+  reviewCount: number; // 리뷰 개수
+  favoriteCount: number; // 찜 개수
 };
 
-// 테이블/계산에 사용하는 키들
+// 테이블 계산에 사용하는 키들
 export type MetricKey = 'rating' | 'reviewCount' | 'favoriteCount';
 
 // 테이블 한 행 타입(테이블/컨테이너가 공유)

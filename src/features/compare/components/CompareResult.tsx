@@ -3,14 +3,13 @@
 // features/compare/components/CompareResult.tsx
 'use client';
 
-import Image from 'next/image';
-
 import { useQuery } from '@tanstack/react-query';
 
 import CompareResultSummary from './CompareResultSummary';
 import CompareResultTable from './CompareResultTable';
 import compareCalc from '../lib/compareCalc';
 import { useCompareStore } from '../model/useCompareStore'; // 전역 상태 관리용
+import { fetchCompare } from '../types/compareMockTypes'; // 임시 목데이터용(실제 API로 교체)
 import {
   METRIC_CONFIG,
   MetricKey,
@@ -22,31 +21,24 @@ import {
 
 /** --------------------------------------------
  * 공용 플레이스홀더
- * - variant별로 다른 문구/이미지 표시
- * - "아이콘 + 문구" 형태로 교체 가능
+ * - variant별로 다른 문구
  * ------------------------------------------- */
 function ResultPlaceholder({ variant }: { variant: 'idle' | 'ready' | 'error' }) {
   // 필요 시 여기에 프로젝트 실제 경로로 바꾸세요.
   const map = {
-    idle: { text: '두 상품을 선택해 비교를 시작하세요.', img: '/images/placeholder-empty.svg' },
+    idle: { text: '두 상품을 선택해 비교를 시작하세요.' },
     ready: {
       text: '비교하기 버튼을 눌러 결과를 확인하세요.',
-      img: '/images/placeholder-ready.svg',
     },
     error: {
-      text: '데이터를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.',
-      img: '/images/placeholder-error.svg',
+      text: '데이터를 불러오지 못했어요.',
     },
   } as const;
 
-  const { text, img } = map[variant];
+  const { text } = map[variant];
 
   return (
-    <div className='border-black-700 bg-black-900/40 my-16 flex flex-col items-center justify-center rounded-xl border p-10 text-gray-400'>
-      {/* ▶ 아이콘/일러스트: 이미지가 없으면 이 div를 지우고 Lucide 아이콘 등으로 대체해도 됩니다 */}
-      <div className='relative h-12 w-12 opacity-80'>
-        <Image src={img} alt='' fill className='object-contain' />
-      </div>
+    <div className='bg-black-900 my-16 flex flex-col items-center justify-center rounded-xl border border-none p-10 text-gray-400'>
       <p className='mt-3'>{text}</p>
     </div>
   );
@@ -69,23 +61,13 @@ const CompareResult = () => {
   const { data, isPending, isError } = useQuery({
     queryKey: ['compare', a?.id, b?.id, requested],
     enabled,
-    queryFn: async (): Promise<[CompareMetrics, CompareMetrics]> => {
-      // 예시: 서버에서 각 상품의 최신 지표 1개씩 반환한다고 가정
-      // const res = await fetch(`/api/compare?aid=${a!.id}&bid=${b!.id}`);
-      // return res.json();
-
-      //  임시 목데이터(별점/리뷰/찜)
-      return [
-        { id: a!.id, rating: 4.8, reviewCount: 100, favoriteCount: 10000 },
-        { id: b!.id, rating: 4.9, reviewCount: 300, favoriteCount: 100 },
-      ];
-    },
+    queryFn: async () => fetchCompare(a!.id, b!.id), // ✅ 통합 목데이터 참조
     staleTime: 60_000,
   });
 
   /** ---------- 상태 분기(UI만 담당) ---------- */
-  if (!a || !b) return <ResultPlaceholder variant='idle' />; // ✅ 입력 전(두 슬롯 중 하나라도 비었을 때)
-  if (!requested) return <ResultPlaceholder variant='ready' />; // ✅ 준비 완료(두 슬롯 선택 완료, 버튼 전)
+  if (!a || !b) return <ResultPlaceholder variant='idle' />; //  입력 전(두 슬롯 중 하나라도 비었을 때)
+  if (!requested) return <ResultPlaceholder variant='ready' />; //  준비 완료(두 슬롯 선택 완료, 비교 버튼 활성화 및 클릭 전)
   if (isPending) return <div className='bg-black-800 mt-8 h-48 animate-pulse rounded-xl' />; // 로딩
   if (isError || !data) return <ResultPlaceholder variant='error' />; // 에러
 
@@ -125,10 +107,10 @@ const CompareResult = () => {
         비교 결과
       </h2>
 
-      {/* ✅ 요약 문구 */}
+      {/* 요약 문구 */}
       <CompareResultSummary aName={a.name} bName={b.name} aWins={aWins} bWins={bWins} ties={ties} />
 
-      {/* ✅ 상세 테이블 */}
+      {/* 상세 테이블 */}
       <CompareResultTable aName={a.name} bName={b.name} rows={rows} />
     </section>
   );

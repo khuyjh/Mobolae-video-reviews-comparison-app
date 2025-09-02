@@ -16,12 +16,15 @@ export interface CompareState {
   b: CompareCandidate | null;
   requested: boolean;
 
-  // 액션들
-  setA: (candidate: CompareCandidate | null) => void;
-  setB: (candidate: CompareCandidate | null) => void;
+  // 선택 액션
+  setA: (v: CompareCandidate | null) => void;
+  setB: (v: CompareCandidate | null) => void;
+
+  // "비교하기" 버튼 액션
   requestCompare: () => void;
+
+  // 후보 변경 시, 다시 버튼을 눌러야 하므로 requested=false로 리셋
   resetRequest: () => void;
-  resetAll: () => void;
 }
 
 export const useCompareStore = create<CompareState>()(
