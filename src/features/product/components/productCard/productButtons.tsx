@@ -5,14 +5,15 @@ import Button from '@/shared/components/Button';
 interface ProductButtonsProps {
   isEditable: boolean;
   className?: string;
+  onReviewButtonClick: () => void;
 }
 
 const BUTTON_STYLES = 'w-full max-w-none rounded-[8px] md:flex-1';
 
-const ProductButtons = ({ isEditable, className }: ProductButtonsProps) => {
+const ProductButtons = ({ isEditable, className, onReviewButtonClick }: ProductButtonsProps) => {
   return (
     <div className={`flex flex-col gap-[15px] md:flex-row ${className}`}>
-      <Button variant='primary' className={BUTTON_STYLES}>
+      <Button variant='primary' className={BUTTON_STYLES} onClick={onReviewButtonClick}>
         리뷰 작성하기
       </Button>
       <Button variant='secondary' className={BUTTON_STYLES}>
