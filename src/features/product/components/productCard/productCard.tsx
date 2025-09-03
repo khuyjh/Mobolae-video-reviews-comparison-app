@@ -10,6 +10,7 @@ import { formatNumber } from '@/shared/utils/formatters';
 import ProductButtons from './productButtons';
 import ProductDescription from './productDescription';
 import ProductHeader from './productHeader';
+import EditDeleteModal from '../productModal/editDeleteModal';
 import ReviewAddModal from '../productModal/reviewAddModal';
 
 interface ProductCardProps {
@@ -36,6 +37,8 @@ const ProductCard = ({
 
   const [isReviewAddModalOpen, setIsReviewAddModalOpen] = useState(false);
   const [isRedirectModalOpen, setIsRedirectModalOpen] = useState(false);
+  const [isEditDeleteModalOpen, setIsEditDeleteModalOpen] = useState(false);
+
   // 임시로 rating 상태를 추가/ TODO: API 연결
   const [userRating, setUserRating] = useState<number>(4);
 
@@ -67,6 +70,7 @@ const ProductCard = ({
             isEditable={isEditable}
             className='mt-[40px] md:mt-[60px]'
             onReviewButtonClick={handleReviewButtonClick}
+            onEditButtonClick={() => setIsEditDeleteModalOpen(true)}
           />
         </div>
       </div>
@@ -80,6 +84,12 @@ const ProductCard = ({
 
       {/* 로그인 화면 이동 모달 */}
       <RedirectModal isOpen={isRedirectModalOpen} onClose={() => setIsRedirectModalOpen(false)} />
+
+      {/* 편집/삭제 모달 */}
+      <EditDeleteModal
+        isOpen={isEditDeleteModalOpen}
+        onClose={() => setIsEditDeleteModalOpen(false)}
+      />
     </>
   );
 };

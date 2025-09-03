@@ -6,11 +6,17 @@ interface ProductButtonsProps {
   isEditable: boolean;
   className?: string;
   onReviewButtonClick: () => void;
+  onEditButtonClick?: () => void;
 }
 
 const BUTTON_STYLES = 'w-full max-w-none rounded-[8px] md:flex-1';
 
-const ProductButtons = ({ isEditable, className, onReviewButtonClick }: ProductButtonsProps) => {
+const ProductButtons = ({
+  isEditable,
+  className,
+  onReviewButtonClick,
+  onEditButtonClick,
+}: ProductButtonsProps) => {
   return (
     <div className={`flex flex-col gap-[15px] md:flex-row ${className}`}>
       <Button variant='primary' className={BUTTON_STYLES} onClick={onReviewButtonClick}>
@@ -20,8 +26,8 @@ const ProductButtons = ({ isEditable, className, onReviewButtonClick }: ProductB
         비교하기
       </Button>
       {isEditable && (
-        <Button variant='tertiary' className={BUTTON_STYLES}>
-          편집하기
+        <Button variant='tertiary' className={BUTTON_STYLES} onClick={onEditButtonClick}>
+          편집/삭제
         </Button>
       )}
     </div>
