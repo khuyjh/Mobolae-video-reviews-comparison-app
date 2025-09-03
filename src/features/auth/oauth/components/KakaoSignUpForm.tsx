@@ -39,6 +39,9 @@ const KakaoSignUpForm = ({ kakaoCode, redirectUrl }: Props) => {
         token: kakaoCode,
         ...data,
       });
+
+      if (!res) return;
+
       const { accessToken } = res;
 
       if (accessToken) {

@@ -41,6 +41,9 @@ const SignUpForm = ({ redirectUrl }: Props) => {
   const onSubmit: SubmitHandler<SignUpSchema> = async (data) => {
     try {
       const res = await signUpRequest(data);
+
+      if (!res) return;
+
       const { accessToken } = res;
 
       if (accessToken) {

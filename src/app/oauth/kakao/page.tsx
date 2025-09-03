@@ -37,6 +37,9 @@ const KakaoCallbackPage = () => {
             redirectUri: `${window.location.origin}/oauth/kakao`,
             token: code,
           });
+
+          if (!res) return;
+
           const { accessToken } = res;
 
           if (accessToken) {

@@ -1,12 +1,13 @@
-import { privateApiClient, publicApiClient } from '@/shared/api/apiClients';
-import { DetailUser } from '@/shared/types/userTypes';
+import { api } from '@/shared/api/apiClients';
+import { TEAM_ID } from '@/shared/constants/constants';
 
 import { SignInSchema, SignUpSchema } from '../schemas/authSchema';
-import { AuthResponse, KakaoLoginData, KakaoSignUpData } from '../types/authTypes';
+import { KakaoLoginData, KakaoSignUpData } from '../types/authTypes';
 
-export const signUpRequest = async (data: SignUpSchema): Promise<AuthResponse> => {
+export const signUpRequest = async (data: SignUpSchema) => {
+  if (!TEAM_ID) return;
   try {
-    const res = await publicApiClient.post('/auth/signUp', data);
+    const res = await api.auth.signUp(TEAM_ID, data);
     return res.data;
   } catch (e) {
     console.log('회원가입 요청 에러');
@@ -14,9 +15,10 @@ export const signUpRequest = async (data: SignUpSchema): Promise<AuthResponse> =
   }
 };
 
-export const signInRequest = async (data: SignInSchema): Promise<AuthResponse> => {
+export const signInRequest = async (data: SignInSchema) => {
+  if (!TEAM_ID) return;
   try {
-    const res = await publicApiClient.post('/auth/signin', data);
+    const res = await api.auth.signIn(TEAM_ID, data);
     return res.data;
   } catch (e) {
     console.log('로그인 요청 에러');
@@ -24,9 +26,10 @@ export const signInRequest = async (data: SignInSchema): Promise<AuthResponse> =
   }
 };
 
-export const getMe = async (): Promise<DetailUser> => {
+export const getMe = async () => {
+  if (!TEAM_ID) return;
   try {
-    const res = await privateApiClient.get('/users/me');
+    const res = await api.user.me(TEAM_ID);
     return res.data;
   } catch (e) {
     console.log('사용자 정보 요청 에러');
@@ -34,9 +37,10 @@ export const getMe = async (): Promise<DetailUser> => {
   }
 };
 
-export const kakaoSignInRequest = async (data: KakaoLoginData): Promise<AuthResponse> => {
+export const kakaoSignInRequest = async (data: KakaoLoginData) => {
+  if (!TEAM_ID) return;
   try {
-    const res = await publicApiClient.post('/auth/signIn/kakao', data);
+    const res = await api.auth.signInOauth(TEAM_ID, 'kakao', data);
     return res.data;
   } catch (e) {
     console.log('카카오 로그인 요청 에러');
@@ -44,9 +48,10 @@ export const kakaoSignInRequest = async (data: KakaoLoginData): Promise<AuthResp
   }
 };
 
-export const kakaoSignUpRequest = async (data: KakaoSignUpData): Promise<AuthResponse> => {
+export const kakaoSignUpRequest = async (data: KakaoSignUpData) => {
+  if (!TEAM_ID) return;
   try {
-    const res = await publicApiClient.post('/auth/signUp/kakao', data);
+    const res = await api.auth.signUpOauth(TEAM_ID, 'kakao', data);
     return res.data;
   } catch (e) {
     console.log('카카오 간편 회원가입 요청 에러');
