@@ -21,6 +21,11 @@ export type CompareSelectProps = {
   disabled?: boolean;
   // 칩 색상용 prop (기본은 left 녹색)
   scheme?: 'left' | 'right';
+  //선택을 시도하고 성공/실패를 알려주는 콜백
+  onTryChange?: (v: CompareCandidate | null) => { ok: boolean; reason?: 'duplicate' };
+  // 실패 사유를 외부에서 처리(토스트 등)하고 싶을 때 사용
+  // ex) onError={(reason) => toast.error('동일 콘텐츠는 선택할 수 없습니다.')}
+  onError?: (reason: 'duplicate' | string) => void;
   //커스텀 스타일
   className?: string; // 외곽 컨테이너 스타일
   inputClassName?: string; // 인풋 스타일
@@ -47,6 +52,8 @@ const CompareSelect = forwardRef<HTMLInputElement, CompareSelectProps>(function 
     dropdownClassName,
     filterFn = defaultFilter,
     scheme = 'left',
+    onTryChange,
+    onError, // 실패 알림(토스트 등)을 외부에서 처리할 수 있게 제공
   },
   _ref,
 ) {
@@ -79,18 +86,6 @@ const CompareSelect = forwardRef<HTMLInputElement, CompareSelectProps>(function 
     return () => document.removeEventListener('mousedown', onDocClick);
   }, []);
 
-  // 드롭다운 열릴 때 첫 항목 활성화
-  useEffect(() => {
-    if (open) setActiveIndex(0);
-  }, [open, query]);
-
-  const handleSelect = (opt: CompareCandidate) => {
-    if (opt.disabled) return;
-    onChange(opt);
-    setOpen(false);
-    setQuery('');
-  };
-
   // 칩 색상용 prop (기본은 left 녹색 글로벌 css chip 색상 사용)
   const ChipColor = {
     left: {
@@ -103,10 +98,49 @@ const CompareSelect = forwardRef<HTMLInputElement, CompareSelectProps>(function 
     },
   } as const;
 
+  // 드롭다운 열릴 때 첫 항목 활성화
+  useEffect(() => {
+    if (open) setActiveIndex(0);
+  }, [open, query]);
+
+  /** 후보를 확정 선택 */
+  const handleSelect = (opt: CompareCandidate) => {
+    if (opt.disabled) return;
+
+    // 1) onTryChange가 있으면 먼저 시도 → 실패(중복 등) 시 에러만 표시 후 종료
+    if (onTryChange) {
+      const res = onTryChange(opt);
+      if (!res.ok) {
+        onError?.(res.reason ?? 'unknown');
+        return; //  선택 무효
+      }
+      // 성공 시 에러 해제, 닫기/초기화만
+      setOpen(false);
+      setQuery('');
+      return; //  onChange는 호출하지 않음 (이중 업데이트 방지)
+    }
+
+    // 2) fallback: 기존 onChange 사용(스토어 없이 로컬 사용 등)
+    onChange(opt);
+    setOpen(false);
+    setQuery('');
+  };
+
+  /** 현재 슬롯의 선택을 제거 */
   const handleClear = () => {
+    if (onTryChange) {
+      const res = onTryChange(null);
+      if (!res.ok) {
+        onError?.(res.reason ?? 'unknown');
+        return;
+      }
+      setQuery('');
+      requestAnimationFrame(() => inputRef.current?.focus());
+      return;
+    }
+
     onChange(null);
     setQuery('');
-    // 포커스 되돌리기
     requestAnimationFrame(() => inputRef.current?.focus());
   };
 
@@ -188,7 +222,10 @@ const CompareSelect = forwardRef<HTMLInputElement, CompareSelectProps>(function 
               aria-label='선택 값 제거'
               className='bg-black-50 cursor-pointer rounded-[6px] focus:outline-none'
             >
-              <X className='aria-hidden="true" h-[17px] w-[17px] rounded-[6px] border border-black text-white md:h-[19px] md:w-[19px]' />
+              <X
+                aria-hidden='true'
+                className='h-[17px] w-[17px] rounded-[6px] border border-black text-white md:h-[19px] md:w-[19px]'
+              />
             </button>
           </div>
         )}

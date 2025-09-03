@@ -31,8 +31,8 @@ const CompareResultSummary = ({ aName, bName, aWins, bWins, ties }: ResultSummar
   const resultHeading =
     side === 'TIE' ? (
       <>
-        <span className={color}>무승부</span>
-        <span className='ml-[4px] text-gray-400'>입니다!</span>
+        <span className={color}>두 콘텐츠의 평이 </span>
+        <span className='ml-[4px] text-gray-400'>비슷합니다.</span>
       </>
     ) : (
       <>
@@ -45,7 +45,7 @@ const CompareResultSummary = ({ aName, bName, aWins, bWins, ties }: ResultSummar
         <span className={DESCRIPTION_STYLE}>콘텐츠가</span>{' '}
         {/* 모바일/태블릿에선 줄바꿈, 데스크탑에선 안 보임 */}
         <br className='lg:hidden' />
-        <span className={DESCRIPTION_STYLE}>승리하였습니다!</span>
+        <span className={DESCRIPTION_STYLE}>더 선호됩니다!</span>
       </>
     );
 
