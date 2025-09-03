@@ -41,20 +41,19 @@ const ContentList = () => {
   }, [keyword, category]);
 
   /** 무한 스크롤 쿼리 (커서 기반) */
-  const { data, isFetchingNextPage, fetchNextPage, hasNextPage, status, refetch } =
-    useInfiniteQuery({
-      queryKey: ['contents', { category, keyword, order }], // 조건별 캐시 키
-      initialPageParam: 0 as number, // 첫 커서
-      queryFn: ({ pageParam }) =>
-        serverListContents({
-          category,
-          keyword,
-          order,
-          cursor: pageParam ?? 0,
-          limit: PAGE_SIZE,
-        }),
-      getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined, // 다음 커서 없으면 종료
-    });
+  const { data, isFetchingNextPage, fetchNextPage, hasNextPage, status } = useInfiniteQuery({
+    queryKey: ['contents', { category, keyword, order }], // 조건별 캐시 키
+    initialPageParam: 0 as number, // 첫 커서
+    queryFn: ({ pageParam }) =>
+      serverListContents({
+        category,
+        keyword,
+        order,
+        cursor: pageParam ?? 0,
+        limit: PAGE_SIZE,
+      }),
+    getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined, // 다음 커서 없으면 종료
+  });
 
   /** pages → 단일 배열로 평탄화 + UI 전용 모델 매핑 */
   const items = useMemo(() => {
@@ -70,11 +69,17 @@ const ContentList = () => {
    */
   const handleChangeOrder = useCallback(
     (nextOrder: ProductOrderKey) => {
+      if (nextOrder === order) return;
+
       const next = new URLSearchParams(searchParams);
-      next.set('order', nextOrder);
+      if (nextOrder === 'recent') {
+        next.delete('order');
+      } else {
+        next.set('order', nextOrder);
+      }
+
       next.delete('cursor'); // 커서 초기화
       router.replace(`${pathname}?${next.toString()}`, { scroll: false });
-      // 필요 시 강제 refetch 가능: refetch();
     },
     [searchParams, router, pathname],
   );
