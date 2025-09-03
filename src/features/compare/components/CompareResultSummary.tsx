@@ -31,7 +31,7 @@ const CompareResultSummary = ({ aName, bName, aWins, bWins, ties }: ResultSummar
   const resultHeading =
     side === 'TIE' ? (
       <>
-        <span className={color}>두 콘텐츠의 평이 </span>
+        <span className={color}>두 콘텐츠의 평이</span>
         <span className='ml-[4px] text-gray-400'>비슷합니다.</span>
       </>
     ) : (
