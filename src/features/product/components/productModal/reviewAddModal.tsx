@@ -2,7 +2,7 @@
 
 import { Star } from 'lucide-react';
 import { ImagePlus, X } from 'lucide-react';
-import { useState, useRef, ChangeEvent } from 'react';
+import { useState, useRef, useMemo, useEffect, ChangeEvent } from 'react';
 import { toast } from 'react-toastify';
 
 import BaseModal from '@/shared/components/BaseModal';
@@ -18,14 +18,13 @@ interface Props {
 }
 
 const IMAGE_ITEM_BASE_CLASSES = 'bg-black-800 group relative rounded-[8px] border border-gray-700';
-
 const IMAGE_ITEM_SIZES = 'h-[140px] w-[140px] md:h-[145px] md:w-[135px] xl:h-[160px] xl:w-[160px]';
-
 const IMAGE_REMOVE_BUTTON_CLASSES =
   'bg-black-900/60 absolute top-1 right-1 rounded-full p-1 opacity-0 transition-opacity group-hover:opacity-100';
-
 const TEXTAREA_CLASSES =
   'bg-black-800 w-full resize-none rounded-[8px] border border-gray-700 p-4 pr-12 text-white placeholder-gray-500';
+
+type ImageEntry = { file: File; url: string };
 
 const ReviewAddModal = ({ isOpen, onClose, rating }: Props) => {
   /* 리뷰 텍스트 상태 관리 */
@@ -33,8 +32,23 @@ const ReviewAddModal = ({ isOpen, onClose, rating }: Props) => {
 
   /* 이미지 파일 상태 관리 */
   const [imageFiles, setImageFiles] = useState<File[]>([]);
-  const MAX_IMAGES = 3; // 최대 이미지 개수
+  const MAX_IMAGES = 3;
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  /* files → previews (한 번 만들고 재사용) */
+  const previews = useMemo<ImageEntry[]>(() => {
+    return imageFiles.map((file) => ({
+      file,
+      url: URL.createObjectURL(file),
+    }));
+  }, [imageFiles]);
+
+  /* previews가 바뀌거나 컴포넌트 unmount 시 URL 해제 */
+  useEffect(() => {
+    return () => {
+      previews.forEach((p) => URL.revokeObjectURL(p.url));
+    };
+  }, [previews]);
 
   /* 이미지 첨부 버튼 클릭 시 파일 입력창 열기 */
   const handleImageUploadClick = () => {
@@ -46,23 +60,18 @@ const ReviewAddModal = ({ isOpen, onClose, rating }: Props) => {
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) {
-      if (e.target) {
-        e.target.value = '';
-      }
+      if (e.target) e.target.value = '';
       return;
     }
 
     const newFilesArray = Array.from(files);
     let duplicatesFound = false;
 
-    /* 먼저 중복 파일을 확인하고 중복 파일이 있는지 여부를 duplicatesFound로 저장 */
     const uniqueNewFiles = newFilesArray.filter((file) => {
       const isDuplicate = imageFiles.some(
         (existingFile) => existingFile.name === file.name && existingFile.size === file.size,
       );
-      if (isDuplicate) {
-        duplicatesFound = true;
-      }
+      if (isDuplicate) duplicatesFound = true;
       return !isDuplicate;
     });
 
@@ -77,7 +86,6 @@ const ReviewAddModal = ({ isOpen, onClose, rating }: Props) => {
     }
 
     const totalFilesAfterAdd = imageFiles.length + uniqueNewFiles.length;
-
     if (totalFilesAfterAdd > MAX_IMAGES) {
       const filesToAdd = uniqueNewFiles.slice(0, MAX_IMAGES - imageFiles.length);
       setImageFiles((prevFiles) => [...prevFiles, ...filesToAdd]);
@@ -85,10 +93,7 @@ const ReviewAddModal = ({ isOpen, onClose, rating }: Props) => {
       setImageFiles((prevFiles) => [...prevFiles, ...uniqueNewFiles]);
     }
 
-    /* 파일 입력의 값을 초기화하여 같은 파일을 다시 선택해도 change 이벤트가 발생하도록 합니다.*/
-    if (e.target) {
-      e.target.value = '';
-    }
+    if (e.target) e.target.value = '';
   };
 
   /* 이미지 제거 */
@@ -96,6 +101,7 @@ const ReviewAddModal = ({ isOpen, onClose, rating }: Props) => {
     setImageFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
   };
 
+  /* 모달 닫기 */
   const handleModalClose = () => {
     setReviewText('');
     setImageFiles([]);
@@ -154,11 +160,10 @@ const ReviewAddModal = ({ isOpen, onClose, rating }: Props) => {
         {/* 이미지 첨부 칸 */}
         <div className='mt-2.5 flex flex-col gap-3'>
           <div className='flex items-center gap-2'>
-            {imageFiles.map((file, index) => (
-              <div key={index} className={cn(IMAGE_ITEM_BASE_CLASSES, IMAGE_ITEM_SIZES)}>
-                {/* 브라우저의 직접적인 파일 접근 이유로 <img />사용*/}
+            {previews.map((p, index) => (
+              <div key={p.url} className={cn(IMAGE_ITEM_BASE_CLASSES, IMAGE_ITEM_SIZES)}>
                 <img
-                  src={URL.createObjectURL(file)}
+                  src={p.url}
                   alt={`첨부 이미지 ${index + 1}`}
                   className='h-full w-full rounded-[8px] object-cover'
                 />
