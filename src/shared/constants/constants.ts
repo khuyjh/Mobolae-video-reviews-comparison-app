@@ -17,5 +17,4 @@ export const CATEGORIES: Category[] = [
 
 // api url/key
 export const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
-export const TEAM_ID = process.env.NEXT_PUBLIC_TEAM_ID;
 export const KAKAO_AUTH_URL = 'https://kauth.kakao.com/oauth/authorize';
