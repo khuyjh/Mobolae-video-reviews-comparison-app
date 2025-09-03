@@ -10,7 +10,7 @@ import ProfileBadge from '@/shared/components/card/avatarCard';
 import type { Reviewer } from '@/shared/types/reviewer';
 
 // 리뷰어 프로필 상세 페이지로 이동하는 라우트 생성 함수
-const buildReviewerHref = (userId: number) => `/reviewer/${userId}`;
+const buildReviewerHref = (userId: number) => `/user/${userId}`;
 
 type Direction = 'row' | 'col';
 
