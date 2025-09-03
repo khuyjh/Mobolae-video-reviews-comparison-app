@@ -20,8 +20,6 @@ interface Props {
 
 type ImageEntry = { file: File; url: string };
 
-const MAX_IMAGES = 3;
-
 export default function ReviewAddModal({ isOpen, onClose, rating }: Props) {
   const [reviewText, setReviewText] = useState('');
   const [imageFiles, setImageFiles] = useState<File[]>([]);
@@ -64,7 +62,7 @@ export default function ReviewAddModal({ isOpen, onClose, rating }: Props) {
 
     if (uniqueNewFiles.length === 0) return;
 
-    const remain = MAX_IMAGES - imageFiles.length;
+    const remain = 3 - imageFiles.length;
     if (remain <= 0) return;
 
     const filesToAdd = uniqueNewFiles.slice(0, remain);
@@ -123,7 +121,7 @@ export default function ReviewAddModal({ isOpen, onClose, rating }: Props) {
           onChange={handleImageChange}
           onRemove={handleImageRemove}
           previewUrls={previews.map((p) => p.url)}
-          showAddButton={imageFiles.length < MAX_IMAGES}
+          maxImages={3}
           className='mt-2.5'
         />
         <p className='text-xs-medium mt-1.5 text-gray-400'>

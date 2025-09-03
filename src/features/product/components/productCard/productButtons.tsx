@@ -27,7 +27,7 @@ const ProductButtons = ({
       </Button>
       {isEditable && (
         <Button variant='tertiary' className={BUTTON_STYLES} onClick={onEditButtonClick}>
-          편집/삭제
+          편집하기
         </Button>
       )}
     </div>

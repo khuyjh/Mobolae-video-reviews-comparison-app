@@ -9,16 +9,16 @@ import { cn } from '@/shared/lib/cn';
  * value: 현재 선택된 이미지 배열
  * onChange: 새로운 파일이 선택 되었을 때 호출되는 함수
  * onRemove: 이미지가 삭제되었을 때 호출되는 함수
+ * maxImages: 이미지 최대 개수 (기본값 1)
  * previewUrls: 이미지 미리보기
- * showAddButton: 이미지 추가 버튼 여부
  */
 interface ImageUploaderProps {
   value: File[];
   onChange: (newFiles: File[]) => void;
   onRemove: (index: number) => void;
+  maxImages?: number;
   className?: string;
   previewUrls: string[];
-  showAddButton?: boolean;
 }
 
 const IMAGE_ITEM_BASE_CLASSES = 'bg-black-800 group relative rounded-[8px] border border-gray-700';
@@ -31,16 +31,14 @@ export default function ImageUploader({
   value,
   onChange,
   onRemove,
+  maxImages = 1, // 기본값 1
   className,
   previewUrls,
-  showAddButton = true,
 }: ImageUploaderProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
-
-    /* 파일이 없거나 빈 배열인 경우 */
     if (!files || files.length === 0) {
       if (e.target) e.target.value = '';
       return;
@@ -54,10 +52,11 @@ export default function ImageUploader({
     onRemove(index);
   };
 
+  const canAddMore = value.length < maxImages;
+
   return (
     <div className={cn('flex flex-col gap-3', className)}>
       <div className='grid grid-cols-3 gap-2'>
-        {/* URL은 부모로부터 받은 previewUrls를 직접 사용 */}
         {previewUrls.map((previewUrl, index) => (
           <div
             key={`${value[index]?.name ?? 'img'}-${index}`}
@@ -68,7 +67,6 @@ export default function ImageUploader({
               alt={`첨부 이미지 ${index + 1}`}
               className='h-full w-full rounded-[8px] object-cover'
             />
-
             <button
               type='button'
               onClick={() => handleImageRemove(index)}
@@ -80,7 +78,7 @@ export default function ImageUploader({
           </div>
         ))}
 
-        {showAddButton && (
+        {canAddMore && (
           <label
             htmlFor='file-upload'
             aria-label='이미지 첨부'
