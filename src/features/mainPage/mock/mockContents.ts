@@ -106,7 +106,7 @@ export const mockContentApiResponse: ContentListResponse = {
 // (옵션) 리뷰어 목데이터
 export const mockReviewers = [
   {
-    userId: 1,
+    userId: 933,
     name: '무비덕',
     profileImageUrl: 'https://i.pravatar.cc/40?img=1',
     followers: 1520,
