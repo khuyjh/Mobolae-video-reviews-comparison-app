@@ -1,9 +1,10 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-import { getMe } from '@/features/auth/api/authApi';
 import { getCookie, removeCookie } from '@/features/auth/utils/cookie';
 
+import { api } from '../api/apiClients';
+import { TEAM_ID } from '../constants/constants';
 import { UserState } from '../types/userTypes';
 
 export const useUserStore = create(
@@ -12,8 +13,10 @@ export const useUserStore = create(
       user: null,
       isLoggedIn: false,
       setUser: async () => {
+        if (!TEAM_ID) return;
         try {
-          const user = await getMe();
+          const res = await api.user.me(TEAM_ID);
+          const user = res.data;
           if (user) {
             set({ user, isLoggedIn: true });
           }
