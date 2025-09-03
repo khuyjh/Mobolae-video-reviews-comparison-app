@@ -6,12 +6,13 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import axios from 'axios';
 import { SubmitHandler, useForm } from 'react-hook-form';
 
+import { api } from '@/shared/api/apiClients';
 import Button from '@/shared/components/Button';
 import Input from '@/shared/components/Input';
 import PasswordInput from '@/shared/components/PasswordInput';
+import { TEAM_ID } from '@/shared/constants/constants';
 import { useUserStore } from '@/shared/stores/userStore';
 
-import { signInRequest } from '../../api/authApi';
 import { SignInSchema, signInSchema } from '../../schemas/authSchema';
 import { setCookie } from '../../utils/cookie';
 
@@ -37,16 +38,23 @@ const SignInForm = ({ redirectUrl }: Props) => {
   const router = useRouter();
 
   const onSubmit: SubmitHandler<SignInSchema> = async (data) => {
+    if (!TEAM_ID) return;
+
     try {
-      const res = await signInRequest(data);
-      const { accessToken } = res;
+      const res = await api.auth.signIn(TEAM_ID, data);
+      const resData = res.data;
+
+      if (!res) return;
+
+      const { accessToken } = resData;
 
       if (accessToken) {
         setCookie('accessToken', accessToken);
       }
 
       setUser();
-      console.log(res.user?.nickname, '님 환영합니다'); //토스트 로그인 처리
+      console.log(resData.user?.nickname, '님 환영합니다'); //토스트 로그인 처리
+
       if (redirectUrl) {
         router.replace(redirectUrl);
       } else {

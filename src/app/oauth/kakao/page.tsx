@@ -5,11 +5,12 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { isAxiosError } from 'axios';
 import { useEffect, useState } from 'react';
 
-import { kakaoSignInRequest } from '@/features/auth/api/authApi';
 import KakaoError from '@/features/auth/components/KakaoError';
 import { setCookie } from '@/features/auth/utils/cookie';
 import moveToKakao from '@/features/auth/utils/moveToKakao';
+import { api } from '@/shared/api/apiClients';
 import LoadingImage from '@/shared/components/LoadingImage';
+import { TEAM_ID } from '@/shared/constants/constants';
 import { useUserStore } from '@/shared/stores/userStore';
 
 const KakaoCallbackPage = () => {
@@ -32,19 +33,26 @@ const KakaoCallbackPage = () => {
       setHasError(true);
     } else {
       const kakaoLogin = async () => {
+        if (!TEAM_ID) return;
+
         try {
-          const res = await kakaoSignInRequest({
+          const res = await api.auth.signInOauth(TEAM_ID, 'kakao', {
             redirectUri: `${window.location.origin}/oauth/kakao`,
             token: code,
           });
-          const { accessToken } = res;
+          const resData = res.data;
+
+          if (!res) return;
+
+          const { accessToken } = resData;
 
           if (accessToken) {
             setCookie('accessToken', accessToken);
           }
 
           setUser();
-          console.log(res.user?.nickname, '님 환영합니다'); //토스트 로그인 처리
+          console.log(resData.user?.nickname, '님 환영합니다'); //토스트 로그인 처리
+
           if (redirectUrl) {
             router.replace(redirectUrl);
           } else {

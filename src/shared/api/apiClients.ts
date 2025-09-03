@@ -1,16 +1,17 @@
 import axios, { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 import Cookies from 'js-cookie';
 
+import {
+  AuthApi,
+  Configuration,
+  FollowApi,
+  ImageApi,
+  OauthApi,
+  ProductApi,
+  ReviewApi,
+  UserApi,
+} from '../../../ts-client';
 import { BASE_URL } from '../constants/constants';
-
-// 인증 토큰을 요구하지 않는 api 요청 instance
-export const publicApiClient: AxiosInstance = axios.create({
-  baseURL: BASE_URL,
-  timeout: 10000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
 
 export const privateApiClient: AxiosInstance = axios.create({
   baseURL: BASE_URL,
@@ -35,3 +36,19 @@ privateApiClient.interceptors.request.use(
     return Promise.reject(error);
   },
 );
+
+const config = new Configuration({
+  baseOptions: {
+    ...privateApiClient.defaults,
+  },
+});
+
+export const api = {
+  user: new UserApi(config, undefined, privateApiClient),
+  review: new ReviewApi(config, undefined, privateApiClient),
+  product: new ProductApi(config, undefined, privateApiClient),
+  oauth: new OauthApi(config, undefined, privateApiClient),
+  image: new ImageApi(config, undefined, privateApiClient),
+  follow: new FollowApi(config, undefined, privateApiClient),
+  auth: new AuthApi(config, undefined, privateApiClient),
+};
