@@ -4,12 +4,11 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { isAxiosError } from 'axios';
 import { SubmitHandler, useForm } from 'react-hook-form';
 
-import { api } from '@/shared/api/apiClients';
 import Button from '@/shared/components/Button';
 import Input from '@/shared/components/Input';
-import { TEAM_ID } from '@/shared/constants/constants';
 import { useUserStore } from '@/shared/stores/userStore';
 
+import { kakaoSignUpRequest } from '../../api/authApi';
 import { KakaoSignUpSchema, kakaoSignUpSchema } from '../../schemas/authSchema';
 import { setCookie } from '../../utils/cookie';
 
@@ -34,27 +33,20 @@ const KakaoSignUpForm = ({ kakaoCode, redirectUrl }: Props) => {
   const router = useRouter();
 
   const onSubmit: SubmitHandler<KakaoSignUpSchema> = async (data) => {
-    if (!TEAM_ID) return;
-
     try {
-      const res = await api.auth.signUpOauth(TEAM_ID, 'kakao', {
+      const res = await kakaoSignUpRequest({
         redirectUri: `${window.location.origin}/oauth/signup/kakao`,
         token: kakaoCode,
         ...data,
       });
-      const resData = res.data;
-
-      if (!res) return;
-
-      const { accessToken } = resData;
+      const { accessToken } = res;
 
       if (accessToken) {
         setCookie('accessToken', accessToken);
       }
 
       setUser();
-      console.log(resData.user?.nickname, '님 환영합니다'); //토스트 로그인 처리
-
+      console.log(res.user?.nickname, '님 환영합니다'); //토스트 로그인 처리
       if (redirectUrl) {
         router.replace(redirectUrl);
       } else {
