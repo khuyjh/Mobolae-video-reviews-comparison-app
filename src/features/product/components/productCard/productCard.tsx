@@ -1,12 +1,16 @@
+'use client';
+
 import Image from 'next/image';
 
-import React from 'react';
+import React, { useState } from 'react';
 
+import RedirectModal from '@/features/auth/components/RedirectModal';
 import { formatNumber } from '@/shared/utils/formatters';
 
 import ProductButtons from './productButtons';
 import ProductDescription from './productDescription';
 import ProductHeader from './productHeader';
+import ReviewAddModal from '../productModal/reviewAddModal';
 
 interface ProductCardProps {
   imageSrc: string;
@@ -30,21 +34,53 @@ const ProductCard = ({
 }: ProductCardProps) => {
   const formattedViews = formatNumber(views);
 
+  const [isReviewAddModalOpen, setIsReviewAddModalOpen] = useState(false);
+  const [isRedirectModalOpen, setIsRedirectModalOpen] = useState(false);
+  // 임시로 rating 상태를 추가/ TODO: API 연결
+  const [userRating, setUserRating] = useState<number>(4);
+
+  // TODO: 실제 로그인 상태를 가져오는 훅으로 교체
+  const isAuthenticated = true; // true: 로그인 / false: 비로그인
+
+  const handleReviewButtonClick = () => {
+    if (isAuthenticated) {
+      setIsReviewAddModalOpen(true);
+    } else {
+      setIsRedirectModalOpen(true);
+    }
+  };
+
   return (
-    <div className='flex flex-col md:flex-row md:gap-5'>
-      {/* 이미지 섹션 */}
-      <div className={IMAGE_CONTAINER_STYLES}>
-        <Image src={imageSrc} alt={title} fill className='object-cover' priority />
+    <>
+      <div className='flex flex-col md:flex-row md:gap-5'>
+        {/* 이미지 섹션 */}
+        <div className={IMAGE_CONTAINER_STYLES}>
+          <Image src={imageSrc} alt={title} fill className='object-cover' priority />
+        </div>
+
+        {/* 콘텐츠 섹션 */}
+        <div className='mt-5 flex flex-1 flex-col md:mt-0 md:py-0 xl:px-[40px]'>
+          <ProductHeader category={category} title={title} views={formattedViews} />
+          {/* 설명 */}
+          <ProductDescription description={description} className='mt-[20px]' />
+          <ProductButtons
+            isEditable={isEditable}
+            className='mt-[40px] md:mt-[60px]'
+            onReviewButtonClick={handleReviewButtonClick}
+          />
+        </div>
       </div>
 
-      {/* 콘텐츠 섹션 */}
-      <div className='mt-5 flex flex-1 flex-col md:mt-0 md:py-0 xl:px-[40px]'>
-        <ProductHeader category={category} title={title} views={formattedViews} />
-        {/* 설명 */}
-        <ProductDescription description={description} className='mt-[20px]' />
-        <ProductButtons isEditable={isEditable} className='mt-[40px] md:mt-[60px]' />
-      </div>
-    </div>
+      {/* 리뷰 작성 */}
+      <ReviewAddModal
+        isOpen={isReviewAddModalOpen}
+        onClose={() => setIsReviewAddModalOpen(false)}
+        rating={userRating}
+      />
+
+      {/* 로그인 화면 이동 모달 */}
+      <RedirectModal isOpen={isRedirectModalOpen} onClose={() => setIsRedirectModalOpen(false)} />
+    </>
   );
 };
 

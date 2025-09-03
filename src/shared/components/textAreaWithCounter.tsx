@@ -1,0 +1,43 @@
+'use client';
+
+import { cn } from '@/shared/lib/cn';
+
+/*
+ * value: 텍스트 입력 값
+ * onChange: 값 변경 핸들러
+ * maxLength: 최대 글자 수(기본 500)
+ */
+interface TextAreaWithCounterProps {
+  value: string;
+  onChange: (value: string) => void;
+  maxLength?: number;
+  placeholder?: string;
+  className?: string;
+}
+
+const TEXTAREA_CLASSES =
+  'bg-black-800 w-full resize-none rounded-[8px] border border-gray-700 p-4 pr-12 text-white placeholder-gray-500 cursor-pointer';
+
+export default function TextAreaWithCounter({
+  value,
+  onChange,
+  maxLength = 500,
+  placeholder,
+  className,
+}: TextAreaWithCounterProps) {
+  return (
+    <div className={cn('relative w-full', className)}>
+      <textarea
+        className={TEXTAREA_CLASSES}
+        rows={5}
+        placeholder={placeholder}
+        value={value}
+        maxLength={maxLength}
+        onChange={(e) => onChange(e.target.value)}
+      />
+      <div className='text-md-regular absolute right-4 bottom-4 text-gray-600'>
+        {value.length}/{maxLength}
+      </div>
+    </div>
+  );
+}

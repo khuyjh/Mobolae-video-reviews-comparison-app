@@ -18,7 +18,7 @@ export default Button;
 
 const VARIANT_STYLE = {
   primary:
-    'bg-main-gradient text-black-900 disabled:bg-black-700 disabled:text-gray-600 hover:brightness-120',
+    'bg-main-gradient text-black-900 disabled:bg-none disabled:bg-black-700 disabled:text-gray-600 disabled:hover:brightness-100 hover:brightness-120',
   secondary:
     'bg-transparent text-main-dark border-1 border-main-dark hover:border-main hover:text-main hover:bg-main/10',
   tertiary:

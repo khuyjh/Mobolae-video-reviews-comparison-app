@@ -20,7 +20,7 @@ const KakaoCallbackPage = () => {
 
   useEffect(() => {
     const code = searchParams.get('code');
-    // const state = searchParams.get('state'); 이후 리다이렉트 로직에서 처리
+    const redirectUrl = searchParams.get('state');
     const kakaoError = searchParams.get('error');
 
     if (kakaoError) {
@@ -45,12 +45,19 @@ const KakaoCallbackPage = () => {
 
           setUser();
           console.log(res.user?.nickname, '님 환영합니다'); //토스트 로그인 처리
-          router.replace('/');
+          if (redirectUrl) {
+            router.replace(redirectUrl);
+          } else {
+            router.replace('/');
+          }
         } catch (e) {
-          console.log(e);
           if (isAxiosError(e) && e.status === 403) {
             //회원가입 된 유저인지 확인, 아니라면 회원가입으로 이동
-            moveToKakao('/oauth/signup/kakao');
+            if (redirectUrl) {
+              moveToKakao('/oauth/signup/kakao', redirectUrl);
+            } else {
+              moveToKakao('/oauth/signup/kakao');
+            }
           } else if (isAxiosError(e) && e.status === 400)
             //잘못된 인가 코드
             setHasError(true);
