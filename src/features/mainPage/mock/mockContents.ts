@@ -108,7 +108,7 @@ const makeContent = (
   return {
     id,
     name,
-    image: `https://picsum.photos/seed/mobo/400/300`, // 시드 고유화
+    image: `https://picsum.photos/400/300`,
     favoriteCount: favoriteCountOf(),
     reviewCount: reviewCountOf(),
     rating: ratingOf(),
