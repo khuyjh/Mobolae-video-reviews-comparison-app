@@ -1,4 +1,4 @@
-// 비교 상품 0개
+// 비교 콘텐츠 0개
 
 import BaseModal from '@/shared/components/BaseModal';
 import Button from '@/shared/components/Button';
