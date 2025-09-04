@@ -2,21 +2,26 @@
 'use client';
 
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
 
 import type { CompareCandidate } from '../types/compareTypes';
 
 /**
  * 비교 페이지 전역 상태 정의
- * - a, b: 선택된 후보(드롭다운에서 확정된 값)
+ * - a, b: 선택된 후보(입력창에 확정된 값)
  * - requested: "비교하기" 버튼을 눌렀는지 여부(결과 섹션 노출 트리거)
  */
 type CompareState = {
   a: CompareCandidate | null;
   b: CompareCandidate | null;
   requested: boolean;
+
   setA: (a: CompareCandidate | null) => void;
   setB: (b: CompareCandidate | null) => void;
+
+  /** 버튼 눌러서 결과 불러오기 */
   requestCompare: () => void;
+  /** 전체 초기화 */
   clearAll: () => void;
 };
 
