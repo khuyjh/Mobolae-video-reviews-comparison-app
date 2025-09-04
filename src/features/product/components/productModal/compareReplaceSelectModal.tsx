@@ -9,7 +9,7 @@ import { CompareModalType } from '.';
 interface Props {
   isOpen: boolean;
   onClose: () => void;
-  onChangeType: (next: CompareModalType) => void;
+  onChangeType: (type: CompareModalType) => void;
 }
 
 /* mock 데이터 */

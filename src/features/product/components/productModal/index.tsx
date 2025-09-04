@@ -1,3 +1,5 @@
+// 비교 모달들 관리
+
 import CompareAddedModal from './compareAddedModal';
 import CompareReadyModal from './compareReadyModal';
 import CompareReplaceDoneModal from './compareReplaceDoneModal';
@@ -9,7 +11,7 @@ interface CompareModalProps {
   type: CompareModalType;
   isOpen: boolean;
   onClose: () => void;
-  onChangeType: (next: CompareModalType) => void;
+  onChangeType: (type: CompareModalType) => void;
 }
 
 const CompareModal = ({ type, isOpen, onClose, onChangeType }: CompareModalProps) => {

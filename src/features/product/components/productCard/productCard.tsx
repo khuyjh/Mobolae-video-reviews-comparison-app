@@ -5,6 +5,7 @@ import Image from 'next/image';
 import React, { useState } from 'react';
 
 import RedirectModal from '@/features/auth/components/RedirectModal';
+import CompareModal, { CompareModalType } from '@/features/product/components/productModal';
 import { formatNumber } from '@/shared/utils/formatters';
 
 import ProductButtons from './productButtons';
@@ -45,12 +46,25 @@ const ProductCard = ({
   // TODO: 실제 로그인 상태를 가져오는 훅으로 교체
   const isAuthenticated = true; // true: 로그인 / false: 비로그인
 
+  const [compareModalType, setCompareModalType] = useState<CompareModalType | null>(null);
+  const [isCompareModalOpen, setIsCompareModalOpen] = useState(false);
+
+  const mockCompareItems = [1, 2]; // Mock 테스트: 비교 상품 [] 0개 / [1] 1개 [1,2] 2개
+  const compareCount = mockCompareItems.length;
+
   const handleReviewButtonClick = () => {
     if (isAuthenticated) {
       setIsReviewAddModalOpen(true);
     } else {
       setIsRedirectModalOpen(true);
     }
+  };
+
+  const handleCompareClick = () => {
+    if (compareCount === 0) setCompareModalType('added');
+    else if (compareCount === 1) setCompareModalType('ready');
+    else setCompareModalType('replaceSelect');
+    setIsCompareModalOpen(true);
   };
 
   return (
@@ -71,6 +85,7 @@ const ProductCard = ({
             className='mt-[40px] md:mt-[60px]'
             onReviewButtonClick={handleReviewButtonClick}
             onEditButtonClick={() => setIsEditDeleteModalOpen(true)}
+            onCompareButtonClick={handleCompareClick}
           />
         </div>
       </div>
@@ -85,11 +100,15 @@ const ProductCard = ({
       {/* 로그인 화면 이동 모달 */}
       <RedirectModal isOpen={isRedirectModalOpen} onClose={() => setIsRedirectModalOpen(false)} />
 
-      {/* 편집/삭제 모달 */}
-      <EditDeleteModal
-        isOpen={isEditDeleteModalOpen}
-        onClose={() => setIsEditDeleteModalOpen(false)}
-      />
+      {/* 비교 모달  */}
+      {compareModalType && (
+        <CompareModal
+          type={compareModalType}
+          isOpen={isCompareModalOpen}
+          onClose={() => setIsCompareModalOpen(false)}
+          onChangeType={(type) => setCompareModalType(type)}
+        />
+      )}
     </>
   );
 };
