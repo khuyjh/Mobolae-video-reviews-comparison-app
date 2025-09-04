@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import axios from 'axios';
 import { SubmitHandler, useForm } from 'react-hook-form';
+import { toast } from 'react-toastify';
 
 import Button from '@/shared/components/Button';
 import Input from '@/shared/components/Input';
@@ -23,6 +24,7 @@ const SignUpForm = ({ redirectUrl }: Props) => {
   const {
     register,
     handleSubmit,
+    setError,
     formState: { errors, isSubmitting, isValid },
   } = useForm<SignUpSchema>({
     resolver: zodResolver(signUpSchema),
@@ -48,7 +50,8 @@ const SignUpForm = ({ redirectUrl }: Props) => {
       }
 
       setUser();
-      console.log(res.user?.nickname, '님 환영합니다'); //토스트 로그인 처리
+      toast.success(`${res.user?.nickname}님 환영합니다!`);
+
       if (redirectUrl) {
         router.replace(redirectUrl);
       } else {
@@ -57,8 +60,24 @@ const SignUpForm = ({ redirectUrl }: Props) => {
     } catch (e) {
       if (axios.isAxiosError(e)) {
         const message = e.response?.data.message;
-        console.log(message); //추후에 토스트 메시지로 활용, 이메일 중복/닉네임 중복
+        const status = e.status;
+
+        if (status === 400 && message.includes('이메일')) {
+          //중복 이메일
+          setError('email', { type: 'server', message: message });
+          return;
+        } else if (status === 400 && message.includes('닉네임')) {
+          //중복 닉네임
+          setError('nickname', { type: 'server', message: message });
+          return;
+        }
+        // status 400 이외 에러
+        toast.error(`문제가 발생했습니다.\n다시 시도해주세요.`);
+        throw e;
       }
+      // axios외 에러
+      toast.error(`문제가 발생했습니다.\n다시 시도해주세요.`);
+      throw e;
     }
   };
 

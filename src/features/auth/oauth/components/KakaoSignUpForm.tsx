@@ -1,8 +1,9 @@
 import { useRouter } from 'next/navigation';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { isAxiosError } from 'axios';
+import axios from 'axios';
 import { SubmitHandler, useForm } from 'react-hook-form';
+import { toast } from 'react-toastify';
 
 import Button from '@/shared/components/Button';
 import Input from '@/shared/components/Input';
@@ -15,12 +16,14 @@ import { setCookie } from '../../utils/cookie';
 interface Props {
   kakaoCode: string;
   redirectUrl?: string;
+  onError: () => void;
 }
 
-const KakaoSignUpForm = ({ kakaoCode, redirectUrl }: Props) => {
+const KakaoSignUpForm = ({ kakaoCode, redirectUrl, onError }: Props) => {
   const {
     register,
     handleSubmit,
+    setError,
     formState: { errors, isSubmitting },
   } = useForm({
     mode: 'onChange',
@@ -46,16 +49,29 @@ const KakaoSignUpForm = ({ kakaoCode, redirectUrl }: Props) => {
       }
 
       setUser();
-      console.log(res.user?.nickname, '님 환영합니다'); //토스트 로그인 처리
+      toast.success(`${res.user?.nickname}님 환영합니다!`);
+
       if (redirectUrl) {
         router.replace(redirectUrl);
       } else {
         router.replace('/');
       }
     } catch (e) {
-      if (isAxiosError(e)) {
+      if (axios.isAxiosError(e)) {
         const message = e.response?.data.message;
-        console.log(message); //추후에 토스트 메시지로 활용, 닉네임 중복
+
+        if (message.includes('닉네임')) {
+          //중복 닉네임
+          setError('nickname', { type: 'server', message: message });
+          return;
+        } else if (message.includes('코드')) {
+          //유효하지 않은 인가 코드
+          onError();
+          throw e;
+        }
+        // 이외 에러
+        toast.error(`문제가 발생했습니다.\n다시 시도해주세요.`);
+        throw e;
       }
     }
   };

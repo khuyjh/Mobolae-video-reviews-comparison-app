@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import axios from 'axios';
 import { SubmitHandler, useForm } from 'react-hook-form';
+import { toast } from 'react-toastify';
 
 import Button from '@/shared/components/Button';
 import Input from '@/shared/components/Input';
@@ -46,7 +47,8 @@ const SignInForm = ({ redirectUrl }: Props) => {
       }
 
       setUser();
-      console.log(res.user?.nickname, '님 환영합니다'); //토스트 로그인 처리
+      toast.success(`${res.user?.nickname}님 환영합니다!`);
+
       if (redirectUrl) {
         router.replace(redirectUrl);
       } else {
@@ -58,20 +60,29 @@ const SignInForm = ({ redirectUrl }: Props) => {
         const status = e.status;
         //status 400에러 -> 유효성 검사 실패 -> 필드 에러 메시지 처리
         if (status === 400 && message.includes('이메일')) {
+          //존재하지 않는 이메일
           setError('email', { type: 'server', message: message });
+          return;
         } else if (status === 400 && message.includes('비밀번호')) {
+          //비밀번호 불일치
           setError('password', { type: 'server', message: message });
+          return;
         } else if (status === 400) {
+          //형식 불일치
           setError('email', { type: 'server', message: '이메일 또는 비밀번호를 다시 확인하세요.' });
           setError('password', {
             type: 'server',
             message: '이메일 또는 비밀번호를 다시 확인하세요.',
           });
-        } else {
-          // status 400 이외 에러 -> 네트워크 등 문제 -> 토스트로 처리
-          console.log(message, status); //추후에 토스트 출력 '알 수 없는 에러가 발생했습니다. 다시 시도하세요'
+          return;
         }
+        // status 400 이외 에러
+        toast.error(`문제가 발생했습니다.\n다시 시도해주세요.`);
+        throw e;
       }
+      // axios외 에러
+      toast.error(`문제가 발생했습니다.\n다시 시도해주세요.`);
+      throw e;
     }
   };
 

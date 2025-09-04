@@ -2,8 +2,9 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 
-import { isAxiosError } from 'axios';
+import axios from 'axios';
 import { useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
 
 import { kakaoSignInRequest } from '@/features/auth/api/authApi';
 import KakaoError from '@/features/auth/components/KakaoError';
@@ -17,59 +18,56 @@ const KakaoCallbackPage = () => {
   const [hasError, setHasError] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
+  const code = searchParams.get('code');
+  const redirectUrl = searchParams.get('state');
+  const kakaoError = searchParams.get('error');
 
   useEffect(() => {
-    const code = searchParams.get('code');
-    const redirectUrl = searchParams.get('state');
-    const kakaoError = searchParams.get('error');
+    if (!code) return;
 
-    if (kakaoError) {
-      setHasError(true);
-      return;
-    }
+    const kakaoLogin = async () => {
+      try {
+        const res = await kakaoSignInRequest({
+          redirectUri: `${window.location.origin}/oauth/kakao`,
+          token: code,
+        });
+        const { accessToken } = res;
 
-    if (!code) {
-      setHasError(true);
-    } else {
-      const kakaoLogin = async () => {
-        try {
-          const res = await kakaoSignInRequest({
-            redirectUri: `${window.location.origin}/oauth/kakao`,
-            token: code,
-          });
-          const { accessToken } = res;
+        if (accessToken) {
+          setCookie('accessToken', accessToken);
+        }
 
-          if (accessToken) {
-            setCookie('accessToken', accessToken);
-          }
+        setUser();
+        toast.success(`${res.user?.nickname}님 환영합니다!`);
 
-          setUser();
-          console.log(res.user?.nickname, '님 환영합니다'); //토스트 로그인 처리
+        if (redirectUrl) {
+          router.replace(redirectUrl);
+        } else {
+          router.replace('/');
+        }
+      } catch (e) {
+        if (axios.isAxiosError(e) && e.status === 403) {
+          //회원가입 된 유저인지 확인, 아니라면 회원가입으로 이동
           if (redirectUrl) {
-            router.replace(redirectUrl);
+            moveToKakao('/oauth/signup/kakao', redirectUrl);
           } else {
-            router.replace('/');
+            moveToKakao('/oauth/signup/kakao');
           }
-        } catch (e) {
-          if (isAxiosError(e) && e.status === 403) {
-            //회원가입 된 유저인지 확인, 아니라면 회원가입으로 이동
-            if (redirectUrl) {
-              moveToKakao('/oauth/signup/kakao', redirectUrl);
-            } else {
-              moveToKakao('/oauth/signup/kakao');
-            }
-          } else if (isAxiosError(e) && e.status === 400)
-            //잘못된 인가 코드
-            setHasError(true);
+        } else if (axios.isAxiosError(e) && e.status === 400) {
+          //유효하지 않은 인가 코드
+          setHasError(true);
           throw e;
         }
-      };
+        // 이외 에러
+        toast.error(`문제가 발생했습니다.\n다시 시도해주세요.`);
+        throw e;
+      }
+    };
 
-      kakaoLogin();
-    }
+    kakaoLogin();
   }, []);
 
-  if (hasError) return <KakaoError />;
+  if (!code || kakaoError || hasError) return <KakaoError />;
 
   return (
     <div className='flex h-dvh items-center justify-center'>
