@@ -35,7 +35,7 @@ const TopShowcase = ({ items }: TopShowcaseProps) => {
         <h2 className='text-xl-semibold text-white'>Top 6</h2>
         <div id='mobile-category-slot' className='mb-4 md:hidden' />
       </div>
-      <ContentGrid items={items} />
+      <ContentGrid items={items.slice(0, 6)} />
     </section>
   );
 };
