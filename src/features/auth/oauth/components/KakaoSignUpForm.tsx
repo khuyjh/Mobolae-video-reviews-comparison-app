@@ -9,7 +9,7 @@ import Button from '@/shared/components/Button';
 import Input from '@/shared/components/Input';
 import { useUserStore } from '@/shared/stores/userStore';
 
-import { kakaoSignUpRequest } from '../../api/authApi';
+import { getMe, kakaoSignUpRequest } from '../../api/authApi';
 import { KakaoSignUpSchema, kakaoSignUpSchema } from '../../schemas/authSchema';
 import { setCookie } from '../../utils/cookie';
 
@@ -48,13 +48,23 @@ const KakaoSignUpForm = ({ kakaoCode, redirectUrl, onError }: Props) => {
         setCookie('accessToken', accessToken);
       }
 
-      setUser();
-      toast.success(`${res.user?.nickname}님 환영합니다!`);
+      //받은 토큰으로 유저 정보 불러오기
+      try {
+        const user = await getMe();
 
-      if (redirectUrl) {
-        router.replace(redirectUrl);
-      } else {
-        router.replace('/');
+        if (user) {
+          setUser(user);
+        }
+
+        toast.success(`${res.user?.nickname}님 환영합니다!`);
+
+        if (redirectUrl) {
+          router.replace(redirectUrl);
+        } else {
+          router.replace('/');
+        }
+      } catch (e) {
+        throw e;
       }
     } catch (e) {
       if (axios.isAxiosError(e)) {

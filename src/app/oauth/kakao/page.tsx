@@ -6,7 +6,7 @@ import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
-import { kakaoSignInRequest } from '@/features/auth/api/authApi';
+import { getMe, kakaoSignInRequest } from '@/features/auth/api/authApi';
 import KakaoError from '@/features/auth/components/KakaoError';
 import { setCookie } from '@/features/auth/utils/cookie';
 import moveToKakao from '@/features/auth/utils/moveToKakao';
@@ -37,13 +37,23 @@ const KakaoCallbackPage = () => {
           setCookie('accessToken', accessToken);
         }
 
-        setUser();
-        toast.success(`${res.user?.nickname}님 환영합니다!`);
+        //받은 토큰으로 유저 정보 불러오기
+        try {
+          const user = await getMe();
 
-        if (redirectUrl) {
-          router.replace(redirectUrl);
-        } else {
-          router.replace('/');
+          if (user) {
+            setUser(user);
+          }
+
+          toast.success(`${res.user?.nickname}님 환영합니다!`);
+
+          if (redirectUrl) {
+            router.replace(redirectUrl);
+          } else {
+            router.replace('/');
+          }
+        } catch (e) {
+          throw e;
         }
       } catch (e) {
         if (axios.isAxiosError(e) && e.status === 403) {

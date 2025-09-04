@@ -12,7 +12,7 @@ import Input from '@/shared/components/Input';
 import PasswordInput from '@/shared/components/PasswordInput';
 import { useUserStore } from '@/shared/stores/userStore';
 
-import { signUpRequest } from '../../api/authApi';
+import { getMe, signUpRequest } from '../../api/authApi';
 import { signUpSchema, SignUpSchema } from '../../schemas/authSchema';
 import { setCookie } from '../../utils/cookie';
 
@@ -49,13 +49,23 @@ const SignUpForm = ({ redirectUrl }: Props) => {
         setCookie('accessToken', accessToken);
       }
 
-      setUser();
-      toast.success(`${res.user?.nickname}님 환영합니다!`);
+      //받은 토큰으로 유저 정보 불러오기
+      try {
+        const user = await getMe();
 
-      if (redirectUrl) {
-        router.replace(redirectUrl);
-      } else {
-        router.replace('/');
+        if (user) {
+          setUser(user);
+        }
+
+        toast.success(`${res.user?.nickname}님 환영합니다!`);
+
+        if (redirectUrl) {
+          router.replace(redirectUrl);
+        } else {
+          router.replace('/');
+        }
+      } catch (e) {
+        throw e;
       }
     } catch (e) {
       if (axios.isAxiosError(e)) {
