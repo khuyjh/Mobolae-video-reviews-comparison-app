@@ -13,14 +13,14 @@ const sortContents = (list: ContentApi[], order: ProductOrderKey): ContentApi[] 
 
   switch (order) {
     case 'rating':
-      // [별점 높은 순] → [리뷰 수 많은 순] → [좋아요 수 많은 순]
+      // [별점 높은 순] → [리뷰 수 많은 순] → [찜 수 많은 순]
       return copy.sort(
         (a, b) =>
           b.rating - a.rating || b.reviewCount - a.reviewCount || b.favoriteCount - a.favoriteCount,
       );
 
     case 'reviewCount':
-      // [리뷰 수 많은 순] → [별점 높은 순] → [좋아요 수 많은 순]
+      // [리뷰 수 많은 순] → [별점 높은 순] → [찜 수 많은 순]
       return copy.sort(
         (a, b) =>
           b.reviewCount - a.reviewCount || b.rating - a.rating || b.favoriteCount - a.favoriteCount,
