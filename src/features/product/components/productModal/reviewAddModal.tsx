@@ -24,6 +24,8 @@ export default function ReviewAddModal({ isOpen, onClose, rating }: Props) {
   const [reviewText, setReviewText] = useState('');
   const [imageFiles, setImageFiles] = useState<File[]>([]);
 
+  const maxImages = 3;
+
   const previews = useMemo<ImageEntry[]>(() => {
     return imageFiles.map((file) => ({
       file,
@@ -56,7 +58,7 @@ export default function ReviewAddModal({ isOpen, onClose, rating }: Props) {
 
     if (uniqueNewFiles.length === 0) return;
 
-    const remain = 3 - imageFiles.length;
+    const remain = maxImages - imageFiles.length;
     if (remain <= 0) return;
 
     const filesToAdd = uniqueNewFiles.slice(0, remain);
@@ -115,11 +117,11 @@ export default function ReviewAddModal({ isOpen, onClose, rating }: Props) {
           onChange={handleImageChange}
           onRemove={handleImageRemove}
           previewUrls={previews.map((p) => p.url)}
-          maxImages={3}
+          maxImages={maxImages}
           className='mt-2.5'
         />
         <p className='text-xs-medium mt-1.5 text-gray-400'>
-          이미지는 최대 3개까지 첨부할 수 있습니다.
+          이미지는 최대 {maxImages}개까지 첨부할 수 있습니다.
         </p>
         <Button
           variant='primary'
