@@ -51,13 +51,7 @@ export default function ReviewAddModal({ isOpen, onClose, rating }: Props) {
     });
 
     if (duplicatesFound) {
-      toast.error(
-        <div>
-          이미 존재하는 파일은
-          <br />
-          추가할 수 없습니다.
-        </div>,
-      );
+      toast.error('이미 존재하는 파일은\n추가할 수 없습니다.');
     }
 
     if (uniqueNewFiles.length === 0) return;
