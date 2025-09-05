@@ -12,7 +12,7 @@ import ProductButtons from './productButtons';
 import ProductDescription from './productDescription';
 import ProductHeader from './productHeader';
 import EditDeleteModal from '../productModal/editDeleteModal';
-import ReviewAddModal from '../productModal/reviewAddModal';
+import ReviewModal from '../productModal/reviewModal';
 
 interface ProductCardProps {
   imageSrc: string;
@@ -91,10 +91,11 @@ const ProductCard = ({
       </div>
 
       {/* 리뷰 작성 */}
-      <ReviewAddModal
+      <ReviewModal
         isOpen={isReviewAddModalOpen}
         onClose={() => setIsReviewAddModalOpen(false)}
         rating={userRating}
+        mode='add'
       />
 
       {/* 로그인 화면 이동 모달 */}
