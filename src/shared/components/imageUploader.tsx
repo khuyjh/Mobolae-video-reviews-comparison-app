@@ -21,7 +21,7 @@ interface ImageUploaderProps {
   previewUrls: string[];
 }
 
-const IMAGE_ITEM_BASE_CLASSES = 'bg-black-800 group relative rounded-[8px] border border-gray-600';
+const IMAGE_ITEM_BASE_CLASSES = 'bg-black-800 group relative rounded-[8px] border border-gray-700';
 
 const IMAGE_ITEM_SIZES = 'w-full aspect-square md:h-[135px] md:w-[135px] xl:h-[160px] xl:w-[160px]';
 

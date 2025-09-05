@@ -86,7 +86,7 @@ export default function ReviewAddModal({ isOpen, onClose, rating }: Props) {
   const productCategory = { id: 1, name: '' };
   const categoryChipProps = toCategoryChip(productCategory);
 
-  const isReviewValid = reviewText.trim().length > 10;
+  const isReviewValid = reviewText.trim().length >= 10;
 
   return (
     <BaseModal title='리뷰 작성 모달' isOpen={isOpen} onClose={handleModalClose} size='L'>

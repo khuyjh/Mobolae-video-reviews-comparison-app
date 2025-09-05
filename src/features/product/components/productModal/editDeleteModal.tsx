@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
+import { toast } from 'react-toastify';
 
 import BaseModal from '@/shared/components/BaseModal';
 import Button from '@/shared/components/Button';
@@ -26,6 +27,12 @@ export default function EditDeleteModal({
   const [images, setImages] = useState<File[]>([]);
   const [text, setText] = useState('');
 
+  const handleModalClose = () => {
+    setImages([]);
+    setText('');
+    onClose();
+  };
+
   /* 삭제 확인 모달 상태 */
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
@@ -41,9 +48,20 @@ export default function EditDeleteModal({
     };
   }, [previewUrls]);
 
+  const isFormValid = images.length > 0 && text.trim().length >= 10;
+
+  const handleTextareaBlur = () => {
+    const trimmedText = text.trim();
+    if (trimmedText.length === 0) {
+      toast.error('설명 내용을 입력해주세요.');
+    } else if (trimmedText.length < 10) {
+      toast.error('최소 10자 이상 적어주세요.');
+    }
+  };
+
   return (
     <div>
-      <BaseModal title='수정/삭제 모달' isOpen={isOpen} onClose={onClose} size='L'>
+      <BaseModal title='수정/삭제 모달' isOpen={isOpen} onClose={handleModalClose} size='L'>
         <div className='flex flex-col px-5 pb-5 md:px-10 md:pb-10'>
           {/* 카테고리 칩 */}
           <div className='flex justify-start'>
@@ -69,6 +87,7 @@ export default function EditDeleteModal({
           <TextAreaWithCounter
             value={text}
             onChange={setText}
+            onBlur={handleTextareaBlur}
             placeholder='감독, 출연진, 줄거리 등을 입력해 주세요.'
             className='mt-2.5 md:mt-3.5'
           />
@@ -78,7 +97,7 @@ export default function EditDeleteModal({
             <Button variant='secondary' onClick={() => setIsDeleteModalOpen(true)}>
               삭제하기
             </Button>
-            <Button variant='primary' disabled={images.length === 0 || text.trim() === ''}>
+            <Button variant='primary' disabled={!isFormValid}>
               수정하기
             </Button>
           </div>
