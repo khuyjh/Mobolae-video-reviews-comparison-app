@@ -109,6 +109,11 @@ const ProductCard = ({
           onChangeType={(type) => setCompareModalType(type)}
         />
       )}
+      {/* 편집/삭제 모달 */}
+      <EditDeleteModal
+        isOpen={isEditDeleteModalOpen}
+        onClose={() => setIsEditDeleteModalOpen(false)}
+      />
     </>
   );
 };
