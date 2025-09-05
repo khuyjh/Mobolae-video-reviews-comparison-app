@@ -55,22 +55,23 @@ const MobileCategorySheet: React.FC<MobileCategorySheetProps> = ({
       title='카테고리'
     >
       <ArrowList>
-        <ul className='space-y-2' role='list'>
-          {categories.map((category: Category) => {
-            const isSelected = selectedCategoryId === Number(category.id);
-            const nextCategoryValue = isSelected ? null : Number(category.id);
-            //새로운 쿼리스트링 생성
-            const categoryHref = buildCategoryHref(currentSearchParams, nextCategoryValue);
+        {categories.map((category) => {
+          const isSelected = selectedCategoryId === Number(category.id);
+          const nextCategoryValue = isSelected ? null : Number(category.id);
+          const categoryHref = buildCategoryHref(currentSearchParams, nextCategoryValue);
 
-            return (
-              <li key={category.id}>
-                <SheetClose asChild>
-                  <CategoryItem category={category} isSelected={isSelected} href={categoryHref} />
-                </SheetClose>
-              </li>
-            );
-          })}
-        </ul>
+          return (
+            <SheetClose asChild key={category.id}>
+              <CategoryItem
+                category={category}
+                isSelected={isSelected}
+                href={categoryHref}
+                className='mb-2 last:mb-0'
+                role='option'
+              />
+            </SheetClose>
+          );
+        })}
       </ArrowList>
     </MobileBottomSheet>
   );

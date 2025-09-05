@@ -2,8 +2,7 @@
 'use client';
 
 import { cn } from '@/shared/lib/cn';
-
-import { useCompareStore } from '../model/useCompareStore';
+import { useCompareStore } from '@/shared/stores/useCompareStore';
 
 type CompareButtonProps = {
   className?: string;
@@ -15,9 +14,10 @@ type CompareButtonProps = {
 
 /**
  * CompareButton
- * - 전역 상태(a, b)가 모두 채워졌고, 부모가 강제 disabled하지 않았을 때만 enabled
- * - enabled/disabled에 따라 색/호버/커서를 분기하여 시각적으로도 명확하게 표현
- * - 클릭 시 store.requestCompare() 호출하여 결과창 렌더링
+ * - 활성화 판정은 스토어의 파생 셀렉터(canCompare)로 통일
+ *   -> a/b가 모두 선택되고, 서로 다른 항목일 때만 true
+ * - 부모 disabledProp이 true면 무조건 비활성
+ * - 클릭 시 store.requestCompare() 호출(스토어 내부에서도 재검증)
  */
 
 const CompareButton = ({
@@ -25,15 +25,12 @@ const CompareButton = ({
   className,
   label = '비교하기',
 }: CompareButtonProps) => {
-  //  개별 selector로 구독(객체 리턴 금지: React 19 dev 무한루프 방지)- zustand 도입 이후 오류가 나서 수정한 부분
-  const a = useCompareStore((s) => s.a);
-  const b = useCompareStore((s) => s.b);
+  // 개별 selector로 원시값만 구독(객체 리턴 금지)
+  const canCompare = useCompareStore((s) => s.canCompare());
   const requestCompare = useCompareStore((s) => s.requestCompare);
 
-  //  파생 상태: 실제 활성화 여부
-  // - 부모가 disabledProp=true면 무조건 비활성
-  // - 둘 중 하나라도 미선택이면 비활성
-  const enabled = !!a && !!b && !disabledProp;
+  //  실제 활성화 여부: 스토어 판정 && 부모 강제 비활성 아님
+  const enabled = canCompare && !disabledProp;
 
   const handleClick = () => {
     // button[disabled]면 브라우저가 클릭 자체를 막지만 확실하게 막기 위한 용도
@@ -54,7 +51,7 @@ const CompareButton = ({
         'focus-visible:ring-main focus-visible:ring-2 focus-visible:outline-none',
         // 크기
         'h-[50px] md:h-[60px] xl:h-[70px]',
-        'w-full max-w-[335px] md:w-[164px] md:max-w-none xl:w-[200px]',
+        'w-full max-w-none md:w-[164px] md:max-w-none xl:w-[200px]',
         // 상태
         enabled
           ? 'text-black-900 bg-main-gradient cursor-pointer hover:brightness-120 active:scale-[0.99]'

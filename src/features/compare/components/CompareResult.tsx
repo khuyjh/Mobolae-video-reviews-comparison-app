@@ -5,10 +5,11 @@
 
 import { useQuery } from '@tanstack/react-query';
 
+import { useCompareStore } from '@/shared/stores/useCompareStore'; // a,b 전역 상태 관리용
+
 import CompareResultSummary from './CompareResultSummary';
 import CompareResultTable from './CompareResultTable';
 import compareCalc from '../lib/compareCalc';
-import { useCompareStore } from '../model/useCompareStore'; // 전역 상태 관리용
 import { fetchCompare } from '../types/compareMockTypes'; // 임시 목데이터용(실제 API로 교체)
 import {
   METRIC_CONFIG,
@@ -26,12 +27,12 @@ import {
 function ResultPlaceholder({ variant }: { variant: 'idle' | 'ready' | 'error' }) {
   // 필요 시 여기에 프로젝트 실제 경로로 바꾸세요.
   const map = {
-    idle: { text: '두 상품을 선택해 비교를 시작하세요.' },
+    idle: { text: '콘텐츠를 입력 후 엔터 혹은 클릭해 주세요.' },
     ready: {
-      text: '비교하기 버튼을 눌러 결과를 확인하세요.',
+      text: '비교하기 버튼을 눌러 결과를 확인해 주세요!',
     },
     error: {
-      text: '데이터를 불러오지 못했어요.',
+      text: '데이터를 불러오지 못했어요!',
     },
   } as const;
 

@@ -6,11 +6,9 @@ import React, { useMemo } from 'react';
 
 import { mockReviewers } from '@/features/mainPage/mock/mockContents';
 import ProfileBadge from '@/shared/components/card/avatarCard';
+import { useUserStore } from '@/shared/stores/userStore';
 
 import type { Reviewer } from '@/shared/types/reviewer';
-
-// 리뷰어 프로필 상세 페이지로 이동하는 라우트 생성 함수
-const buildReviewerHref = (userId: number) => `/reviewer/${userId}`;
 
 type Direction = 'row' | 'col';
 
@@ -29,6 +27,9 @@ const ReviewerRankingList: React.FC<ReviewerRankingListProps> = ({
   reviewers,
   direction = 'row',
 }) => {
+  // store에서 유저 정보 가져옴
+  const meId = useUserStore((state) => state.user?.id);
+
   // 팔로워 수 기준 내림차순 정렬
   // reviewers 배열을 얕은 복사 후 sort (원본 불변)
   const sorted = useMemo(
@@ -47,6 +48,9 @@ const ReviewerRankingList: React.FC<ReviewerRankingListProps> = ({
     [top],
   );
 
+  // href 생성 (내 id와 해당 프로필의 user.id 비교하여 분기)
+  const getHref = (userId: number) => (meId && userId === meId ? '/mypage' : `/user/${userId}`);
+
   // --- 가로 스크롤 버전 ---
   if (direction === 'row') {
     return (
@@ -54,7 +58,7 @@ const ReviewerRankingList: React.FC<ReviewerRankingListProps> = ({
         {top.map((reviewer) => (
           <Link
             key={reviewer.userId}
-            href={buildReviewerHref(reviewer.userId)}
+            href={getHref(reviewer.userId)}
             className='min-w-[147px] flex-none shrink-0 snap-start'
           >
             <ProfileBadge
@@ -76,7 +80,7 @@ const ReviewerRankingList: React.FC<ReviewerRankingListProps> = ({
   return (
     <div className='space-y-[30px]'>
       {top.map((reviewer) => (
-        <Link key={reviewer.userId} href={buildReviewerHref(reviewer.userId)} className='block'>
+        <Link key={reviewer.userId} href={getHref(reviewer.userId)} className='block'>
           <ProfileBadge
             variant='ranking'
             id={reviewer.userId}
