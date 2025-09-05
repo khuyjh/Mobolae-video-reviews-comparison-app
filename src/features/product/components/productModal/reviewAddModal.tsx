@@ -75,10 +75,18 @@ export default function ReviewAddModal({ isOpen, onClose, rating }: Props) {
     onClose();
   };
 
+  const handleReviewBlur = () => {
+    if (reviewText.trim().length === 0) {
+      toast.error('리뷰 내용을 입력해주세요.');
+    } else if (reviewText.trim().length < 10) {
+      toast.error('최소 10자 이상 적어주세요.');
+    }
+  };
+
   const productCategory = { id: 1, name: '' };
   const categoryChipProps = toCategoryChip(productCategory);
 
-  const isReviewValid = reviewText.trim().length > 0;
+  const isReviewValid = reviewText.trim().length > 10;
 
   return (
     <BaseModal title='리뷰 작성 모달' isOpen={isOpen} onClose={handleModalClose} size='L'>
@@ -108,6 +116,7 @@ export default function ReviewAddModal({ isOpen, onClose, rating }: Props) {
         <TextAreaWithCounter
           value={reviewText}
           onChange={setReviewText}
+          onBlur={handleReviewBlur}
           maxLength={500}
           placeholder='리뷰를 작성해 주세요'
           className='mt-3 md:mt-4'

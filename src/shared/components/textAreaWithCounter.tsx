@@ -10,6 +10,7 @@ import { cn } from '@/shared/lib/cn';
 interface TextAreaWithCounterProps {
   value: string;
   onChange: (value: string) => void;
+  onBlur?: (event: React.FocusEvent<HTMLTextAreaElement>) => void;
   maxLength?: number;
   placeholder?: string;
   className?: string;
