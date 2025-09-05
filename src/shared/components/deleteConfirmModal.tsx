@@ -23,7 +23,7 @@ export default function DeleteConfirmModal({
         <AlertTriangle className='size-14 text-red-500' aria-hidden='true' />
 
         {/* 안내 문구 */}
-        <p className='text-base-semibold md:text-mg-semibold xl:text-xl-semibold mt-4 text-center'>
+        <p className='text-base-semibold md:text-lg-semibold xl:text-xl-semibold mt-4 text-center'>
           정말 삭제하시겠습니까?
         </p>
 
