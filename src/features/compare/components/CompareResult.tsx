@@ -5,10 +5,11 @@
 
 import { useQuery } from '@tanstack/react-query';
 
+import { useCompareStore } from '@/shared/stores/useCompareStore'; // a,b 전역 상태 관리용
+
 import CompareResultSummary from './CompareResultSummary';
 import CompareResultTable from './CompareResultTable';
 import compareCalc from '../lib/compareCalc';
-import { useCompareStore } from '../model/useCompareStore'; // 전역 상태 관리용
 import { fetchCompare } from '../types/compareMockTypes'; // 임시 목데이터용(실제 API로 교체)
 import {
   METRIC_CONFIG,

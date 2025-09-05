@@ -3,14 +3,14 @@
 
 import { toast } from 'react-toastify';
 
-import { useCompareStore } from '@/features/compare/model/useCompareStore';
 import { MOCK_CANDIDATES } from '@/features/compare/types/compareMockTypes';
 import { CompareCandidate } from '@/features/compare/types/compareTypes';
+import { useCompareStore } from '@/shared/stores/useCompareStore';
 
 import CompareButton from '../../features/compare/components/CompareButton';
 import CompareResult from '../../features/compare/components/CompareResult';
 import CompareSelect from '../../features/compare/components/CompareSelect';
-import { ToastProvider } from '../../shared/components/toastProvider';
+
 // 스타일 상수화
 const COMPARE_BASE_STYLE =
   'grid grid-cols-1 items-end gap-y-[30px] md:gap-[24px] md:h-[55px] md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] xl:h-[70px]';

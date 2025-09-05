@@ -2,8 +2,7 @@
 'use client';
 
 import { cn } from '@/shared/lib/cn';
-
-import { useCompareStore } from '../model/useCompareStore';
+import { useCompareStore } from '@/shared/stores/useCompareStore';
 
 type CompareButtonProps = {
   className?: string;
