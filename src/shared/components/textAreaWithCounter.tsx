@@ -22,6 +22,7 @@ const TEXTAREA_CLASSES =
 export default function TextAreaWithCounter({
   value,
   onChange,
+  onBlur,
   maxLength = 500,
   placeholder,
   className,
@@ -35,6 +36,7 @@ export default function TextAreaWithCounter({
         value={value}
         maxLength={maxLength}
         onChange={(e) => onChange(e.target.value)}
+        onBlur={onBlur}
       />
       <div className='text-md-regular absolute right-4 bottom-4 text-gray-600'>
         {value.length}/{maxLength}
