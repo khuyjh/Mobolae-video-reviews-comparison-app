@@ -26,12 +26,12 @@ import {
 function ResultPlaceholder({ variant }: { variant: 'idle' | 'ready' | 'error' }) {
   // 필요 시 여기에 프로젝트 실제 경로로 바꾸세요.
   const map = {
-    idle: { text: '두 상품을 선택해 비교를 시작하세요.' },
+    idle: { text: '콘텐츠를 입력 후 엔터 혹은 클릭해 주세요.' },
     ready: {
-      text: '비교하기 버튼을 눌러 결과를 확인하세요.',
+      text: '비교하기 버튼을 눌러 결과를 확인해 주세요!',
     },
     error: {
-      text: '데이터를 불러오지 못했어요.',
+      text: '데이터를 불러오지 못했어요!',
     },
   } as const;
 

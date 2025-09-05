@@ -20,11 +20,11 @@ interface Props {
 
 type ImageEntry = { file: File; url: string };
 
-const MAX_IMAGES = 3;
-
 export default function ReviewAddModal({ isOpen, onClose, rating }: Props) {
   const [reviewText, setReviewText] = useState('');
   const [imageFiles, setImageFiles] = useState<File[]>([]);
+
+  const maxImages = 3;
 
   const previews = useMemo<ImageEntry[]>(() => {
     return imageFiles.map((file) => ({
@@ -53,18 +53,12 @@ export default function ReviewAddModal({ isOpen, onClose, rating }: Props) {
     });
 
     if (duplicatesFound) {
-      toast.error(
-        <div>
-          이미 존재하는 파일은
-          <br />
-          추가할 수 없습니다.
-        </div>,
-      );
+      toast.error('이미 존재하는 파일은\n추가할 수 없습니다.');
     }
 
     if (uniqueNewFiles.length === 0) return;
 
-    const remain = MAX_IMAGES - imageFiles.length;
+    const remain = maxImages - imageFiles.length;
     if (remain <= 0) return;
 
     const filesToAdd = uniqueNewFiles.slice(0, remain);
@@ -81,10 +75,18 @@ export default function ReviewAddModal({ isOpen, onClose, rating }: Props) {
     onClose();
   };
 
+  const handleReviewBlur = () => {
+    if (reviewText.trim().length === 0) {
+      toast.error('리뷰 내용을 입력해주세요.');
+    } else if (reviewText.trim().length < 10) {
+      toast.error('최소 10자 이상 적어주세요.');
+    }
+  };
+
   const productCategory = { id: 1, name: '' };
   const categoryChipProps = toCategoryChip(productCategory);
 
-  const isReviewValid = reviewText.trim().length > 0;
+  const isReviewValid = reviewText.trim().length > 10;
 
   return (
     <BaseModal title='리뷰 작성 모달' isOpen={isOpen} onClose={handleModalClose} size='L'>
@@ -114,6 +116,7 @@ export default function ReviewAddModal({ isOpen, onClose, rating }: Props) {
         <TextAreaWithCounter
           value={reviewText}
           onChange={setReviewText}
+          onBlur={handleReviewBlur}
           maxLength={500}
           placeholder='리뷰를 작성해 주세요'
           className='mt-3 md:mt-4'
@@ -123,11 +126,11 @@ export default function ReviewAddModal({ isOpen, onClose, rating }: Props) {
           onChange={handleImageChange}
           onRemove={handleImageRemove}
           previewUrls={previews.map((p) => p.url)}
-          showAddButton={imageFiles.length < MAX_IMAGES}
+          maxImages={maxImages}
           className='mt-2.5'
         />
         <p className='text-xs-medium mt-1.5 text-gray-400'>
-          이미지는 최대 3개까지 첨부할 수 있습니다.
+          이미지는 최대 {maxImages}개까지 첨부할 수 있습니다.
         </p>
         <Button
           variant='primary'
