@@ -57,6 +57,7 @@ const PERSIST_VERSION = 1;
  * 현재 로그인한 유저 id를 userStore의 persist 값(auth-storage)에서 읽어옵니다.
  * - auth-storage 포맷은 zustand persist 기본 형태: { state: {...}, version: N }
  * - user.id 경로가 바뀌면 이 함수만 수정
+ * - 값이 없거나 파싱 실패 시 null 반환.
  */
 function getCurrentUserIdFromAuthStorage(): string | null {
   try {
@@ -81,17 +82,20 @@ const BASE_KEY = 'compare-storage';
 const namespacedStorage = {
   getItem: (_name: string) => {
     const userId = getCurrentUserIdFromAuthStorage();
-    const key = `${BASE_KEY}:${userId ?? 'guest'}`;
+    if (!userId) return null;
+    const key = `${BASE_KEY}:${userId}`;
     return localStorage.getItem(key);
   },
   setItem: (_name: string, value: string) => {
     const userId = getCurrentUserIdFromAuthStorage();
-    const key = `${BASE_KEY}:${userId ?? 'guest'}`;
+    if (!userId) return;
+    const key = `${BASE_KEY}:${userId}`;
     localStorage.setItem(key, value);
   },
   removeItem: (_name: string) => {
     const userId = getCurrentUserIdFromAuthStorage();
-    const key = `${BASE_KEY}:${userId ?? 'guest'}`;
+    if (!userId) return;
+    const key = `${BASE_KEY}:${userId}`;
     localStorage.removeItem(key);
   },
 };
@@ -151,13 +155,18 @@ export const useCompareStore = create<CompareState>()(
       },
 
       /**
-       *  유저 전환 시, 현재 유저 네임스페이스의 저장값으로 메모리 동기화
+       *  유저 전환 시: 로그인 상태면 해당 유저 키에서 복원, 아니면 메모리 초기화
        * - layout 등 공통 클라이언트에서 userId가 바뀔 때 마다 한 번 호출해 주세요.
        */
       syncWithCurrentUser: () => {
         try {
           const userId = getCurrentUserIdFromAuthStorage();
-          const key = `${BASE_KEY}:${userId ?? 'guest'}`;
+          if (!userId) {
+            // 로그아웃 상태: persist 비활성. 메모리만 초기화.
+            set({ a: null, b: null, requested: false });
+            return;
+          }
+          const key = `${BASE_KEY}:${userId}`;
           const raw = localStorage.getItem(key);
           const parsed = raw ? JSON.parse(raw) : null;
           const a = parsed?.state?.a ?? null;
