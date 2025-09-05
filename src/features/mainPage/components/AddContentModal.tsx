@@ -1,4 +1,3 @@
-// src/features/mainPage/components/AddContentModal.tsx
 'use client';
 
 import { useRouter } from 'next/navigation';
@@ -13,56 +12,44 @@ import BaseModal from '@/shared/components/BaseModal';
 import Button from '@/shared/components/Button';
 import Dropdown from '@/shared/components/Dropdown';
 import ImageUploader from '@/shared/components/imageUploader';
-import Input from '@/shared/components/Input';
 import TextAreaWithCounter from '@/shared/components/textAreaWithCounter';
-import { CATEGORIES } from '@/shared/constants/constants';
+import { CATEGORIES, TEAM_ID } from '@/shared/constants/constants';
 
-/** --------------------------------
- * 더미 API (실서비스 API로 교체)
- * -------------------------------- */
-async function checkDuplicateProductName(name: string): Promise<boolean> {
-  await new Promise((r) => setTimeout(r, 120));
-  // TODO: 실제 중복 검사 API 연동
-  return false;
-}
-async function createProduct(values: ProductFormValues): Promise<{ productId: number }> {
-  await new Promise((r) => setTimeout(r, 600));
-  return { productId: 1234 };
-}
+import NameDuplicateGuideInput from './NameDuplicateGuideInput';
+import { useProductNameSearch } from '../hooks/useProductNameSearch';
 
-/** --------------------------------
- * 상수/타입/유틸
- * -------------------------------- */
-const NAME_MAX = 20;
-const DESCRIPTION_MAX = 500;
-const DESCRIPTION_MIN = 10;
-/** 대표 이미지는 1장만 허용 */
-const MAX_IMAGES = 1;
+/**
+ * 상수 / 타입
+ */
+const NAME_MAX_LENGTH = 20;
+const DESCRIPTION_MAX_LENGTH = 500;
+const DESCRIPTION_MIN_LENGTH = 10;
+const MAX_IMAGE_COUNT = 1;
 
 type CategoryOption = { name: string; value: number };
 
-/** 안전 숫자 변환 (Dropdown onChange 시 string/number/boolean 혼용 대비) */
-const toNumber = (v: unknown): number => {
-  if (typeof v === 'number') return v;
-  if (typeof v === 'string') {
-    const n = Number(v);
-    return Number.isNaN(n) ? 0 : n;
+/**
+ * 프로젝트 Dropdown 시그니처와의 혼합 타입을 number로 수렴
+ */
+const toNumber = (value: unknown): number => {
+  if (typeof value === 'number') return value;
+  if (typeof value === 'string') {
+    const parsed = Number(value);
+    return Number.isNaN(parsed) ? 0 : parsed;
   }
   return 0;
 };
 
-/** --------------------------------
- * zod 스키마
- * - blur 요구사항: 설명의 "필수" / "10자 미만" 메시지 분리 노출
- *   - .min(1) → "상품 설명은 필수 입력입니다."
- *   - superRefine → 비어있지 않을 때 10자 미만이면 "최소 10자 이상 적어주세요."
- * -------------------------------- */
+/**
+ * Zod 스키마
+ * - blur 요구 사항: “필수/최대”는 일반 체인으로, “설명 10자 미만”은 superRefine로 분기 메시지 제공
+ */
 const schema = z.object({
   name: z
     .string()
     .trim()
     .min(1, '상품 이름은 필수 입력입니다.')
-    .max(NAME_MAX, `최대 ${NAME_MAX}자까지 입력할 수 있습니다.`),
+    .max(NAME_MAX_LENGTH, `최대 ${NAME_MAX_LENGTH}자까지 입력할 수 있습니다.`),
 
   categoryId: z.number().int().min(1, '카테고리를 선택해주세요.'),
 
@@ -70,28 +57,28 @@ const schema = z.object({
     .string()
     .trim()
     .min(1, '상품 설명은 필수 입력입니다.')
-    .superRefine((v, ctx) => {
-      if (v.length > 0 && v.length < DESCRIPTION_MIN) {
+    .superRefine((value, ctx) => {
+      if (value.length > 0 && value.length < DESCRIPTION_MIN_LENGTH) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: '최소 10자 이상 적어주세요.',
         });
       }
     })
-    .max(DESCRIPTION_MAX, `최대 ${DESCRIPTION_MAX}자까지 입력할 수 있습니다.`),
+    .max(DESCRIPTION_MAX_LENGTH, `최대 ${DESCRIPTION_MAX_LENGTH}자까지 입력할 수 있습니다.`),
 
   images: z
     .array(z.instanceof(File))
     .min(1, '대표 이미지를 추가해주세요.')
-    .max(MAX_IMAGES, `대표 이미지는 ${MAX_IMAGES}장만 업로드할 수 있습니다.`),
+    .max(MAX_IMAGE_COUNT, `대표 이미지는 ${MAX_IMAGE_COUNT}장만 업로드할 수 있습니다.`),
 });
 
 type ProductFormValues = z.infer<typeof schema>;
 
-/** --------------------------------
- * Dropdown 타입 어댑터
- * - 프로젝트 Dropdown의 onChange 시그니처 (string|number|boolean)에 맞춰 변환
- * -------------------------------- */
+/**
+ * Dropdown 어댑터
+ * - 프로젝트 컴포넌트의 onChange 시그니처를 React Hook Form이 기대하는 number 값으로 맞춤
+ */
 function CategoryDropdown({
   value,
   options,
@@ -113,31 +100,26 @@ function CategoryDropdown({
   );
 }
 
-/** --------------------------------
- * 컴포넌트
- * -------------------------------- */
+/**
+ * 상품 추가 모달
+ * - React Hook Form + Zod로 blur/submit 검증을 일원화
+ * - 이름 입력 시 서버에서 유사 이름을 안내(선택 불가)
+ * - blur 시 완전 일치 → “이미 등록된 상품입니다.” 토스트
+ * - 대표 이미지는 1장만 허용
+ */
 export default function AddContentModal({
   isOpen,
   onClose,
 }: {
+  /** 모달 오픈 여부 */
   isOpen: boolean;
+  /** 닫기 콜백 */
   onClose: () => void;
 }) {
   const router = useRouter();
 
-  /**
-   * RHF 설정
-   * - mode: 'onBlur' → blur 시 필드 검증 (요구사항과 일치)
-   * - zodResolver(schema) → blur/submit 모두 동일 규칙 적용
-   */
-  const {
-    control,
-    handleSubmit,
-    watch,
-    setValue,
-    reset,
-    formState, // errors, isSubmitting, touchedFields 사용
-  } = useForm<ProductFormValues>({
+  // React Hook Form: blur 모드 + zodResolver 적용
+  const { control, handleSubmit, watch, setValue, reset, formState } = useForm<ProductFormValues>({
     resolver: zodResolver(schema),
     mode: 'onBlur',
     defaultValues: {
@@ -150,25 +132,24 @@ export default function AddContentModal({
 
   const { errors, isSubmitting, touchedFields } = formState;
 
-  /** 모달 오픈 시 폼 초기화 */
+  // 모달이 열릴 때마다 초기화
   useEffect(() => {
     if (isOpen) {
       reset({ name: '', categoryId: 0, description: '', images: [] });
     }
   }, [isOpen, reset]);
 
-  /** 이미지 프리뷰 URL 생성/해제 */
-  const images = watch('images') ?? [];
-  const previewUrls = useMemo(() => images.map((f) => URL.createObjectURL(f)), [images]);
+  // 이미지 미리보기 URL 생성/해제(메모리 누수 방지)
+  const imageFiles = watch('images') ?? [];
+  const previewUrls = useMemo(
+    () => imageFiles.map((file) => URL.createObjectURL(file)),
+    [imageFiles],
+  );
   useEffect(() => {
-    return () => previewUrls.forEach((u) => URL.revokeObjectURL(u));
+    return () => previewUrls.forEach((url) => URL.revokeObjectURL(url));
   }, [previewUrls]);
 
-  /**
-   * blur 시 에러 토스트
-   * - touchedFields를 함께 조건으로 걸어 blur 상황에서만 토스트 출력
-   * - submit 실패 시에는 onInvalid에서 일괄 토스트
-   */
+  // blur 시 에러 토스트: Form이 잡은 에러를 즉시 노출
   useEffect(() => {
     if (touchedFields.name && errors.name?.message) toast.error(errors.name.message);
   }, [touchedFields.name, errors.name?.message]);
@@ -178,18 +159,15 @@ export default function AddContentModal({
     }
   }, [touchedFields.description, errors.description?.message]);
 
-  /** 이름 blur에서 중복 검사 (스키마 필수/길이와 별개로 추가 검증) */
-  const handleNameBlur = async (): Promise<void> => {
-    const name = (watch('name') ?? '').trim();
-    if (!name) return; // "상품 이름은 필수 입력입니다."는 위 useEffect에서 이미 토스트
-    const duplicated = await checkDuplicateProductName(name);
-    if (duplicated) toast.error('이미 등록된 상품입니다.');
-  };
-
-  /** 이미지 onChange (1장만 허용 + 다중 드롭/중복 방지) */
+  /**
+   * 이미지 선택 처리
+   * - 1장만 허용
+   * - 다중 드롭 시 첫 장만
+   * - 동일 파일(이름/사이즈) 중복 방지
+   */
   const handleImageChange = (newFiles: File[]): void => {
-    const current = watch('images') ?? [];
-    if (current.length >= MAX_IMAGES) {
+    const currentFiles = watch('images') ?? [];
+    if (currentFiles.length >= MAX_IMAGE_COUNT) {
       toast.error('대표 이미지는 1장만 업로드할 수 있습니다.');
       return;
     }
@@ -198,26 +176,30 @@ export default function AddContentModal({
     if (newFiles.length > 1) {
       toast.error('대표 이미지는 1장만 가능합니다. \n 첫 번째 파일만 등록합니다.');
     }
-    const first = newFiles[0];
-    if (!first) return;
+    const firstFile = newFiles[0];
+    if (!firstFile) return;
 
-    const dup = current.some((f) => f.name === first.name && f.size === first.size);
-    if (dup) {
+    const isDuplicate = currentFiles.some(
+      (file) => file.name === firstFile.name && file.size === firstFile.size,
+    );
+
+    if (isDuplicate) {
       toast.error('이미 선택한 파일입니다.');
       return;
     }
 
-    setValue('images', [first], { shouldDirty: true, shouldTouch: true, shouldValidate: true });
+    setValue('images', [firstFile], {
+      shouldDirty: true,
+      shouldTouch: true,
+      shouldValidate: true,
+    });
   };
 
-  /** 제출 성공/실패 핸들러 */
-  const onValid = async (values: ProductFormValues): Promise<void> => {
+  /** 제출 성공/실패 처리 */
+  const onValid = async (_values: ProductFormValues): Promise<void> => {
     try {
-      const { productId } = await createProduct({
-        ...values,
-        name: values.name.trim(),
-        description: values.description.trim(),
-      });
+      // TODO: 실제 생성 API 연동
+      const productId = 1234;
       onClose();
       router.push(`/product/${productId}`);
     } catch {
@@ -225,79 +207,89 @@ export default function AddContentModal({
     }
   };
 
+  /** 제출 실패 시: 현재 폼 모든 에러를 중복 제거하여 토스트 */
   const onInvalid: SubmitErrorHandler<ProductFormValues> = (formErrors) => {
-    const msgs = Object.values(formErrors)
-      .map((e) => e?.message)
+    const messages = Object.values(formErrors)
+      .map((error) => error?.message)
       .filter(Boolean) as string[];
-    Array.from(new Set(msgs)).forEach((m) => toast.error(m)); // 중복 제거 후 토스트
+    Array.from(new Set(messages)).forEach((message) => toast.error(message));
   };
 
-  /** 파생 값 (버튼 활성화 가드) */
-  const nameVal = watch('name') ?? '';
-  const descVal = watch('description') ?? '';
+  /**
+   * 파생 값 & 서버 검색
+   * - Controller 바깥에서 훅 호출(렌더/훅 규칙 문제 회피)
+   * - 1자 이상부터 디바운스 검색 → 사용자 경험/부하 절충
+   */
+  const nameValue = watch('name') ?? '';
+  const descriptionValue = watch('description') ?? '';
   const categoryId = watch('categoryId') ?? 0;
 
+  const { data: productNameCandidates = [], isLoading } = useProductNameSearch(
+    TEAM_ID,
+    nameValue,
+    10,
+  );
+
+  /** 카테고리 옵션: 숫자 id 유지 */
   const categoryOptions: CategoryOption[] = useMemo(
     () => CATEGORIES.map((c) => ({ name: c.name, value: c.id })),
     [],
   );
 
-  const isReady =
-    nameVal.trim().length > 0 &&
+  /** 버튼 활성화: 시각적 가드 + 실수 방지 */
+  const isSubmitReady =
+    nameValue.trim().length > 0 &&
     categoryId > 0 &&
-    descVal.trim().length >= DESCRIPTION_MIN &&
-    images.length === MAX_IMAGES &&
+    descriptionValue.trim().length >= DESCRIPTION_MIN_LENGTH &&
+    imageFiles.length === MAX_IMAGE_COUNT &&
     !isSubmitting;
 
   return (
     <BaseModal title='상품 추가' isOpen={isOpen} onClose={onClose} size='L'>
       <form onSubmit={handleSubmit(onValid, onInvalid)} className='md:px-5 md:pb-5'>
         <h2 className='text-xl-semibold md:text-2xl-semibold mb-10'>상품 추가</h2>
-
-        <div className='flex flex-col items-center gap-[10px] md:flex-row-reverse md:gap-[15px]'>
+        <div className='flex flex-col items-start gap-[10px] md:flex-row-reverse md:gap-[15px]'>
           {/* 대표 이미지 (1장만) */}
           <ImageUploader
-            value={images}
+            value={imageFiles}
             onChange={handleImageChange}
             onRemove={() =>
-              setValue('images', [], { shouldDirty: true, shouldTouch: true, shouldValidate: true })
+              setValue('images', [], {
+                shouldDirty: true,
+                shouldTouch: true,
+                shouldValidate: true,
+              })
             }
             previewUrls={previewUrls}
-            showAddButton={images.length < MAX_IMAGES}
+            maxImages={MAX_IMAGE_COUNT}
             className='w-[140px]'
           />
 
           {/* 이름 / 카테고리 */}
           <div className='flex w-full flex-col gap-[10px] md:max-w-90 md:gap-[15px]'>
-            {/* 상품 이름: 20자 초과 차단 + blur 필수/중복 검사 + 글자수 카운터 */}
+            {/* 상품 이름: 안내 전용 자동완성 + blur 완전 일치 중복 에러 */}
             <Controller
               control={control}
               name='name'
               render={({ field }) => (
-                <div className='relative'>
-                  <Input
-                    id='product-name'
-                    maxLength={NAME_MAX}
-                    className='pr-10' // 내부 오른쪽에 공간 확보
-                    value={field.value ?? ''}
-                    onChange={(e) => field.onChange((e.target.value || '').slice(0, NAME_MAX))}
-                    onBlur={async () => {
-                      field.onBlur();
-                      await handleNameBlur();
-                    }}
-                  />
-                  <span className='pointer-events-none absolute right-3 bottom-1/2 translate-y-1/2 text-xs text-gray-600'>
-                    {(field.value ?? '').length}/{NAME_MAX}
-                  </span>
-                </div>
+                <NameDuplicateGuideInput
+                  value={field.value ?? ''}
+                  onChange={(next) => field.onChange(next.slice(0, NAME_MAX_LENGTH))}
+                  onBlur={field.onBlur}
+                  names={productNameCandidates} // 서버에서 가져온 유사 이름들(선택 불가)
+                  isLoading={isLoading}
+                  maxLength={NAME_MAX_LENGTH}
+                  aria-invalid={Boolean(errors.name)}
+                  onDuplicate={() => toast.error('이미 등록된 상품입니다.')}
+                />
               )}
             />
 
-            {/* 카테고리: 어댑터로 타입을 맞춰 안전하게 값만 number로 세팅 */}
+            {/* 카테고리 */}
             <CategoryDropdown
               value={categoryId}
               options={categoryOptions}
-              onChange={(id) =>
+              onChange={(id: number) =>
                 setValue('categoryId', id, {
                   shouldDirty: true,
                   shouldTouch: true,
@@ -308,7 +300,7 @@ export default function AddContentModal({
           </div>
         </div>
 
-        {/* 상품 설명: 500자 초과 차단 + onBlur 직접 연결 (RHF) */}
+        {/* 상품 설명 */}
         <div className='mt-[10px] md:mt-[15px]'>
           <Controller
             control={control}
@@ -316,23 +308,25 @@ export default function AddContentModal({
             render={({ field }) => (
               <TextAreaWithCounter
                 value={field.value ?? ''}
-                onChange={(v) => field.onChange((v || '').slice(0, DESCRIPTION_MAX))} // 초과 차단
-                onBlur={field.onBlur} // RHF blur → 스키마 검증 (빈 값/10자 미만 메시지 분리)
-                maxLength={DESCRIPTION_MAX}
+                onChange={(next: string) =>
+                  field.onChange((next || '').slice(0, DESCRIPTION_MAX_LENGTH))
+                }
+                maxLength={DESCRIPTION_MAX_LENGTH}
                 placeholder='상품 설명을 입력하세요 (최소 10자)'
                 className='mt-1'
                 aria-invalid={Boolean(errors.description)}
+                onBlur={field.onBlur}
               />
             )}
           />
         </div>
 
-        {/* 제출 */}
+        {/* 제출 버튼 */}
         <Button
           type='submit'
           variant='primary'
           className='mt-5 w-full max-w-none md:mt-10 md:max-w-none'
-          disabled={!isReady}
+          disabled={!isSubmitReady}
         >
           {isSubmitting ? '등록 중…' : '상품 등록'}
         </Button>
