@@ -29,6 +29,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
         draggable
         pauseOnHover
         theme='dark'
+        toastClassName='whitespace-pre-line'
       />
     </>
   );
