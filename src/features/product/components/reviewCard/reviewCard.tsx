@@ -9,6 +9,15 @@ import ReviewMeta from './reviewMeta';
 import ReviewUser from './reviewUser';
 import ReviewModal from '../productModal/reviewModal';
 
+/*
+ * reviewContent: 리뷰 본문 내용
+ * Images?: 리뷰에 첨부된 이미지 URL
+ * likeCount: 리뷰 좋아요 수
+ * isLiked: boolean: 좋아요
+ * showActions: 리뷰 수정 및 삭제 버튼
+ * createdAt: 리뷰 작성 날짜
+ * onLikeClick: () => void - 좋아요 버튼 클릭 시 부모에게 알리는 함수
+ */
 export interface ReviewCardProps {
   reviewContent: string;
   Images?: string[];
