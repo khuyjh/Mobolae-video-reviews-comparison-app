@@ -40,16 +40,22 @@ const CategorySidebar: React.FC<CategorySidebarProps> = ({
     </h3>
     <nav role='navigation' aria-label='카테고리 메뉴'>
       <ArrowList>
-        <div className='space-y-2'>
-          {categories.map((category) => {
-            const active = selectedCategoryId === Number(category.id);
-            const nextId = active ? null : Number(category.id);
-            const href = buildCategoryHref(searchParams, nextId);
-            return (
-              <CategoryItem key={category.id} category={category} isSelected={active} href={href} />
-            );
-          })}
-        </div>
+        {categories.map((category) => {
+          const active = selectedCategoryId === Number(category.id);
+          const nextId = active ? null : Number(category.id);
+          const href = buildCategoryHref(searchParams, nextId);
+
+          return (
+            <CategoryItem
+              key={category.id}
+              category={category}
+              isSelected={active}
+              href={href}
+              className='mb-2 last:mb-0'
+              role='option'
+            />
+          );
+        })}
       </ArrowList>
     </nav>
   </aside>

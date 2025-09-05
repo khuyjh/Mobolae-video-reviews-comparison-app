@@ -68,7 +68,7 @@ const FloatingButton = ({ isVisible = true }: FloatingButtonProps) => {
       className={cn(
         BASE_CLASSES,
         OPACITY_CLASS,
-        'hover:bg-red hover:scale-105 hover:opacity-100 focus-visible:opacity-100',
+        'hover:scale-105 hover:opacity-100 hover:brightness-120 focus-visible:opacity-100',
       )}
     >
       <Plus className='mx-auto size-10' strokeWidth={2} />

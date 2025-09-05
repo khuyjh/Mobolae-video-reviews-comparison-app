@@ -46,17 +46,13 @@ const MobileGnbSheet = ({ isLoggedIn }: GnbSheetProps) => {
       title='메뉴'
     >
       <ArrowList>
-        <ul className='flex flex-col space-y-4'>
-          {items.map((item) => (
-            <li key={item.href}>
-              <SheetClose asChild>
-                <Link href={item.href} className={`nav-item ${LINK_STYLE}`} tabIndex={-1}>
-                  <span>{item.label}</span>
-                </Link>
-              </SheetClose>
-            </li>
-          ))}
-        </ul>
+        {items.map((item) => (
+          <SheetClose asChild key={item.href}>
+            <Link href={item.href} className={`nav-item ${LINK_STYLE}`}>
+              <span>{item.label}</span>
+            </Link>
+          </SheetClose>
+        ))}
       </ArrowList>
     </MobileBottomSheet>
   );

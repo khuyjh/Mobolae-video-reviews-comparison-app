@@ -34,7 +34,7 @@ const Home = async ({ searchParams }: PageProps) => {
   const hasFilter = Boolean(category || (keyword && keyword.trim()));
 
   return (
-    <main className='mx-auto w-full max-w-[1540px] px-5 md:px-[30px]'>
+    <main className='mx-auto w-full max-w-[1540px]'>
       <FloatingButton />
 
       <div className='flex'>
@@ -48,27 +48,28 @@ const Home = async ({ searchParams }: PageProps) => {
         {/* 가운데: 메인 콘텐츠 */}
         <section
           aria-labelledby='main-title'
-          className='mt-[30px] min-h-[60vh] min-w-0 flex-1 px-5 md:mt-10 md:px-[30px] xl:mt-[60px] xl:px-[43px]'
+          className='mt-[30px] min-h-[60vh] min-w-0 flex-1 md:mt-10 xl:mt-[60px]'
         >
           <h1 id='main-title' className='sr-only'>
             메인 콘텐츠
           </h1>
 
-          {/* 태블릿(md) 전용: 메인 상단에 가로형 랭킹 */}
-          <div className='mb-[60px] lg:hidden'>
+          {/* 태블릿, 모바일: 메인 상단에 가로형 랭킹 */}
+          <div className='mb-[60px] pl-5 md:pl-[30px] lg:hidden'>
             <ReviewerRankingHorizontal />
           </div>
-
-          {hasFilter ? (
-            // 검색어나 카테고리가 있을 때만 리스트 렌더 (클라이언트 컴포넌트)
-            <ContentList />
-          ) : (
-            // 없으면 Top/Most만 SSR로 렌더
-            <>
-              <TopShowcase items={mockContents} />
-              <MostReviewed items={mockContents} />
-            </>
-          )}
+          <div className='px-5 md:px-[30px] xl:px-[60px]'>
+            {hasFilter ? (
+              // 검색어나 카테고리가 있을 때만 리스트 렌더 (클라이언트 컴포넌트)
+              <ContentList />
+            ) : (
+              // 없으면 Top/Most만 SSR로 렌더
+              <>
+                <TopShowcase items={mockContents} />
+                <MostReviewed items={mockContents} />
+              </>
+            )}
+          </div>
         </section>
 
         {/* 우측: 랭킹 사이드바 (lg↑) */}
