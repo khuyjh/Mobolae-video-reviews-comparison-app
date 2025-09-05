@@ -7,9 +7,10 @@ import { toast } from 'react-toastify';
 import { useShallow } from 'zustand/shallow';
 
 import LoadingImage from '@/shared/components/LoadingImage';
+import { PATH_OPTION } from '@/shared/constants/constants';
 import { useUserStore } from '@/shared/stores/userStore';
 
-import { getMe } from '../api/authApi';
+import { me } from '../../../../openapi/requests';
 import { getCookie } from '../utils/cookie';
 /*
 AUTH_ROUTES: 로그인 되었을 때 접근 방지할 경로
@@ -23,6 +24,12 @@ interface Props {
 }
 
 const AuthGuard = ({ children }: Props) => {
+  const [isMounted, setIsMounted] = useState(false);
+  const router = useRouter();
+  const pathname = usePathname();
+  const isAuthPath = AUTH_ROUTES.includes(pathname);
+  const isNeedAuthPath = NEED_AUTH_ROUTES.includes(pathname);
+  const accessToken = getCookie('accessToken');
   const { isLoggedIn, initializeAuth, setUser } = useUserStore(
     useShallow((state) => ({
       isLoggedIn: state.isLoggedIn,
@@ -30,19 +37,16 @@ const AuthGuard = ({ children }: Props) => {
       setUser: state.setUser,
     })),
   );
-  const [isMounted, setIsMounted] = useState(false);
-  const router = useRouter();
-  const pathname = usePathname();
-  const isAuthPath = AUTH_ROUTES.includes(pathname);
-  const isNeedAuthPath = NEED_AUTH_ROUTES.includes(pathname);
 
   const restoreAuth = async () => {
-    const accessToken = getCookie('accessToken');
-
     if (accessToken && !isLoggedIn) {
       try {
-        const user = await getMe();
-        setUser(user);
+        const res = await me(PATH_OPTION);
+
+        if (!res.data) return;
+
+        setUser(res.data);
+        toast.success(`${res.data.nickname}님 환영합니다!`);
       } catch (e) {
         toast.error(`사용자 정보를 불러오지 못했습니다.\n새로고침을 시도해주세요.`);
         throw e;

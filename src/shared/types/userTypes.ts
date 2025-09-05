@@ -5,7 +5,7 @@ export interface BaseUser {
   image: null | string;
   createdAt: string;
   updatedAt: string;
-  teamId: '16-7';
+  teamId: string;
 }
 
 export interface DetailUser extends BaseUser {

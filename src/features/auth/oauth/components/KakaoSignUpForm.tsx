@@ -1,15 +1,17 @@
 import { useRouter } from 'next/navigation';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 
 import Button from '@/shared/components/Button';
 import Input from '@/shared/components/Input';
+import { PATH_OPTION } from '@/shared/constants/constants';
 import { useUserStore } from '@/shared/stores/userStore';
 
-import { getMe, kakaoSignUpRequest } from '../../api/authApi';
+import { useSignUpOauth } from '../../../../../openapi/queries';
+import { me, SignUpOauthError } from '../../../../../openapi/requests';
 import { KakaoSignUpSchema, kakaoSignUpSchema } from '../../schemas/authSchema';
 import { setCookie } from '../../utils/cookie';
 
@@ -20,6 +22,8 @@ interface Props {
 }
 
 const KakaoSignUpForm = ({ kakaoCode, redirectUrl, onError }: Props) => {
+  const setUser = useUserStore((state) => state.setUser);
+  const router = useRouter();
   const {
     register,
     handleSubmit,
@@ -32,41 +36,33 @@ const KakaoSignUpForm = ({ kakaoCode, redirectUrl, onError }: Props) => {
       nickname: '',
     },
   });
-  const setUser = useUserStore((state) => state.setUser);
-  const router = useRouter();
-
-  const onSubmit: SubmitHandler<KakaoSignUpSchema> = async (data) => {
-    try {
-      const res = await kakaoSignUpRequest({
-        redirectUri: `${window.location.origin}/oauth/signup/kakao`,
-        token: kakaoCode,
-        ...data,
-      });
-      const { accessToken } = res;
+  const { mutate } = useSignUpOauth([], {
+    onSuccess: async (res: AxiosResponse) => {
+      const { accessToken } = res.data;
 
       if (accessToken) {
         setCookie('accessToken', accessToken);
       }
 
-      //받은 토큰으로 유저 정보 불러오기
-      try {
-        const user = await getMe();
+      const meRes = await me(PATH_OPTION);
+      const userData = meRes.data;
 
-        if (user) {
-          setUser(user);
-        }
-
-        toast.success(`${res.user?.nickname}님 환영합니다!`);
-
-        if (redirectUrl) {
-          router.replace(redirectUrl);
-        } else {
-          router.replace('/');
-        }
-      } catch (e) {
-        throw e;
+      if (!userData) {
+        //Authguard에서 restoreAuth로 로그인 상태 복구 유도
+        onError();
+        return;
       }
-    } catch (e) {
+
+      setUser(userData);
+      toast.success(`${userData.nickname}님 환영합니다!`);
+
+      if (redirectUrl) {
+        router.replace(redirectUrl);
+      } else {
+        router.replace('/');
+      }
+    },
+    onError: (e: SignUpOauthError) => {
       if (axios.isAxiosError(e)) {
         const message = e.response?.data.message;
 
@@ -83,7 +79,19 @@ const KakaoSignUpForm = ({ kakaoCode, redirectUrl, onError }: Props) => {
         toast.error(`문제가 발생했습니다.\n다시 시도해주세요.`);
         throw e;
       }
-    }
+    },
+  });
+
+  const onSubmit: SubmitHandler<KakaoSignUpSchema> = async (data) => {
+    mutate({
+      path: { ...PATH_OPTION.path, provider: 'kakao' },
+      body: {
+        redirectUri: `${window.location.origin}/oauth/signup/kakao`,
+        token: kakaoCode,
+        ...data,
+      },
+      throwOnError: true,
+    });
   };
 
   return (
