@@ -12,8 +12,8 @@ export type WinnerCode = 'A' | 'B' | 'TIE';
 
 /** 문구 + 색상을 한 번에 관리 (컴포넌트에서 이걸 주로 사용) */
 export const WINNER_CONFIG: Record<WinnerCode, { text: string; color: string }> = {
-  A: { text: '콘텐츠 1 승리', color: WINNER_TEXT_COLOR.A },
-  B: { text: '콘텐츠 2 승리', color: WINNER_TEXT_COLOR.B },
+  A: { text: '콘텐츠 1 우세', color: WINNER_TEXT_COLOR.A },
+  B: { text: '콘텐츠 2 우세', color: WINNER_TEXT_COLOR.B },
   TIE: { text: '무승부', color: WINNER_TEXT_COLOR.TIE },
 } as const;
 

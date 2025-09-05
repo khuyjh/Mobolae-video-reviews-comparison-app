@@ -1,10 +1,11 @@
-// 형제 컴포넌트들(CompareSelect 2개, CompareButton, CompareResult)사이의 상태 공유를 간단하게 만들고, 한 곳에서 일관되게 관리
+// 비교 콘텐츠 a,b의 상태를 한 곳에서 일관되게 관리하는 zustand 스토어
+// - a,b: 선택된 후보(입력창에 확정된 값)
 'use client';
 
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 
-import type { CompareCandidate } from '../types/compareTypes';
+import type { CompareCandidate } from '../../features/compare/types/compareTypes';
 
 /** 동일 아이템 선택 방지 결과 타입 */
 type TrySetResult = { ok: true } | { ok: false; reason: 'duplicate' };
