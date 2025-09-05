@@ -91,6 +91,14 @@ export default function ImageUploader({
             htmlFor='file-upload'
             aria-label='이미지 첨부'
             tabIndex={0}
+            role='button'
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+
+                fileInputRef.current?.click();
+              }
+            }}
             className={cn(
               IMAGE_ITEM_BASE_CLASSES,
               IMAGE_ITEM_SIZES,
