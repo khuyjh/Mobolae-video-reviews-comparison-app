@@ -3,10 +3,15 @@
 import { usePathname, useRouter } from 'next/navigation';
 
 import { ReactNode, useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
 import { useShallow } from 'zustand/shallow';
 
 import LoadingImage from '@/shared/components/LoadingImage';
+import { PATH_OPTION } from '@/shared/constants/constants';
 import { useUserStore } from '@/shared/stores/userStore';
+
+import { me } from '../../../../openapi/requests';
+import { getCookie } from '../utils/cookie';
 /*
 AUTH_ROUTES: 로그인 되었을 때 접근 방지할 경로
 NEED_AUTH_ROUTES: 로그인 되지 않았을 때 접근 방지할 경로
@@ -19,25 +24,41 @@ interface Props {
 }
 
 const AuthGuard = ({ children }: Props) => {
-  const { isLoggedIn, initializeAuth, restoreAuth } = useUserStore(
-    useShallow((state) => ({
-      isLoggedIn: state.isLoggedIn,
-      initializeAuth: state.initializeAuth,
-      restoreAuth: state.restoreAuth,
-    })),
-  );
   const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
-
   const isAuthPath = AUTH_ROUTES.includes(pathname);
   const isNeedAuthPath = NEED_AUTH_ROUTES.includes(pathname);
+  const accessToken = getCookie('accessToken');
+  const { isLoggedIn, initializeAuth, setUser } = useUserStore(
+    useShallow((state) => ({
+      isLoggedIn: state.isLoggedIn,
+      initializeAuth: state.initializeAuth,
+      setUser: state.setUser,
+    })),
+  );
+
+  const restoreAuth = async () => {
+    if (accessToken && !isLoggedIn) {
+      try {
+        const res = await me(PATH_OPTION);
+
+        if (!res.data) return;
+
+        setUser(res.data);
+        toast.success(`${res.data.nickname}님 환영합니다!`);
+      } catch (e) {
+        toast.error(`사용자 정보를 불러오지 못했습니다.\n새로고침을 시도해주세요.`);
+        throw e;
+      }
+    }
+  };
 
   useEffect(() => {
     setIsMounted(true);
     //토큰 여부를 확인해서 유저권한 제어, 마운트시 1회 실행
-    initializeAuth();
     restoreAuth();
+    initializeAuth();
   }, []);
 
   useEffect(() => {

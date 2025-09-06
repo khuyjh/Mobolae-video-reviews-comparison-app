@@ -5,7 +5,7 @@ export interface BaseUser {
   image: null | string;
   createdAt: string;
   updatedAt: string;
-  teamId: '16-7';
+  teamId: string;
 }
 
 export interface DetailUser extends BaseUser {
@@ -20,9 +20,8 @@ export interface DetailUser extends BaseUser {
 export interface UserState {
   user: DetailUser | null;
   isLoggedIn: boolean;
-  setUser: () => void;
+  setUser: (user: DetailUser) => void;
   updateUser: (updatedUser: DetailUser) => void;
-  restoreAuth: () => void;
   initializeAuth: () => void;
   clearUser: () => void;
 }
