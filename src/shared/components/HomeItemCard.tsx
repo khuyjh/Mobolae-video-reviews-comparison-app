@@ -29,7 +29,7 @@ interface HomeItemCardProps {
 
 // 카드 내부 스타일 정리
 const CARD_BASE_STYLE =
-  'block relative no-underline text-inherit cursor-pointer border border-black-700 bg-black-800 rounded-lg p-[10px] w-full h-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-500/60 transition hover:shadow-lg hover:border-gray-400';
+  'block relative no-underline text-inherit cursor-pointer border border-black-700 bg-black-800 rounded-lg p-[10px] w-full h-auto transition hover:shadow-lg hover:border-[var(--color-main)] focus:outline-none focus:ring-2 focus:ring-[var(--color-main)] focus:ring-offset-2 focus:ring-offset-black-900';
 const REVIEW_FAVORITE_TEXT_STYLE =
   'text-sm-regular md:text-md-regular xl:text-base-regular flex items-center gap-1 text-gray-600';
 const STAR_CONTAINER_STYLE =

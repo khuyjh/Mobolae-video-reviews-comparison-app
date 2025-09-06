@@ -45,7 +45,7 @@ export default function ProfileTabs({ value, onChange }: Props) {
               key={opt.value}
               onClick={() => onChange(opt.value)} // 클릭 시 클릭한 탭으로 변경
               className={clsx(
-                'pb-2 text-base transition',
+                'cursor-pointer pb-2 text-base transition',
                 isActive
                   ? 'border-white font-semibold text-white'
                   : 'text-gray-400 hover:text-white',
