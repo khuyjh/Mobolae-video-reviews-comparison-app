@@ -1,7 +1,5 @@
 'use client';
 
-import { useState } from 'react';
-
 import { Chip } from '@/shared/components/chip';
 import { formatDate } from '@/shared/utils/formatDate';
 
@@ -18,13 +16,15 @@ interface ReviewMetaProps {
   showActions: boolean;
   createdAt: string;
   onLikeClick: () => void;
+  onEditClick?: () => void;
+  onDeleteClick?: () => void;
 }
 
 const META_CONTAINER_STYLE = 'flex items-center justify-between';
 const DATE_ACTIONS_WRAPPER_STYLE = 'flex items-center space-x-[15px] md:space-x-[20px]';
 const DATE_STYLE = 'text-xs-regular xl:text-md-regular text-gray-600';
 const ACTIONS_STYLE = 'text-xs-light xl:text-md-light flex items-center space-x-[10px]';
-const ACTION_BUTTON_STYLE = 'text-gray-400 hover:text-gray-300';
+const ACTION_BUTTON_STYLE = 'text-gray-400 hover:text-gray-300 cursor-pointer';
 
 const ReviewMeta = ({
   likeCount,
@@ -32,6 +32,8 @@ const ReviewMeta = ({
   showActions,
   createdAt,
   onLikeClick,
+  onEditClick,
+  onDeleteClick,
 }: ReviewMetaProps) => {
   return (
     <div className={META_CONTAINER_STYLE}>
@@ -39,10 +41,18 @@ const ReviewMeta = ({
         <span className={DATE_STYLE}>{formatDate(createdAt)}</span>
         {showActions && (
           <div className={ACTIONS_STYLE}>
-            <button className={ACTION_BUTTON_STYLE} aria-label='리뷰 수정하기'>
+            <button
+              className={ACTION_BUTTON_STYLE}
+              aria-label='리뷰 수정하기'
+              onClick={onEditClick}
+            >
               수정
             </button>
-            <button className={ACTION_BUTTON_STYLE} aria-label='리뷰 삭제하기'>
+            <button
+              className={ACTION_BUTTON_STYLE}
+              aria-label='리뷰 삭제하기'
+              onClick={onDeleteClick}
+            >
               삭제
             </button>
           </div>

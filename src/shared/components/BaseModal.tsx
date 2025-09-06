@@ -29,7 +29,7 @@ const SIZE_STYLE = {
 };
 
 const CLOSE_BUTTON_STYLE =
-  "flex justify-end transition-opacity hover:opacity-70 focus:outline-hidden disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-6 md:[&_svg:not([class*='size-'])]:size-9 xl:[&_svg:not([class*='size-h'])]:size-10";
+  "transition-opacity hover:opacity-70 focus:outline-hidden disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-6 md:[&_svg:not([class*='size-'])]:size-9 xl:[&_svg:not([class*='size-h'])]:size-10";
 
 const BaseModal = ({
   children,
@@ -44,10 +44,14 @@ const BaseModal = ({
     <Dialog open={isOpen} onOpenChange={closeOnOutsideClick ? onClose : undefined}>
       <DialogContent className={cn('bg-black-900 text-white', SIZE_STYLE[size], className)}>
         <DialogTitle className='sr-only'>{title}</DialogTitle>
-        <button type='button' className={CLOSE_BUTTON_STYLE} onClick={onClose}>
-          <XIcon className='text-white' />
-          <span className='sr-only'>Close</span>
-        </button>
+
+        <div className='flex justify-end'>
+          <button type='button' className={CLOSE_BUTTON_STYLE} onClick={onClose}>
+            <XIcon className='text-white' />
+            <span className='sr-only'>Close</span>
+          </button>
+        </div>
+
         {children}
       </DialogContent>
     </Dialog>

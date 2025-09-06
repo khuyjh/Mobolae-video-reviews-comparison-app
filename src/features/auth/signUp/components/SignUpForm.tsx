@@ -3,15 +3,18 @@
 import { useRouter } from 'next/navigation';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
 import { SubmitHandler, useForm } from 'react-hook-form';
+import { toast } from 'react-toastify';
 
 import Button from '@/shared/components/Button';
 import Input from '@/shared/components/Input';
 import PasswordInput from '@/shared/components/PasswordInput';
+import { PATH_OPTION } from '@/shared/constants/constants';
 import { useUserStore } from '@/shared/stores/userStore';
 
-import { signUpRequest } from '../../api/authApi';
+import { useSignUp } from '../../../../../openapi/queries';
+import { me, SignUpError } from '../../../../../openapi/requests';
 import { signUpSchema, SignUpSchema } from '../../schemas/authSchema';
 import { setCookie } from '../../utils/cookie';
 
@@ -20,9 +23,12 @@ interface Props {
 }
 
 const SignUpForm = ({ redirectUrl }: Props) => {
+  const setUser = useUserStore((state) => state.setUser);
+  const router = useRouter();
   const {
     register,
     handleSubmit,
+    setError,
     formState: { errors, isSubmitting, isValid },
   } = useForm<SignUpSchema>({
     resolver: zodResolver(signUpSchema),
@@ -35,31 +41,60 @@ const SignUpForm = ({ redirectUrl }: Props) => {
       passwordConfirmation: '',
     },
   });
-  const setUser = useUserStore((state) => state.setUser);
-  const router = useRouter();
-
-  const onSubmit: SubmitHandler<SignUpSchema> = async (data) => {
-    try {
-      const res = await signUpRequest(data);
-      const { accessToken } = res;
+  const { mutate } = useSignUp([], {
+    onSuccess: async (res: AxiosResponse) => {
+      const { accessToken } = res.data;
 
       if (accessToken) {
         setCookie('accessToken', accessToken);
       }
 
-      setUser();
-      console.log(res.user?.nickname, '님 환영합니다'); //토스트 로그인 처리
+      const meRes = await me(PATH_OPTION);
+      const userData = meRes.data;
+
+      if (!userData) {
+        throw new Error();
+      }
+
+      setUser(userData);
+      toast.success(`${userData.nickname}님 환영합니다!`);
+
       if (redirectUrl) {
         router.replace(redirectUrl);
       } else {
         router.replace('/');
       }
-    } catch (e) {
+    },
+    onError: (e: SignUpError) => {
       if (axios.isAxiosError(e)) {
         const message = e.response?.data.message;
-        console.log(message); //추후에 토스트 메시지로 활용, 이메일 중복/닉네임 중복
+        const status = e.status;
+
+        if (status === 400 && message.includes('이메일')) {
+          //중복 이메일
+          setError('email', { type: 'server', message: message });
+          return;
+        } else if (status === 400 && message.includes('닉네임')) {
+          //중복 닉네임
+          setError('nickname', { type: 'server', message: message });
+          return;
+        }
+        // status 400 이외 에러
+        toast.error(`문제가 발생했습니다.\n다시 시도해주세요.`);
+        throw e;
       }
-    }
+      // axios외 에러
+      toast.error(`문제가 발생했습니다.\n다시 시도해주세요.`);
+      throw e;
+    },
+  });
+
+  const onSubmit: SubmitHandler<SignUpSchema> = (data) => {
+    mutate({
+      ...PATH_OPTION,
+      body: data,
+      throwOnError: true,
+    });
   };
 
   return (
