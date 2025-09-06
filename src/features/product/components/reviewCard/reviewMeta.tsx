@@ -24,7 +24,7 @@ const META_CONTAINER_STYLE = 'flex items-center justify-between';
 const DATE_ACTIONS_WRAPPER_STYLE = 'flex items-center space-x-[15px] md:space-x-[20px]';
 const DATE_STYLE = 'text-xs-regular xl:text-md-regular text-gray-600';
 const ACTIONS_STYLE = 'text-xs-light xl:text-md-light flex items-center space-x-[10px]';
-const ACTION_BUTTON_STYLE = 'text-gray-400 hover:text-gray-300';
+const ACTION_BUTTON_STYLE = 'text-gray-400 hover:text-gray-300 cursor-pointer';
 
 const ReviewMeta = ({
   likeCount,

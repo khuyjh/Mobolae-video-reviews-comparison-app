@@ -27,7 +27,12 @@ interface Props {
 
 type ImageEntry = { file: File; url: string };
 
-export default function ReviewModal({ isOpen, onClose, rating, mode, review }: Props) {
+const ReviewModal = ({ isOpen, onClose, rating, mode, review }: Props) => {
+  /* 초기 리뷰 텍스트 상태를 변경 여부를 감지*/
+  const initialReviewText = review?.content || '';
+
+  const initialExistingImages = useMemo(() => review?.images || [], [review]);
+
   const [reviewText, setReviewText] = useState(mode === 'edit' && review ? review.content : '');
   /* 기존 이미지 (수정에서만 초기화) */
   const [existingImages, setExistingImages] = useState(
@@ -128,6 +133,21 @@ export default function ReviewModal({ isOpen, onClose, rating, mode, review }: P
 
   const isReviewValid = reviewText.trim().length >= 10;
 
+  /* 텍스트와 이미지 변경 여부를 확인 */
+  const hasChanges = useMemo(() => {
+    const isTextChanged = reviewText !== initialReviewText;
+    const isExistingImagesModified = existingImages.length !== initialExistingImages.length;
+    const isNewImageAdded = imageFiles.length > 0;
+
+    /* 기존 이미지 배열의 순서나 내용이 바뀌었는지도 확인 */
+    const isExistingImageOrderChanged =
+      JSON.stringify(existingImages) !== JSON.stringify(initialExistingImages);
+
+    return (
+      isTextChanged || isExistingImagesModified || isNewImageAdded || isExistingImageOrderChanged
+    );
+  }, [reviewText, existingImages, imageFiles, initialReviewText, initialExistingImages]);
+
   return (
     <BaseModal
       title={mode === 'add' ? '리뷰 작성 모달' : '리뷰 수정 모달'}
@@ -135,7 +155,7 @@ export default function ReviewModal({ isOpen, onClose, rating, mode, review }: P
       onClose={handleModalClose}
       size='L'
     >
-      <div className='flex-col px-5 pb-4 md:px-10 md:pb-10'>
+      <div className='flex flex-col px-5 pb-4 md:px-10 md:pb-10'>
         <div className='flex flex-col items-start'>
           <Chip {...categoryChipProps} />
           <h2 className='text-xl-semibold mt-2.5 text-white'>
@@ -163,7 +183,9 @@ export default function ReviewModal({ isOpen, onClose, rating, mode, review }: P
           onChange={setReviewText}
           onBlur={handleReviewBlur}
           maxLength={500}
-          placeholder={mode === 'add' ? '리뷰를 작성해 주세요' : '리뷰를 수정해 주세요'}
+          placeholder={
+            mode === 'add' ? '최소 10자 이상 리뷰를 작성해 주세요' : '리뷰를 수정해 주세요'
+          }
           className='mt-3 md:mt-4'
         />
 
@@ -187,7 +209,8 @@ export default function ReviewModal({ isOpen, onClose, rating, mode, review }: P
         <Button
           variant='primary'
           className='mt-8 w-full max-w-full md:max-w-full xl:max-w-full'
-          disabled={!isReviewValid}
+          /* 작성 모드는 텍스트 유효성 | 수정 모드는 텍스트 유효성 + 변경 여부 모두 확인*/
+          disabled={!isReviewValid || (mode === 'edit' && !hasChanges)}
           onClick={handleSubmit}
         >
           {mode === 'add' ? '작성하기' : '수정하기'}
@@ -195,4 +218,6 @@ export default function ReviewModal({ isOpen, onClose, rating, mode, review }: P
       </div>
     </BaseModal>
   );
-}
+};
+
+export default ReviewModal;
