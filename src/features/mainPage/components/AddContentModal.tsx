@@ -70,13 +70,7 @@ function CategoryDropdown({
  * - 설명 blur 시 에러 토스트(필수/10자 미만) 재도입
  * - 제출 시엔 조용히 가드(토스트 X)
  */
-export default function AddContentModal({
-  isOpen,
-  onClose,
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-}) {
+const AddContentModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
   const router = useRouter();
 
   const { control, handleSubmit, watch, setValue, reset, formState, setError, clearErrors } =
@@ -356,4 +350,6 @@ export default function AddContentModal({
       </form>
     </BaseModal>
   );
-}
+};
+
+export default AddContentModal;

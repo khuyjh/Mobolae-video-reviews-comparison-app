@@ -29,7 +29,7 @@ const INPUT_CLASSES =
  * 이름 입력 + "중복 안내 전용" 드롭다운
  * - 실제 중복 판정 및 토스트는 부모(onBlur) 1곳에서만
  */
-export default function NameDuplicateGuideInput({
+const NameDuplicateGuideInput = ({
   value,
   onChange,
   onBlur,
@@ -37,7 +37,7 @@ export default function NameDuplicateGuideInput({
   isLoading,
   maxLength,
   'aria-invalid': ariaInvalid,
-}: Props) {
+}: Props) => {
   const [isFocused, setIsFocused] = useState(false);
   const trimmed = (value ?? '').trim();
 
@@ -93,4 +93,6 @@ export default function NameDuplicateGuideInput({
       )}
     </div>
   );
-}
+};
+
+export default NameDuplicateGuideInput;
