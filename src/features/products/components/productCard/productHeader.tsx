@@ -15,10 +15,9 @@ const ICON_SIZE = 'h-6 w-6 xl:h-7 xl:w-7';
 interface ProductHeaderProps {
   category: { id: number; name: string };
   title: string;
-  views: number | string;
 }
 
-const ProductHeader = ({ category, title, views }: ProductHeaderProps) => {
+const ProductHeader = ({ category, title }: ProductHeaderProps) => {
   const [isLiked, setIsLiked] = useState(false);
 
   const handleLikeClick = () => {
@@ -66,8 +65,6 @@ const ProductHeader = ({ category, title, views }: ProductHeaderProps) => {
           </button>
         </div>
       </div>
-
-      <p className='text-md-light mt-[10px] text-gray-600'>조회 {views}</p>
     </div>
   );
 };

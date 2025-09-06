@@ -5,8 +5,7 @@ import Image from 'next/image';
 import React, { useState } from 'react';
 
 import RedirectModal from '@/features/auth/components/RedirectModal';
-import CompareModal, { CompareModalType } from '@/features/product/components/productModal';
-import { formatNumber } from '@/shared/utils/formatters';
+import CompareModal, { CompareModalType } from '@/features/products/components/productModal';
 
 import ProductButtons from './productButtons';
 import ProductDescription from './productDescription';
@@ -18,24 +17,14 @@ interface ProductCardProps {
   imageSrc: string;
   category: { id: number; name: string };
   title: string;
-  views: number | string;
   description: string;
   isEditable: boolean;
 }
 
 const IMAGE_CONTAINER_STYLES =
-  'relative aspect-[335/236] w-full bg-gray-300 md:h-[197px] md:w-[280px] xl:h-[250px] xl:w-[335px]';
+  'relative aspect-[335/236] w-full bg-gray-300 md:h-[197px] md:w-[280px] xl:h-[250px] xl:w-[335px] rounded-[8px]';
 
-const ProductCard = ({
-  imageSrc,
-  category,
-  title,
-  views,
-  description,
-  isEditable,
-}: ProductCardProps) => {
-  const formattedViews = formatNumber(views);
-
+const ProductCard = ({ imageSrc, category, title, description, isEditable }: ProductCardProps) => {
   const [isReviewAddModalOpen, setIsReviewAddModalOpen] = useState(false);
   const [isRedirectModalOpen, setIsRedirectModalOpen] = useState(false);
   const [isEditDeleteModalOpen, setIsEditDeleteModalOpen] = useState(false);
@@ -77,7 +66,7 @@ const ProductCard = ({
 
         {/* 콘텐츠 섹션 */}
         <div className='mt-5 flex flex-1 flex-col md:mt-0 md:py-0 xl:px-[40px]'>
-          <ProductHeader category={category} title={title} views={formattedViews} />
+          <ProductHeader category={category} title={title} />
           {/* 설명 */}
           <ProductDescription description={description} className='mt-[20px]' />
           <ProductButtons
