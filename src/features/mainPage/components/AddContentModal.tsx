@@ -276,7 +276,7 @@ export default function AddContentModal({
       <form onSubmit={handleSubmit(onValid, onInvalid)} className='md:px-5 md:pb-5'>
         <h2 className='text-xl-semibold md:text-2xl-semibold mb-10'>콘텐츠 추가</h2>
 
-        <div className='flex flex-col items-start justify-end gap-[10px] md:flex-row-reverse md:gap-[15px]'>
+        <div className='flex flex-col items-start justify-between gap-[10px] md:flex-row-reverse md:gap-[15px]'>
           {/* 대표 이미지 (1장만) */}
           <ImageUploader
             value={imageFiles}
@@ -290,7 +290,7 @@ export default function AddContentModal({
             }
             previewUrls={previewUrls}
             maxImages={MAX_IMAGE_COUNT}
-            className='w-[140px]'
+            className='min-w-35 md:min-w-[135px] xl:min-w-40'
           />
 
           {/* 제목 / 카테고리 */}
@@ -343,7 +343,7 @@ export default function AddContentModal({
                 }
                 maxLength={DESCRIPTION_MAX_LENGTH}
                 placeholder='콘텐츠 설명을 입력하세요 (최소 10자)'
-                className='mt-1'
+                className='[&>textarea]:text-md-regular md:[&>textarea]:text-base-regular mt-1 [&>textarea]:pl-5'
                 aria-invalid={Boolean(errors.description)}
                 onBlur={field.onBlur}
               />

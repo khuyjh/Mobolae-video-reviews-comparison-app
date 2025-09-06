@@ -2,7 +2,6 @@
 
 import React, { useMemo, useState } from 'react';
 
-import { cn as classNames } from '@/shared/lib/cn';
 import { normalizeForCompare } from '@/shared/utils/normalize';
 
 type Props = {
@@ -23,6 +22,9 @@ type Props = {
   'aria-invalid'?: boolean;
 };
 
+const INPUT_CLASSES =
+  'border-black-700 bg-black-800 focus:ring-main text-md-regular md:text-base-regular h-[60px] w-full rounded-lg border px-5 text-white transition-colors xl:h-[70px] placeholder:text-gray-500 focus:ring-1 focus:outline-none';
+
 /**
  * 이름 입력 + "중복 안내 전용" 드롭다운
  * - 실제 중복 판정 및 토스트는 부모(onBlur) 1곳에서만
@@ -34,8 +36,6 @@ export default function NameDuplicateGuideInput({
   names,
   isLoading,
   maxLength,
-  className,
-  inputClassName,
   'aria-invalid': ariaInvalid,
 }: Props) {
   const [isFocused, setIsFocused] = useState(false);
@@ -49,7 +49,7 @@ export default function NameDuplicateGuideInput({
   }, [names, trimmed]);
 
   return (
-    <div className={classNames('relative w-full', className)}>
+    <div className='relative w-full'>
       <input
         value={value}
         onChange={(e) => onChange((e.target.value || '').slice(0, maxLength))}
@@ -58,14 +58,9 @@ export default function NameDuplicateGuideInput({
           setIsFocused(false);
           onBlur();
         }}
-        placeholder='콘텐츠 제목 (콘텐츠 등록 여부를 확인해 주세요)'
+        placeholder='콘텐츠 제목 (등록 여부를 확인해 주세요)'
         aria-invalid={ariaInvalid}
-        className={classNames(
-          'border-black-700 bg-black-800 focus:ring-main text-md-regular placeholder:text-md-regular',
-          'h-[60px] w-full rounded-lg border px-4 text-white transition-colors xl:h-[70px]',
-          'placeholder:text-gray-500 focus:ring-1 focus:outline-none',
-          inputClassName,
-        )}
+        className={INPUT_CLASSES}
       />
 
       {/* 글자수 */}
