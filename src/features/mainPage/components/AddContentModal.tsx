@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useMemo } from 'react';
-import { useForm, Controller, SubmitErrorHandler } from 'react-hook-form';
+import { Controller, SubmitErrorHandler, useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import { z } from 'zod';
 
@@ -14,13 +14,13 @@ import Dropdown from '@/shared/components/Dropdown';
 import ImageUploader from '@/shared/components/imageUploader';
 import TextAreaWithCounter from '@/shared/components/textAreaWithCounter';
 import { CATEGORIES, TEAM_ID } from '@/shared/constants/constants';
+import { normalizeForCompare } from '@/shared/utils/normalize';
 
 import NameDuplicateGuideInput from './NameDuplicateGuideInput';
 import { useProductNameSearch } from '../hooks/useProductNameSearch';
 
-/**
- * 상수 / 타입
- */
+/* ───────── 상수 / 타입 ───────── */
+
 const NAME_MAX_LENGTH = 20;
 const DESCRIPTION_MAX_LENGTH = 500;
 const DESCRIPTION_MIN_LENGTH = 10;
@@ -28,22 +28,17 @@ const MAX_IMAGE_COUNT = 1;
 
 type CategoryOption = { name: string; value: number };
 
-/**
- * 프로젝트 Dropdown 시그니처와의 혼합 타입을 number로 수렴
- */
+/** Dropdown 값을 number로 수렴 */
 const toNumber = (value: unknown): number => {
   if (typeof value === 'number') return value;
   if (typeof value === 'string') {
-    const parsed = Number(value);
-    return Number.isNaN(parsed) ? 0 : parsed;
+    const n = Number(value);
+    return Number.isNaN(n) ? 0 : n;
   }
   return 0;
 };
 
-/**
- * Zod 스키마
- * - blur 요구 사항: “필수/최대”는 일반 체인으로, “설명 10자 미만”은 superRefine로 분기 메시지 제공
- */
+/* Zod 스키마 (기본 필수/길이만 담당; 중복 검사는 onBlur에서 처리) */
 const schema = z.object({
   name: z
     .string()
@@ -57,8 +52,8 @@ const schema = z.object({
     .string()
     .trim()
     .min(1, '상품 설명은 필수 입력입니다.')
-    .superRefine((value, ctx) => {
-      if (value.length > 0 && value.length < DESCRIPTION_MIN_LENGTH) {
+    .superRefine((v, ctx) => {
+      if (v.length > 0 && v.length < DESCRIPTION_MIN_LENGTH) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: '최소 10자 이상 적어주세요.',
@@ -75,10 +70,7 @@ const schema = z.object({
 
 type ProductFormValues = z.infer<typeof schema>;
 
-/**
- * Dropdown 어댑터
- * - 프로젝트 컴포넌트의 onChange 시그니처를 React Hook Form이 기대하는 number 값으로 맞춤
- */
+/* Dropdown 어댑터 */
 function CategoryDropdown({
   value,
   options,
@@ -100,126 +92,74 @@ function CategoryDropdown({
   );
 }
 
-/**
- * 상품 추가 모달
- * - React Hook Form + Zod로 blur/submit 검증을 일원화
- * - 이름 입력 시 서버에서 유사 이름을 안내(선택 불가)
- * - blur 시 완전 일치 → “이미 등록된 상품입니다.” 토스트
- * - 대표 이미지는 1장만 허용
+/* ───────── 상품 추가 모달 ─────────
+ * - 이름 onBlur 한 곳에서만: 빈값/중복 판정 + 토스트 1회
+ * - 버튼 비활성화는 "라이브 중복"도 반영(토스트는 onBlur만)
+ * - 설명 blur 시 에러 토스트(필수/10자 미만) 재도입
+ * - 제출 시엔 조용히 가드(토스트 X)
  */
 export default function AddContentModal({
   isOpen,
   onClose,
 }: {
-  /** 모달 오픈 여부 */
   isOpen: boolean;
-  /** 닫기 콜백 */
   onClose: () => void;
 }) {
   const router = useRouter();
 
-  // React Hook Form: blur 모드 + zodResolver 적용
-  const { control, handleSubmit, watch, setValue, reset, formState } = useForm<ProductFormValues>({
-    resolver: zodResolver(schema),
-    mode: 'onBlur',
-    defaultValues: {
-      name: '',
-      categoryId: 0,
-      description: '',
-      images: [],
-    },
-  });
+  const { control, handleSubmit, watch, setValue, reset, formState, setError, clearErrors } =
+    useForm<ProductFormValues>({
+      resolver: zodResolver(schema),
+      mode: 'onBlur',
+      defaultValues: { name: '', categoryId: 0, description: '', images: [] },
+    });
 
   const { errors, isSubmitting, touchedFields } = formState;
 
-  // 모달이 열릴 때마다 초기화
+  /* 열릴 때 폼 초기화 */
   useEffect(() => {
     if (isOpen) {
       reset({ name: '', categoryId: 0, description: '', images: [] });
     }
   }, [isOpen, reset]);
 
-  // 이미지 미리보기 URL 생성/해제(메모리 누수 방지)
+  /* 미리보기 URL 생성/해제 */
   const imageFiles = watch('images') ?? [];
-  const previewUrls = useMemo(
-    () => imageFiles.map((file) => URL.createObjectURL(file)),
-    [imageFiles],
-  );
-  useEffect(() => {
-    return () => previewUrls.forEach((url) => URL.revokeObjectURL(url));
-  }, [previewUrls]);
+  const previewUrls = useMemo(() => imageFiles.map((f) => URL.createObjectURL(f)), [imageFiles]);
+  useEffect(() => () => previewUrls.forEach((u) => URL.revokeObjectURL(u)), [previewUrls]);
 
-  // blur 시 에러 토스트: Form이 잡은 에러를 즉시 노출
-  useEffect(() => {
-    if (touchedFields.name && errors.name?.message) toast.error(errors.name.message);
-  }, [touchedFields.name, errors.name?.message]);
-  useEffect(() => {
-    if (touchedFields.description && errors.description?.message) {
-      toast.error(errors.description.message);
-    }
-  }, [touchedFields.description, errors.description?.message]);
-
-  /**
-   * 이미지 선택 처리
-   * - 1장만 허용
-   * - 다중 드롭 시 첫 장만
-   * - 동일 파일(이름/사이즈) 중복 방지
-   */
+  /* 이미지 선택 (1장만, 중복 파일 방지) */
   const handleImageChange = (newFiles: File[]): void => {
-    const currentFiles = watch('images') ?? [];
-    if (currentFiles.length >= MAX_IMAGE_COUNT) {
+    const current = watch('images') ?? [];
+
+    if (current.length >= MAX_IMAGE_COUNT) {
       toast.error('대표 이미지는 1장만 업로드할 수 있습니다.');
       return;
     }
-    if (!newFiles || newFiles.length === 0) return;
+
+    if (!newFiles?.length) return;
 
     if (newFiles.length > 1) {
       toast.error('대표 이미지는 1장만 가능합니다. \n 첫 번째 파일만 등록합니다.');
     }
-    const firstFile = newFiles[0];
-    if (!firstFile) return;
 
-    const isDuplicate = currentFiles.some(
-      (file) => file.name === firstFile.name && file.size === firstFile.size,
-    );
+    const file = newFiles[0];
+    if (!file) return;
 
-    if (isDuplicate) {
+    const dup = current.some((f) => f.name === file.name && f.size === file.size);
+    if (dup) {
       toast.error('이미 선택한 파일입니다.');
       return;
     }
 
-    setValue('images', [firstFile], {
+    setValue('images', [file], {
       shouldDirty: true,
       shouldTouch: true,
       shouldValidate: true,
     });
   };
 
-  /** 제출 성공/실패 처리 */
-  const onValid = async (_values: ProductFormValues): Promise<void> => {
-    try {
-      // TODO: 실제 생성 API 연동
-      const productId = 1234;
-      onClose();
-      router.push(`/product/${productId}`);
-    } catch {
-      toast.error('상품 등록에 실패했습니다. 잠시 후 다시 시도해 주세요.');
-    }
-  };
-
-  /** 제출 실패 시: 현재 폼 모든 에러를 중복 제거하여 토스트 */
-  const onInvalid: SubmitErrorHandler<ProductFormValues> = (formErrors) => {
-    const messages = Object.values(formErrors)
-      .map((error) => error?.message)
-      .filter(Boolean) as string[];
-    Array.from(new Set(messages)).forEach((message) => toast.error(message));
-  };
-
-  /**
-   * 파생 값 & 서버 검색
-   * - Controller 바깥에서 훅 호출(렌더/훅 규칙 문제 회피)
-   * - 1자 이상부터 디바운스 검색 → 사용자 경험/부하 절충
-   */
+  /* 파생 값 & 서버 검색 */
   const nameValue = watch('name') ?? '';
   const descriptionValue = watch('description') ?? '';
   const categoryId = watch('categoryId') ?? 0;
@@ -230,24 +170,112 @@ export default function AddContentModal({
     10,
   );
 
-  /** 카테고리 옵션: 숫자 id 유지 */
-  const categoryOptions: CategoryOption[] = useMemo(
-    () => CATEGORIES.map((c) => ({ name: c.name, value: c.id })),
-    [],
+  /* 후보를 정규화 Set으로 보관(중복 판정용) */
+  const normalizedCandidates = useMemo(
+    () => new Set(productNameCandidates.map((n) => normalizeForCompare(n))),
+    [productNameCandidates],
   );
 
-  /** 버튼 활성화: 시각적 가드 + 실수 방지 */
+  /* 현재 입력이 "라이브" 중복인지 (토스트는 onBlur에서만, 버튼 비활성화만 여기서) */
+  const liveNameDuplicate = useMemo(() => {
+    const norm = normalizeForCompare(nameValue.trim());
+    return norm !== '' && normalizedCandidates.has(norm);
+  }, [nameValue, normalizedCandidates]);
+
+  /* onBlur에서만 토스트 + 에러 설정(빈값/중복) */
+  const handleNameBlur = (): void => {
+    const trimmed = nameValue.trim();
+
+    if (trimmed === '') {
+      setError('name', {
+        type: 'required',
+        message: '상품 이름은 필수 입력입니다.',
+      });
+      toast.error('상품 이름은 필수 입력입니다.');
+      return;
+    }
+
+    if (liveNameDuplicate) {
+      setError('name', {
+        type: 'duplicate',
+        message: '이미 등록된 상품입니다.',
+      });
+      toast.error('이미 등록된 상품입니다.');
+      return;
+    }
+
+    if (errors.name) {
+      clearErrors('name');
+    }
+  };
+
+  /* 설명: blur 시 에러 토스트(필수/10자 미만) */
+  useEffect(() => {
+    if (touchedFields.description && errors.description?.message) {
+      toast.error(errors.description.message);
+    }
+  }, [touchedFields.description, errors.description?.message]);
+
+  /* 버튼 활성화: name 에러 또는 "라이브 중복"이면 비활성화 */
   const isSubmitReady =
     nameValue.trim().length > 0 &&
     categoryId > 0 &&
     descriptionValue.trim().length >= DESCRIPTION_MIN_LENGTH &&
     imageFiles.length === MAX_IMAGE_COUNT &&
-    !isSubmitting;
+    !isSubmitting &&
+    !errors.name &&
+    !liveNameDuplicate;
+
+  /* 제출: blur 없이 바로 눌러도 조용히 가드(토스트 X) */
+  const onValid = async (_values: ProductFormValues): Promise<void> => {
+    const trimmed = nameValue.trim();
+
+    if (trimmed === '') {
+      setError('name', {
+        type: 'required',
+        message: '상품 이름은 필수 입력입니다.',
+      });
+      return;
+    }
+
+    if (liveNameDuplicate) {
+      setError('name', {
+        type: 'duplicate',
+        message: '이미 등록된 상품입니다.',
+      });
+      return;
+    }
+
+    try {
+      // TODO: 실제 생성 API 연동
+      const productId = 1234;
+      onClose();
+      router.push(`/product/${productId}`);
+    } catch {
+      toast.error('상품 등록에 실패했습니다. 잠시 후 다시 시도해 주세요.');
+    }
+  };
+
+  /* 제출 실패: 모든 에러 메시지 합쳐서 토스트 */
+  const onInvalid: SubmitErrorHandler<ProductFormValues> = (formErrors) => {
+    const messages = Object.values(formErrors)
+      .map((e) => e?.message)
+      .filter(Boolean) as string[];
+
+    Array.from(new Set(messages)).forEach((m) => toast.error(m));
+  };
+
+  /* 카테고리 옵션 */
+  const categoryOptions: CategoryOption[] = useMemo(
+    () => CATEGORIES.map((c) => ({ name: c.name, value: c.id })),
+    [],
+  );
 
   return (
     <BaseModal title='상품 추가' isOpen={isOpen} onClose={onClose} size='L'>
       <form onSubmit={handleSubmit(onValid, onInvalid)} className='md:px-5 md:pb-5'>
         <h2 className='text-xl-semibold md:text-2xl-semibold mb-10'>상품 추가</h2>
+
         <div className='flex flex-col items-start gap-[10px] md:flex-row-reverse md:gap-[15px]'>
           {/* 대표 이미지 (1장만) */}
           <ImageUploader
@@ -267,7 +295,7 @@ export default function AddContentModal({
 
           {/* 이름 / 카테고리 */}
           <div className='flex w-full flex-col gap-[10px] md:max-w-90 md:gap-[15px]'>
-            {/* 상품 이름: 안내 전용 자동완성 + blur 완전 일치 중복 에러 */}
+            {/* 이름: 표시 전용(자식), 판정/토스트는 부모 onBlur */}
             <Controller
               control={control}
               name='name'
@@ -275,12 +303,14 @@ export default function AddContentModal({
                 <NameDuplicateGuideInput
                   value={field.value ?? ''}
                   onChange={(next) => field.onChange(next.slice(0, NAME_MAX_LENGTH))}
-                  onBlur={field.onBlur}
-                  names={productNameCandidates} // 서버에서 가져온 유사 이름들(선택 불가)
+                  onBlur={() => {
+                    field.onBlur();
+                    handleNameBlur(); // ✅ 여기서만 토스트 1회
+                  }}
+                  names={productNameCandidates}
                   isLoading={isLoading}
                   maxLength={NAME_MAX_LENGTH}
-                  aria-invalid={Boolean(errors.name)}
-                  onDuplicate={() => toast.error('이미 등록된 상품입니다.')}
+                  aria-invalid={Boolean(errors.name) || liveNameDuplicate}
                 />
               )}
             />
@@ -300,7 +330,7 @@ export default function AddContentModal({
           </div>
         </div>
 
-        {/* 상품 설명 */}
+        {/* 설명 */}
         <div className='mt-[10px] md:mt-[15px]'>
           <Controller
             control={control}
@@ -321,7 +351,7 @@ export default function AddContentModal({
           />
         </div>
 
-        {/* 제출 버튼 */}
+        {/* 제출 */}
         <Button
           type='submit'
           variant='primary'
