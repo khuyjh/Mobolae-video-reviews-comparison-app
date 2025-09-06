@@ -1,7 +1,7 @@
 // 공용 단일 선택형 드롭다운 ui
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 import {
   Select,
@@ -29,7 +29,7 @@ interface SelectDropdownProps {
 
 // 드롭다운 내부 css값
 const SELECTTRIGGER_STYLE =
-  'border border-black-700 bg-black-800 !h-auto w-full rounded-lg border px-[20px] py-[17px] text-gray-600 text-sm xl:text-base outline-none focus:ring-0 focus-visible:ring-0 data-[placeholder]:text-gray-500 md:py-[19px] xl:py-[23px] [&_svg]:text-gray-400 [&_svg]:!opacity-100 [&_svg]:transition-colors data-[state=open]:[&_svg]:text-white data-[state=open]:[&_svg]:!opacity-100 [&>svg]:transition-transform data-[state=open]:[&>svg]:rotate-180 data-[state=open]:ring-2 data-[state=open]:ring-gray-400 data-[state=open]:ring-offset-0';
+  'border border-black-700 bg-black-800 !h-auto w-full rounded-lg px-[20px] py-[17px] text-gray-600 text-sm xl:text-base outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-main)] cursor-pointer data-[placeholder]:text-gray-500 md:py-[19px] xl:py-[23px] [&_svg]:text-gray-400 [&_svg]:!opacity-100 [&_svg]:transition-colors data-[state=open]:[&_svg]:text-white data-[state=open]:[&_svg]:!opacity-100 [&>svg]:transition-transform data-[state=open]:[&>svg]:rotate-180';
 const SELECTCONTENT_STYLE =
   'bg-black-800 border-black-700 box-border w-[--radix-select-trigger-width] border p-0 [&_[data-radix-select-viewport]]:gap-[10px] [&_[data-radix-select-viewport]]:p-2';
 const SELECTITEM_STYLE =
@@ -49,6 +49,12 @@ const Dropdown = ({
     initialValue ? String(initialValue.value) : undefined,
   );
 
+  //  Trigger에 대한 ref (닫힐 때 blur 위해 필요)
+  const triggerRef = useRef<HTMLButtonElement>(null);
+
+  //  포인터로 닫혔는지 추적하는 플래그
+  const lastByPointerRef = useRef(false);
+
   return (
     <div className={cn('w-full max-w-[355px] md:w-[360px] xl:max-w-[400px]', className)}>
       <Select
@@ -62,13 +68,34 @@ const Dropdown = ({
           onChange(raw); // 필요하면 여기서 Number/Boolean 변환
         }}
       >
-        <SelectTrigger className={cn('w-full', SELECTTRIGGER_STYLE, triggerClassName)}>
+        <SelectTrigger
+          ref={triggerRef}
+          className={cn('w-full', SELECTTRIGGER_STYLE, triggerClassName)}
+        >
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
         <SelectContent
           sideOffset={4}
           collisionPadding={0}
           className={cn(SELECTCONTENT_STYLE, 'w-[--radix-select-trigger-width]', contentClassName)}
+          onPointerDown={() => {
+            lastByPointerRef.current = true;
+          }}
+          // ✅ 콘텐츠 외부를 클릭해서 닫히는 경우 → 포인터 상호작용 표시
+          onPointerDownOutside={() => {
+            lastByPointerRef.current = true;
+          }}
+          // ✅ 닫힐 때 Radix가 기본적으로 Trigger로 포커스를 되돌리는데,
+          // 포인터 상호작용으로 닫힌 경우에는 이를 막고 Trigger를 blur 처리하여 링 제거
+          onCloseAutoFocus={(e) => {
+            if (lastByPointerRef.current) {
+              e.preventDefault(); // Trigger로의 자동 포커스 복귀 방지
+              lastByPointerRef.current = false;
+              // 다음 틱에 blur (안전)
+              requestAnimationFrame(() => triggerRef.current?.blur());
+            }
+            // 키보드로 닫힌 경우(Escape/Enter)에는 기본 포커스 복귀를 유지 → 접근성 OK
+          }}
         >
           {options.map((c) => (
             <SelectItem
