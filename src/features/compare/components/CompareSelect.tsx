@@ -20,11 +20,10 @@ export type CompareSelectProps = {
   label?: string;
   value: CompareCandidate | null; // Chip 선택 값 한번에 1개로 제한
   onChange: (v: CompareCandidate | null) => void; // Chip 선택/해제 콜백
-  options?: CompareCandidate[]; // 후보 목록
   placeholder?: string;
   disabled?: boolean;
-  // 칩 색상용 prop (기본은 left 녹색)
-  scheme?: 'left' | 'right';
+  // 칩 색상용 prop (기본은 a 녹색)
+  scheme?: 'a' | 'b';
   //선택을 시도하고 성공/실패를 알려주는 콜백
   onTryChange?: (v: CompareCandidate | null) => { ok: boolean; reason?: 'duplicate' };
   // 실패 사유를 외부에서 처리(토스트 등)하고 싶을 때 사용
@@ -43,8 +42,10 @@ const defaultFilter = (opt: CompareCandidate, q: string) => {
   return norm(opt.name).includes(norm(q));
 };
 
-// 리스트 아이템 최소 타입 + 타입가드 (any 금지)
+// 콘텐츠 리스트 아이템 최소 타입
 type ContentList = { id: number; name: string };
+
+// 타입 가드: any 사용 금지용
 const toContentList = (v: unknown): v is ContentList => {
   if (typeof v !== 'object' || v === null) return false;
   const o = v as { id?: unknown; name?: unknown };
@@ -59,22 +60,18 @@ const toCandidates = (resp: ListProductDefaultResponse | undefined): CompareCand
   return listis.map((p) => ({ id: p.id, name: p.name }));
 };
 
-const SUGGESTION_COUNT = 5; // 입력이 비었을 때 보여줄 개수
-const DEBOUNCE_MS = 300;
-
 const CompareSelect = forwardRef<HTMLInputElement, CompareSelectProps>(function CompareSelect(
   {
     label,
     value,
     onChange,
-    options = [], // ⬅️ 부모가 초기 추천을 내려줄 수도 있음(없어도 OK),\
     placeholder = '콘텐츠명을 입력해 주세요',
     disabled = false,
     className,
     inputClassName,
     dropdownClassName,
     filterFn = defaultFilter,
-    scheme = 'left',
+    scheme = 'a',
     onTryChange,
     onError, // 실패 알림(토스트 등)을 외부에서 처리할 수 있게 제공
   },
@@ -96,9 +93,11 @@ const CompareSelect = forwardRef<HTMLInputElement, CompareSelectProps>(function 
     return () => clearTimeout(t);
   }, [query]);
 
-  // 서버 검색 호출 (Swagger: keyword 파라미터!)
-  //    - debounced 길이가 1~2+ 이상일 때 enabled (원하시는 기준으로)
-  const { data: serverData, isLoading: isServerLoading } = useListProduct(
+  // 사용자가 입력한 값(query)을 DEBOUNCE_MS(ms기준) 기다린 후 debounced에 반영
+  const DEBOUNCE_MS = 150;
+
+  // 서버 검색 호출 (기본설정은 입력 1글자 이상일 때)
+  const { data: serverData } = useListProduct(
     {
       ...PATH_OPTION,
       query: {
@@ -107,7 +106,7 @@ const CompareSelect = forwardRef<HTMLInputElement, CompareSelectProps>(function 
     },
     [debounced],
     {
-      enabled: debounced.length >= 1, // 1글자부터 검색(필요시 2로)
+      enabled: debounced.length >= 1, // 1글자부터 검색(서버 요청이 너무 자주 일어닐 시 2글자로 수정)
       staleTime: 30_000,
     },
   );
@@ -115,20 +114,12 @@ const CompareSelect = forwardRef<HTMLInputElement, CompareSelectProps>(function 
   // 서버 결과 → 후보
   const serverOptions = useMemo(() => toCandidates(serverData), [serverData]);
 
-  //  최종 후보 소스 결정
-  //   - 입력 있으면: 서버 결과
-  //   - 입력 없으면: 초기 제안(부모 options 또는 서버 첫 페이지를 부모에서 내려주기)
-  const baseOptions: CompareCandidate[] = useMemo(() => {
-    if (debounced.length >= 1) return serverOptions;
-    // 입력이 없을 땐 상위 N개 보여주기(UX 개선)
-    return options.slice(0, SUGGESTION_COUNT);
-  }, [debounced.length, serverOptions, options]);
-
   // 드롭다운에 보일 리스트 (입력이 없으면 baseOptions 그대로)
-  const filtered = useMemo(() => {
-    if (!baseOptions.length) return [];
-    return debounced.length >= 1 ? baseOptions : baseOptions;
-  }, [baseOptions, debounced.length]);
+  const filtered: CompareCandidate[] = useMemo(() => {
+    if (debounced.length >= 1) return serverOptions;
+    return [];
+  }, [debounced.length, serverOptions]);
+
   // Chip이 있을 때 입력/검색 비활성
   const inputDisabled = disabled || !!value;
 
@@ -144,15 +135,15 @@ const CompareSelect = forwardRef<HTMLInputElement, CompareSelectProps>(function 
     return () => document.removeEventListener('mousedown', onDocClick);
   }, []);
 
-  // 칩 색상용 prop (기본은 left 녹색 글로벌 css chip 색상 사용)
+  // 칩 색상용 prop (기본은 a 녹색 글로벌 css chip 색상 사용)
   const ChipColor = {
-    left: {
+    a: {
       chip: ' bg-green-50 text-green-500',
       ring: 'focus-within:ring-main', // 필요 시 입력창 포커스 컬러 변경용
     },
-    right: {
+    b: {
       chip: ' bg-pink-50 text-pink-500',
-      ring: 'focus-within:ring-fuchsia-400/70',
+      ring: 'focus-within:ring-main',
     },
   } as const;
 
@@ -302,9 +293,9 @@ const CompareSelect = forwardRef<HTMLInputElement, CompareSelectProps>(function 
               setQuery(e.target.value);
               setOpen(true);
             }}
-            onFocus={() => !inputDisabled && setOpen(!!query)}
+            onFocus={() => !inputDisabled && setOpen(true)}
             onKeyDown={handleKeyDown}
-            placeholder={placeholder}
+            placeholder={debounced.length >= 1 ? '검색 중...' : placeholder}
             disabled={inputDisabled}
             role='combobox'
             aria-expanded={open}

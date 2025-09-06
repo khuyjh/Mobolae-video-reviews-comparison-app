@@ -1,7 +1,7 @@
 // 비교하기 페이지
 'use client';
 
-import { useMemo, useEffect } from 'react';
+import { useMemo } from 'react';
 import { toast } from 'react-toastify';
 
 import { PATH_OPTION } from '@/shared/constants/constants';
@@ -28,7 +28,7 @@ const toContentList = (v: unknown): v is ContentList => {
 // 응답 → CompareCandidate[] 로 변환
 function toCandidates(resp: ListProductDefaultResponse | undefined): CompareCandidate[] {
   if (!resp) return [];
-  // 스키마가 배열형/객체형 모두 가능성을 고려
+
   const listUnknown: unknown = Array.isArray(resp) ? resp : (resp as { list?: unknown }).list;
   if (!Array.isArray(listUnknown)) return [];
   const listis = listUnknown.filter(toContentList); // 타입가드로 좁히기
@@ -48,11 +48,6 @@ const ComparePage = () => {
   const trySetA = useCompareStore((s) => s.trySetA);
   const trySetB = useCompareStore((s) => s.trySetB);
 
-  /** ------------------------------------------------------
-   * 1) 서버에서 상품 리스트를 1페이지 가져옵니다.
-   *    - 우선은 "전체 1페이지" 정도만 받아서 로컬 필터(CompareSelect)로 검색
-   *    - 데이터가 많아지면, 다음 단계에서 "서버 검색"으로 확장하면 됩니다.
-   * ----------------------------------------------------- */
   const { data, isLoading, isError, error } = useListProduct({ ...PATH_OPTION, query: {} }, [], {
     staleTime: 60_000,
   });
@@ -61,28 +56,6 @@ const ComparePage = () => {
     if (isError || !data) return [];
     return toCandidates(data);
   }, [data, isError]);
-
-  useEffect(() => {
-    console.log('[DEBUG] BASE_URL', process.env.NEXT_PUBLIC_BASE_URL);
-    console.log('[DEBUG] TEAM_ID', PATH_OPTION.path.teamId);
-  }, []);
-
-  useEffect(() => {
-    console.log('[DEBUG] list data raw:', data);
-    console.log('[DEBUG] isLoading:', isLoading, 'isError:', isError, 'error:', error);
-  }, [data, isLoading, isError, error]);
-
-  useEffect(() => {
-    console.log('[DEBUG] serverOptions length:', serverOptions.length);
-    console.log('[DEBUG] first 5:', serverOptions.slice(0, 5));
-  }, [serverOptions]);
-
-  useEffect(() => {
-    console.log(
-      '[DEBUG] names:',
-      serverOptions.map((o) => o.name),
-    );
-  }, [serverOptions]);
 
   return (
     <main className='mx-auto max-w-4xl p-[24px]'>
@@ -93,11 +66,10 @@ const ComparePage = () => {
           label='콘텐츠 1'
           className={COMPARE_SELECT_BASE_STYLE}
           value={a}
-          scheme='left'
+          scheme='a'
           onChange={() => {}} // fallback용. 실제 업데이트는 onTryChange가 담당
           onTryChange={trySetA} // 핵심: 중복 체크 + 상태 반영
           onError={() => toast.info(TOAST_INFO_MESSAGE)}
-          options={serverOptions}
           placeholder={PLACEHOLDER_TEXT}
         />
 
@@ -106,11 +78,10 @@ const ComparePage = () => {
           label='콘텐츠 2'
           className={COMPARE_SELECT_BASE_STYLE}
           value={b}
-          scheme='right'
+          scheme='b'
           onChange={() => {}}
           onTryChange={trySetB}
           onError={() => toast.info(TOAST_INFO_MESSAGE)}
-          options={serverOptions}
           placeholder={PLACEHOLDER_TEXT}
         />
 
