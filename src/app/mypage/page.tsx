@@ -1,82 +1,79 @@
 'use client';
 
-import React from 'react';
-import { useState } from 'react';
+import { useInfiniteQuery } from '@tanstack/react-query';
+import React, { useMemo, useState } from 'react';
 
+import VirtualizedContentGrid from '@/features/mainPage/components/VirtualizedContentGrid';
+import ActivityCard from '@/features/mypage/components/activityCard';
 import ProfileCard from '@/features/mypage/components/ProfileCard';
-import ProfileBadge from '@/shared/components/card/avatarCard';
-import { buildRankingMap } from '@/shared/utils/rankingUtil';
+import ProfileTabs from '@/features/mypage/components/ProfileTabs';
+import { fetchDummyPage, type PageResponse } from '@/features/mypage/mock/dummyPager';
+
+import type { ContentItem } from '@/shared/types/content';
 
 const AVATAR = '/images/profileImg.jpg';
+type TabKey = 'reviews' | 'items' | 'wishlist';
 
-const items = [
-  { id: 101, name: '리뷰왕', avatarSrc: AVATAR, followers: 682, reviewCount: 398, rating: 5 },
-  { id: 102, name: '리뷰왕', avatarSrc: AVATAR, followers: 682, reviewCount: 398, rating: 4 },
-  {
-    id: 103,
-    name: '리뷰왕리뷰왕리뷰왕리뷰왕',
-    avatarSrc: AVATAR,
-    followers: 800,
-    reviewCount: 38,
-    rating: 3,
-  },
-  {
-    id: 105,
-    name: '리뷰왕리뷰왕리뷰왕리뷰왕',
-    avatarSrc: AVATAR,
-    followers: 800,
-    reviewCount: 38,
-    rating: 3,
-  },
-];
-
-const MyPage = () => {
-  const rankingMap = buildRankingMap(items);
+export default function MyPage() {
   const [isFollowing, setIsFollowing] = useState(false);
+  const [tab, setTab] = useState<TabKey>('reviews');
 
-  const handleFollowToggle = () => {
-    setIsFollowing((prev) => !prev);
-  };
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useInfiniteQuery({
+    queryKey: ['mypage', 'infinite', tab],
+    queryFn: ({ pageParam = 0 }) => fetchDummyPage({ cursor: pageParam, limit: 12 }),
+    initialPageParam: 0,
+    getNextPageParam: (last) => last.nextCursor ?? undefined,
+  });
+
+  // 더미 → ContentItem 매핑
+  const items: ContentItem[] = useMemo(
+    () =>
+      (data?.pages ?? []).flatMap((p) =>
+        p.items.map((it) => ({
+          contentId: it.id,
+          title: it.title,
+          contentImage: it.image,
+          favoriteCount: it.favoriteCount,
+          reviewCount: it.reviewCount,
+          rating: it.rating,
+        })),
+      ),
+    [data],
+  );
 
   return (
-    <div className='space-y-4 px-[20px]'>
-      <ProfileCard
-        name='surisuri마수리'
-        avatarSrc='/images/profileImg.jpg'
-        bio=''
-        followers={762}
-        following={102}
-        isFollowing={isFollowing}
-        onFollowToggle={handleFollowToggle}
-      />
-      {/* 메인페이지 랭킹 카드: rank 대신 id + rankingMap 전달 */}
-      {items.map((item) => (
-        <ProfileBadge
-          key={item.id}
-          variant='ranking'
-          id={item.id}
-          name={item.name}
-          avatarSrc={item.avatarSrc}
-          followers={item.followers}
-          review={item.reviewCount}
-          rating={item.rating}
-          rankingMap={rankingMap} // 부모에서 만든 맵
+    <div className='mt-[30px] px-[20px] md:px-[117px] xl:mx-auto xl:flex xl:max-w-[1340px] xl:px-[0px]'>
+      <div className='mb-[60px] xl:mr-[60px]'>
+        <ProfileCard
+          name='surisuri마수리'
+          avatarSrc={AVATAR}
+          bio='자기소개 입니다자기소개 입니다자기소개 입니다자기소개 입니다자기소개 입니다'
+          followers={762}
+          following={102}
+          isFollowing={isFollowing}
+          onFollowToggle={() => setIsFollowing((p) => !p)}
         />
-      ))}
+      </div>
 
-      {/* 리뷰페이지 카드 */}
-      <ProfileBadge
-        variant='reviewProfile'
-        id={999}
-        name='리뷰왕코'
-        avatarSrc={AVATAR}
-        rating={3}
-      />
+      <div className='flex-1'>
+        <div className='mb-[60px]'>
+          <h2 className='text-lg-semibold mb-[30px] text-white'>활동 내역</h2>
+          <ActivityCard rating={5} reviewCount={156} topCategoryId={2} />
+        </div>
 
-      {/* 팔로워 목록 카드 */}
-      <ProfileBadge variant='follower' id={1000} name='미끄럼틀' avatarSrc={AVATAR} />
+        <ProfileTabs value={tab} onChange={setTab} />
+
+        <div className='mt-6 pb-[80px]'>
+          <VirtualizedContentGrid
+            items={items}
+            hasNextPage={!!hasNextPage}
+            fetchNextPage={fetchNextPage}
+            isLoading={isLoading || isFetchingNextPage}
+            itemHeightEstimate={276}
+            rowGap={16}
+          />
+        </div>
+      </div>
     </div>
   );
-};
-
-export default MyPage;
+}

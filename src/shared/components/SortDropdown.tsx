@@ -23,6 +23,7 @@ type Props<K extends string = string> = {
   buttonClassName?: string; // 트리거 버튼
   panelClassName?: string; // 패널(목록)
   itemClassName?: string; // 아이템 공통
+  labelClassName?: string; // 프로필페이지 드롭다운
 };
 
 //상품과 상품 리뷰
@@ -35,6 +36,7 @@ const SortDropdown = <K extends string = string>({
   buttonClassName,
   panelClassName,
   itemClassName,
+  labelClassName,
 }: Props<K>) => {
   const [open, setOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -96,6 +98,7 @@ const SortDropdown = <K extends string = string>({
           className={clsx(
             'text-md-regular xl:text-base-regular truncate text-gray-600',
             open ? 'text-white' : 'text-gray-600',
+            labelClassName,
           )}
         >
           {selectedOpt ? selectedOpt.label : placeholder}

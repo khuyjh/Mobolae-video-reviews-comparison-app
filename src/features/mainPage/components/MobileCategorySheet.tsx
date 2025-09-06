@@ -1,22 +1,23 @@
 'use client';
 
+import { useSearchParams } from 'next/navigation';
+
 import React from 'react';
 
 import CategoryItem from '@/features/mainPage/components/CategoryItem';
 import { Chip } from '@/shared/components/chip';
 import MobileBottomSheet from '@/shared/components/MobileBottomSheet';
 import { SheetClose } from '@/shared/components/ui/sheet';
-import { Category } from '@/shared/types/CategoryTypes';
+import { Category } from '@/shared/types/categoryTypes';
 
 import ArrowList from './ArrowList';
+import { buildCategoryHref } from '../services/buildCategoryHref';
 
 interface MobileCategorySheetProps {
   /** 카테고리 목록 */
   categories: Category[];
   /** 현재 선택된 카테고리 값 */
-  selectedCategory: string | null;
-  /** 카테고리 선택/해제 시 실행되는 콜백 */
-  onCategorySelect: (value: string | null) => void;
+  selectedCategoryId: number | null;
 }
 
 /**
@@ -28,12 +29,15 @@ interface MobileCategorySheetProps {
  */
 const MobileCategorySheet: React.FC<MobileCategorySheetProps> = ({
   categories,
-  selectedCategory,
-  onCategorySelect,
+  selectedCategoryId,
 }) => {
-  // 현재 선택된 카테고리 라벨(없으면 "카테고리")
-  const selectedLabel =
-    categories.find((category) => category.value === selectedCategory)?.name ?? '카테고리';
+  // 현재 URLSearchParams를 가져와 복제 (불변성 유지)
+  const searchParamsFromHook = useSearchParams();
+  const currentSearchParams = new URLSearchParams(searchParamsFromHook.toString());
+
+  // 현재 선택된 카테고리의 label (없으면 "카테고리")
+  const selectedCategoryLabel =
+    categories.find((category) => Number(category.id) === selectedCategoryId)?.name ?? '카테고리';
 
   return (
     <MobileBottomSheet
@@ -45,32 +49,29 @@ const MobileCategorySheet: React.FC<MobileCategorySheetProps> = ({
           role='button'
           aria-label='카테고리 바텀시트 열기'
         >
-          {selectedCategory ? selectedLabel : '카테고리'}
+          {selectedCategoryId ? selectedCategoryLabel : '카테고리'}
         </Chip>
       }
       title='카테고리'
     >
       <ArrowList>
-        <ul className='space-y-2' role='list'>
-          {categories.map((category: Category) => {
-            const active = selectedCategory === category.value;
-            const next = active ? null : category.value;
+        {categories.map((category) => {
+          const isSelected = selectedCategoryId === Number(category.id);
+          const nextCategoryValue = isSelected ? null : Number(category.id);
+          const categoryHref = buildCategoryHref(currentSearchParams, nextCategoryValue);
 
-            return (
-              <li key={category.id}>
-                <SheetClose asChild>
-                  <div aria-current={active ? 'true' : undefined}>
-                    <CategoryItem
-                      category={category}
-                      isSelected={active}
-                      onClick={() => onCategorySelect(next)}
-                    />
-                  </div>
-                </SheetClose>
-              </li>
-            );
-          })}
-        </ul>
+          return (
+            <SheetClose asChild key={category.id}>
+              <CategoryItem
+                category={category}
+                isSelected={isSelected}
+                href={categoryHref}
+                className='mb-2 last:mb-0'
+                role='option'
+              />
+            </SheetClose>
+          );
+        })}
       </ArrowList>
     </MobileBottomSheet>
   );

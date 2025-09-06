@@ -1,74 +1,127 @@
 'use client';
 
-import React from 'react';
+import Link from 'next/link';
 
-import { mockReviewers } from '@/features/mainPage/mock/contents';
+import React, { useMemo } from 'react';
 
-export interface Reviewer {
-  id: number;
-  name: string;
-  profileImageUrl: string;
-}
+import { mockReviewers } from '@/features/mainPage/mock/mockContents';
+import ProfileBadge from '@/shared/components/card/avatarCard';
+import { useUserStore } from '@/shared/stores/userStore';
 
-/** 개별 카드 */
-const RankingCard: React.FC<{
-  reviewer: Reviewer;
-  isHorizontalLayout?: boolean;
-}> = ({ reviewer, isHorizontalLayout = false }) => {
-  return (
-    <div className={`rounded-lg border p-3 ${isHorizontalLayout ? 'min-w-[147px]' : ''}`}>
-      <div className='flex items-center space-x-3'>
-        <img
-          src={reviewer.profileImageUrl}
-          alt={reviewer.name}
-          className='h-8 w-8 rounded-full object-cover'
-        />
-        <div className='text-sm-medium truncate text-white'>{reviewer.name}</div>
+import type { Reviewer } from '@/shared/types/reviewer';
+
+type Direction = 'row' | 'col';
+
+type ReviewerRankingListProps = {
+  reviewers: Reviewer[];
+  direction?: Direction; // 기본값: 'row'
+};
+
+/**
+ * ReviewerRankingList
+ * - reviewers 데이터를 받아 랭킹 순서대로 ProfileBadge를 렌더링하는 리스트 컴포넌트
+ * - direction에 따라 'row'(가로 스크롤) / 'col'(세로 리스트) 배치 지원
+ * - TODO: 팔로워 동률일 경우 처리
+ */
+const ReviewerRankingList: React.FC<ReviewerRankingListProps> = ({
+  reviewers,
+  direction = 'row',
+}) => {
+  // store에서 유저 정보 가져옴
+  const meId = useUserStore((state) => state.user?.id);
+
+  // 팔로워 수 기준 내림차순 정렬
+  // reviewers 배열을 얕은 복사 후 sort (원본 불변)
+  const sorted = useMemo(
+    () => [...reviewers].sort((a, b) => (b.followers ?? 0) - (a.followers ?? 0)),
+    [reviewers],
+  );
+
+  // 상위 5명만 제한
+  const topN = 5;
+  const top = useMemo(() => sorted.slice(0, topN), [sorted]);
+
+  // 등수 매핑: userId → rank
+  // 예: {1: 1위, 2: 2위, ...}
+  const rankingMap = useMemo(
+    () => new Map(top.map((reviewer, i) => [reviewer.userId, i + 1])),
+    [top],
+  );
+
+  // href 생성 (내 id와 해당 프로필의 user.id 비교하여 분기)
+  const getHref = (userId: number) => (meId && userId === meId ? '/mypage' : `/user/${userId}`);
+
+  // --- 가로 스크롤 버전 ---
+  if (direction === 'row') {
+    return (
+      <div className='flex w-full snap-x snap-mandatory flex-nowrap gap-5 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'>
+        {top.map((reviewer) => (
+          <Link
+            key={reviewer.userId}
+            href={getHref(reviewer.userId)}
+            className='min-w-[147px] flex-none shrink-0 snap-start'
+          >
+            <ProfileBadge
+              variant='ranking'
+              id={reviewer.userId} // ProfileBadge는 id prop 사용
+              name={reviewer.name}
+              avatarSrc={reviewer.profileImageUrl}
+              followers={reviewer.followers ?? 0}
+              review={reviewer.review ?? 0}
+              rankingMap={rankingMap}
+            />
+          </Link>
+        ))}
       </div>
+    );
+  }
+
+  // --- 세로 리스트 버전 ---
+  return (
+    <div className='space-y-[30px]'>
+      {top.map((reviewer) => (
+        <Link key={reviewer.userId} href={getHref(reviewer.userId)} className='block'>
+          <ProfileBadge
+            variant='ranking'
+            id={reviewer.userId}
+            name={reviewer.name}
+            avatarSrc={reviewer.profileImageUrl}
+            followers={reviewer.followers ?? 0}
+            review={reviewer.review ?? 0}
+            rankingMap={rankingMap}
+          />
+        </Link>
+      ))}
     </div>
   );
 };
 
-/** 모바일·태블릿·소형 데스크탑: 가로 스크롤 바 (lg 미만에서 보이도록) */
-export const ReviewerRankingHorizontal: React.FC<{
-  reviewers?: Reviewer[];
-}> = ({ reviewers = mockReviewers }) => {
-  return (
-    <section
-      aria-labelledby='reviewer-ranking-title-horizontal'
-      className='mt-[30px] md:mt-[40px] lg:hidden'
-    >
-      <h2 id='reviewer-ranking-title-horizontal' className='text-lg-semibold mb-3 text-white'>
-        리뷰어 랭킹
-      </h2>
-      <div className='flex w-full gap-3 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'>
-        {reviewers.map((reviewer) => (
-          <RankingCard key={reviewer.id} reviewer={reviewer} isHorizontalLayout />
-        ))}
-      </div>
-    </section>
-  );
-};
+/**
+ * ReviewerRankingHorizontal
+ * - 모바일·태블릿 전용
+ * - 가로 스크롤 리스트 형태로 리뷰어 랭킹을 표시
+ */
+export const ReviewerRankingHorizontal: React.FC<{ reviewers?: Reviewer[] }> = ({
+  reviewers = mockReviewers as Reviewer[],
+}) => (
+  <section>
+    <h2 className='text-md-regular mb-3 text-white'>리뷰어 랭킹</h2>
+    <ReviewerRankingList reviewers={reviewers} direction='row' />
+  </section>
+);
 
-/** 큰 화면(lg 이상): 좌측 레일 세로 리스트 */
-export const ReviewerRankingSidebar: React.FC<{
-  reviewers?: Reviewer[];
-}> = ({ reviewers = mockReviewers }) => {
-  return (
-    <aside
-      aria-labelledby='reviewer-ranking-title-sidebar'
-      className='mt-[45px] h-fit px-[30px] lg:min-w-[250px]'
-    >
-      <div className='sticky top-24'>
-        <h2 id='reviewer-ranking-title-sidebar' className='text-lg-semibold mb-3 text-white'>
-          리뷰어 랭킹
-        </h2>
-        <div className='space-y-3'>
-          {reviewers.map((reviewer) => (
-            <RankingCard key={reviewer.id} reviewer={reviewer} />
-          ))}
-        </div>
-      </div>
-    </aside>
-  );
-};
+/**
+ * ReviewerRankingSidebar
+ * - 데스크탑 전용
+ * - 좌측 레일에 세로 리스트 형태로 리뷰어 랭킹을 표시
+ */
+export const ReviewerRankingSidebar: React.FC<{ reviewers?: Reviewer[] }> = ({
+  reviewers = mockReviewers as Reviewer[],
+}) => (
+  <aside className='border-black-800 h-fit border-l px-[30px] py-[45px] xl:min-w-[250px]'>
+    <div className='sticky top-24'>
+      <h2 className='text-base-regular mb-[30px] text-white'>리뷰어 랭킹</h2>
+      <ReviewerRankingList reviewers={reviewers} direction='col' />
+    </div>
+  </aside>
+);

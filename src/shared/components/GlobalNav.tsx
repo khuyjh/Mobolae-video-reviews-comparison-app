@@ -1,6 +1,7 @@
 'use client';
 /* eslint-disable @next/next/no-img-element */
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 
 import { useEffect, useRef, useState } from 'react';
 
@@ -12,6 +13,9 @@ import { useUserStore } from '../stores/userStore';
 export default function GlobalNav() {
   const [searchOpen, setSearchOpen] = useState(false);
   const isLoggedIn = useUserStore((state) => state.isLoggedIn);
+  const params = useSearchParams();
+  const redirectUrl = params.get('redirect_url');
+  const query = `?redirect_url=${redirectUrl}`;
 
   const triggerBtnRef = useRef<HTMLButtonElement>(null);
   const mobileSearchRef = useRef<HTMLDivElement>(null);
@@ -67,10 +71,16 @@ export default function GlobalNav() {
             </div>
           ) : (
             <div className={DESKTOP_AUTH}>
-              <Link href='/signin' className='hover:text-gray-600'>
+              <Link
+                href={redirectUrl ? `/signin${query}` : '/signin'}
+                className='hover:text-gray-600'
+              >
                 로그인
               </Link>
-              <Link href='/signup' className='hover:text-gray-600'>
+              <Link
+                href={redirectUrl ? `/signup${query}` : '/signup'}
+                className='hover:text-gray-600'
+              >
                 회원가입
               </Link>
             </div>

@@ -30,9 +30,9 @@ type MostReviewedProps = {
  */
 const MostReviewed = ({ items }: MostReviewedProps) => {
   return (
-    <section className='mt-[60px]'>
+    <section className='my-[60px]'>
       <h2 className='text-xl-semibold mb-[30px] text-white'>리뷰 많은 상품</h2>
-      <ContentGrid items={items} />
+      <ContentGrid items={items.slice(0, 6)} />
     </section>
   );
 };

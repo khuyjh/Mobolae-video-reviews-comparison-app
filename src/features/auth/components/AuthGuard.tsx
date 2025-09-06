@@ -3,41 +3,62 @@
 import { usePathname, useRouter } from 'next/navigation';
 
 import { ReactNode, useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
 import { useShallow } from 'zustand/shallow';
 
 import LoadingImage from '@/shared/components/LoadingImage';
+import { PATH_OPTION } from '@/shared/constants/constants';
 import { useUserStore } from '@/shared/stores/userStore';
 
-//로그인 되었을 때 접근 방지할 경로
-const AUTH_ROUTES = ['/signin', '/signup', '/oauth/signup/kakao'];
-
-//로그인 되지 않았을 때 접근 가능한 경로
+import { me } from '../../../../openapi/requests';
+import { getCookie } from '../utils/cookie';
+/*
+AUTH_ROUTES: 로그인 되었을 때 접근 방지할 경로
+NEED_AUTH_ROUTES: 로그인 되지 않았을 때 접근 방지할 경로
+*/
+const AUTH_ROUTES = ['/signin', '/signup', '/oauth/kakao', '/oauth/signup/kakao'];
+const NEED_AUTH_ROUTES = ['/compare', '/mypage'];
 
 interface Props {
   children: ReactNode;
 }
 
 const AuthGuard = ({ children }: Props) => {
-  const { isLoggedIn, initializeAuth, restoreAuth } = useUserStore(
-    useShallow((state) => ({
-      isLoggedIn: state.isLoggedIn,
-      initializeAuth: state.initializeAuth,
-      restoreAuth: state.restoreAuth,
-    })),
-  );
   const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
-  // const isMounted = useRef(false);
-
   const isAuthPath = AUTH_ROUTES.includes(pathname);
-  //TODO: 로그인이 필요한 경로 처리
+  const isNeedAuthPath = NEED_AUTH_ROUTES.includes(pathname);
+  const accessToken = getCookie('accessToken');
+  const { isLoggedIn, initializeAuth, setUser } = useUserStore(
+    useShallow((state) => ({
+      isLoggedIn: state.isLoggedIn,
+      initializeAuth: state.initializeAuth,
+      setUser: state.setUser,
+    })),
+  );
+
+  const restoreAuth = async () => {
+    if (accessToken && !isLoggedIn) {
+      try {
+        const res = await me(PATH_OPTION);
+
+        if (!res.data) return;
+
+        setUser(res.data);
+        toast.success(`${res.data.nickname}님 환영합니다!`);
+      } catch (e) {
+        toast.error(`사용자 정보를 불러오지 못했습니다.\n새로고침을 시도해주세요.`);
+        throw e;
+      }
+    }
+  };
 
   useEffect(() => {
     setIsMounted(true);
     //토큰 여부를 확인해서 유저권한 제어, 마운트시 1회 실행
-    initializeAuth();
     restoreAuth();
+    initializeAuth();
   }, []);
 
   useEffect(() => {
@@ -47,12 +68,16 @@ const AuthGuard = ({ children }: Props) => {
     if (isLoggedIn && isAuthPath) {
       router.replace('/');
     }
-  }, [isLoggedIn, isAuthPath, router, isMounted]);
 
-  if (!isMounted || (isLoggedIn && isAuthPath)) {
+    if (!isLoggedIn && isNeedAuthPath) {
+      router.replace('/');
+    }
+  }, [isLoggedIn, isAuthPath, isNeedAuthPath, router, isMounted]);
+
+  if (!isMounted || (isLoggedIn && isAuthPath) || (!isLoggedIn && isNeedAuthPath)) {
     return (
-      <div className='pt-80 md:pt-120 xl:pt-80'>
-        <LoadingImage />
+      <div className='flex h-dvh items-center justify-center'>
+        <LoadingImage loadingText='Loading...' />
       </div>
     );
   }
