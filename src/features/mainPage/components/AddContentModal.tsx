@@ -17,6 +17,7 @@ import { CATEGORIES, TEAM_ID } from '@/shared/constants/constants';
 import { normalizeForCompare } from '@/shared/utils/normalize';
 
 import NameDuplicateGuideInput from './NameDuplicateGuideInput';
+import { createProduct, imageUpload } from '../../../../openapi/requests';
 import { useProductNameSearch } from '../hooks/useProductNameSearch';
 
 /* ───────── 상수 / 타입 ───────── */
@@ -230,28 +231,49 @@ export default function AddContentModal({
   const onValid = async (_values: ProductFormValues): Promise<void> => {
     const trimmed = nameValue.trim();
 
-    if (trimmed === '') {
-      setError('name', {
-        type: 'required',
-        message: '콘텐츠 제목은 필수 입력입니다.',
-      });
+    if (!trimmed) {
+      setError('name', { type: 'required', message: '콘텐츠 제목은 필수 입력입니다.' });
+      return;
+    }
+    if (liveNameDuplicate) {
+      setError('name', { type: 'duplicate', message: '이미 등록된 콘텐츠입니다.' });
       return;
     }
 
-    if (liveNameDuplicate) {
-      setError('name', {
-        type: 'duplicate',
-        message: '이미 등록된 콘텐츠입니다.',
-      });
+    const file = imageFiles?.[0];
+    if (!file) {
+      setError('images', { type: 'custom', message: '대표 이미지를 추가해주세요.' });
       return;
     }
 
     try {
-      // TODO: 실제 생성 API 연동
-      const productId = 1234;
+      // 1) 이미지 업로드
+      const uploadRes = await imageUpload({
+        path: { teamId: TEAM_ID as string },
+        body: { image: file },
+        throwOnError: true,
+      });
+      const imageUrl = uploadRes.data.url;
+
+      // 2) 생성
+      const createRes = await createProduct({
+        path: { teamId: TEAM_ID as string },
+        body: {
+          name: trimmed,
+          categoryId,
+          description: descriptionValue.trim(),
+          image: imageUrl,
+        },
+        throwOnError: true,
+      });
+      const productId = createRes.data.id;
+
+      if (!productId) throw new Error('생성 응답에 콘텐츠 ID가 없습니다.');
+      toast.success('콘텐츠가 등록되었습니다.');
       onClose();
       router.push(`/product/${productId}`);
-    } catch {
+    } catch (e) {
+      console.error(e);
       toast.error('콘텐츠 등록에 실패했습니다. 잠시 후 다시 시도해 주세요.');
     }
   };
