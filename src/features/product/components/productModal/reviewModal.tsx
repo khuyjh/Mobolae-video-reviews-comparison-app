@@ -16,16 +16,33 @@ interface Props {
   isOpen: boolean;
   onClose: () => void;
   rating: number;
+  mode: 'add' | 'edit'; // 리뷰 생성 | 리뷰 수정
+  review?: {
+    id: number;
+    content: string;
+    rating: number;
+    images: { id: number; url: string }[];
+  };
 }
 
 type ImageEntry = { file: File; url: string };
 
-export default function ReviewAddModal({ isOpen, onClose, rating }: Props) {
-  const [reviewText, setReviewText] = useState('');
+const ReviewModal = ({ isOpen, onClose, rating, mode, review }: Props) => {
+  /* 초기 리뷰 텍스트 상태를 변경 여부를 감지*/
+  const initialReviewText = review?.content || '';
+
+  const initialExistingImages = useMemo(() => review?.images || [], [review]);
+
+  const [reviewText, setReviewText] = useState(mode === 'edit' && review ? review.content : '');
+  /* 기존 이미지 (수정에서만 초기화) */
+  const [existingImages, setExistingImages] = useState(
+    mode === 'edit' && review ? review.images : [],
+  );
+  /* 신규 업로드 이미지 파일 */
   const [imageFiles, setImageFiles] = useState<File[]>([]);
 
   const maxImages = 3;
-
+  /* 신규 이미지 -> 미리보기 URL 변환 */
   const previews = useMemo<ImageEntry[]>(() => {
     return imageFiles.map((file) => ({
       file,
@@ -57,20 +74,25 @@ export default function ReviewAddModal({ isOpen, onClose, rating }: Props) {
     }
 
     if (uniqueNewFiles.length === 0) return;
-
-    const remain = maxImages - imageFiles.length;
+    /* 기존 이미지 + 신규 이미지 */
+    const remain = maxImages - (existingImages.length + imageFiles.length);
     if (remain <= 0) return;
 
     const filesToAdd = uniqueNewFiles.slice(0, remain);
     setImageFiles((prev) => [...prev, ...filesToAdd]);
   };
-
+  /* 신규 이미지 삭제 */
   const handleImageRemove = (index: number) => {
     setImageFiles((prev) => prev.filter((_, i) => i !== index));
   };
+  /* 기존 이미지 삭제 */
+  const handleExistingImageRemove = (index: number) => {
+    setExistingImages((prev) => prev.filter((_, i) => i !== index));
+  };
 
   const handleModalClose = () => {
-    setReviewText('');
+    setReviewText(mode === 'edit' && review ? review.content : '');
+    setExistingImages(mode === 'edit' && review ? review.images : []);
     setImageFiles([]);
     onClose();
   };
@@ -83,14 +105,57 @@ export default function ReviewAddModal({ isOpen, onClose, rating }: Props) {
     }
   };
 
+  const handleSubmit = () => {
+    if (mode === 'add') {
+      const body = {
+        productId: 1,
+        content: reviewText,
+        rating,
+        images: previews.map((p) => p.url), // 신규 이미지 URL
+      };
+      console.log('POST body:', body);
+    } else {
+      const body = {
+        content: reviewText,
+        rating,
+        images: [
+          ...existingImages.map((img) => ({ id: img.id })), // 기존 이미지 id만 전송
+          ...previews.map((p) => ({ source: p.url })), // 신규 이미지는 url 전송
+        ],
+      };
+      console.log('PATCH body:', body);
+    }
+    handleModalClose();
+  };
+
   const productCategory = { id: 1, name: '' };
   const categoryChipProps = toCategoryChip(productCategory);
 
   const isReviewValid = reviewText.trim().length >= 10;
 
+  /* 텍스트와 이미지 변경 여부를 확인 */
+  const hasChanges = useMemo(() => {
+    const isTextChanged = reviewText !== initialReviewText;
+    const isExistingImagesModified = existingImages.length !== initialExistingImages.length;
+    const isNewImageAdded = imageFiles.length > 0;
+
+    /* 기존 이미지 배열의 순서나 내용이 바뀌었는지도 확인 */
+    const isExistingImageOrderChanged =
+      JSON.stringify(existingImages) !== JSON.stringify(initialExistingImages);
+
+    return (
+      isTextChanged || isExistingImagesModified || isNewImageAdded || isExistingImageOrderChanged
+    );
+  }, [reviewText, existingImages, imageFiles, initialReviewText, initialExistingImages]);
+
   return (
-    <BaseModal title='리뷰 작성 모달' isOpen={isOpen} onClose={handleModalClose} size='L'>
-      <div className='flex-col px-5 pb-4 md:px-10 md:pb-10'>
+    <BaseModal
+      title={mode === 'add' ? '리뷰 작성 모달' : '리뷰 수정 모달'}
+      isOpen={isOpen}
+      onClose={handleModalClose}
+      size='L'
+    >
+      <div className='flex flex-col px-5 pb-4 md:px-10 md:pb-10'>
         <div className='flex flex-col items-start'>
           <Chip {...categoryChipProps} />
           <h2 className='text-xl-semibold mt-2.5 text-white'>
@@ -118,14 +183,23 @@ export default function ReviewAddModal({ isOpen, onClose, rating }: Props) {
           onChange={setReviewText}
           onBlur={handleReviewBlur}
           maxLength={500}
-          placeholder='리뷰를 작성해 주세요'
+          placeholder={
+            mode === 'add' ? '최소 10자 이상 리뷰를 작성해 주세요' : '리뷰를 수정해 주세요'
+          }
           className='mt-3 md:mt-4'
         />
+
         <ImageUploader
           value={imageFiles}
           onChange={handleImageChange}
-          onRemove={handleImageRemove}
-          previewUrls={previews.map((p) => p.url)}
+          onRemove={(index) => {
+            if (index < existingImages.length) {
+              handleExistingImageRemove(index);
+            } else {
+              handleImageRemove(index - existingImages.length);
+            }
+          }}
+          previewUrls={[...existingImages.map((img) => img.url), ...previews.map((p) => p.url)]}
           maxImages={maxImages}
           className='mt-2.5'
         />
@@ -135,11 +209,15 @@ export default function ReviewAddModal({ isOpen, onClose, rating }: Props) {
         <Button
           variant='primary'
           className='mt-8 w-full max-w-full md:max-w-full xl:max-w-full'
-          disabled={!isReviewValid}
+          /* 작성 모드는 텍스트 유효성 | 수정 모드는 텍스트 유효성 + 변경 여부 모두 확인*/
+          disabled={!isReviewValid || (mode === 'edit' && !hasChanges)}
+          onClick={handleSubmit}
         >
-          작성하기
+          {mode === 'add' ? '작성하기' : '수정하기'}
         </Button>
       </div>
     </BaseModal>
   );
-}
+};
+
+export default ReviewModal;
