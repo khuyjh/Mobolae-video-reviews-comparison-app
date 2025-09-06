@@ -58,11 +58,11 @@ export default function NameDuplicateGuideInput({
           setIsFocused(false);
           onBlur();
         }}
-        placeholder='상품명 (상품 등록 여부를 확인해 주세요)'
+        placeholder='콘텐츠 제목 (콘텐츠 등록 여부를 확인해 주세요)'
         aria-invalid={ariaInvalid}
         className={classNames(
           'border-black-700 bg-black-800 focus:ring-main text-md-regular placeholder:text-md-regular',
-          'h-[60px] w-full rounded-lg border px-4 text-white transition-colors',
+          'h-[60px] w-full rounded-lg border px-4 text-white transition-colors xl:h-[70px]',
           'placeholder:text-gray-500 focus:ring-1 focus:outline-none',
           inputClassName,
         )}
@@ -75,7 +75,7 @@ export default function NameDuplicateGuideInput({
 
       {/* 안내 패널: 포커스 중 + 2자 이상 */}
       {isFocused && trimmed.length >= 2 && (
-        <div className='border-black-700 bg-black-800 absolute top-full right-0 left-0 z-20 mt-1 rounded-lg border p-2 shadow-xl'>
+        <div className='border-black-700 bg-black-800 absolute top-full right-0 left-0 z-20 mt-1 rounded-lg border p-[10px] shadow-xl'>
           {isLoading ? (
             <div className='px-2 py-1 text-sm text-gray-400'>검색 중…</div>
           ) : filtered.length === 0 ? (
@@ -84,7 +84,7 @@ export default function NameDuplicateGuideInput({
             filtered.map((name, i) => (
               <div
                 key={`${name}-${i}`}
-                className='pointer-events-none flex items-center justify-between rounded-md px-3 py-2 text-sm text-gray-300'
+                className='pointer-events-none mt-[5px] flex items-center justify-between rounded-md px-3 py-1.5 text-sm text-gray-300 first:mt-0'
                 title='선택은 불가합니다 (중복 안내 전용)'
               >
                 <span className='truncate'>{name}</span>

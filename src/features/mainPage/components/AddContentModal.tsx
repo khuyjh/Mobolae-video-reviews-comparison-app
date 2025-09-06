@@ -43,7 +43,7 @@ const schema = z.object({
   name: z
     .string()
     .trim()
-    .min(1, '상품 이름은 필수 입력입니다.')
+    .min(1, '콘텐츠 제목은 필수 입력입니다.')
     .max(NAME_MAX_LENGTH, `최대 ${NAME_MAX_LENGTH}자까지 입력할 수 있습니다.`),
 
   categoryId: z.number().int().min(1, '카테고리를 선택해주세요.'),
@@ -51,7 +51,7 @@ const schema = z.object({
   description: z
     .string()
     .trim()
-    .min(1, '상품 설명은 필수 입력입니다.')
+    .min(1, '콘텐츠 설명은 필수 입력입니다.')
     .superRefine((v, ctx) => {
       if (v.length > 0 && v.length < DESCRIPTION_MIN_LENGTH) {
         ctx.addIssue({
@@ -92,8 +92,8 @@ function CategoryDropdown({
   );
 }
 
-/* ───────── 상품 추가 모달 ─────────
- * - 이름 onBlur 한 곳에서만: 빈값/중복 판정 + 토스트 1회
+/* ───────── 콘텐츠 추가 모달 ─────────
+ * - 제목 onBlur 한 곳에서만: 빈값/중복 판정 + 토스트 1회
  * - 버튼 비활성화는 "라이브 중복"도 반영(토스트는 onBlur만)
  * - 설명 blur 시 에러 토스트(필수/10자 미만) 재도입
  * - 제출 시엔 조용히 가드(토스트 X)
@@ -189,18 +189,18 @@ export default function AddContentModal({
     if (trimmed === '') {
       setError('name', {
         type: 'required',
-        message: '상품 이름은 필수 입력입니다.',
+        message: '콘텐츠 제목은 필수 입력입니다.',
       });
-      toast.error('상품 이름은 필수 입력입니다.');
+      toast.error('콘텐츠 제목은 필수 입력입니다.');
       return;
     }
 
     if (liveNameDuplicate) {
       setError('name', {
         type: 'duplicate',
-        message: '이미 등록된 상품입니다.',
+        message: '이미 등록된 콘텐츠입니다.',
       });
-      toast.error('이미 등록된 상품입니다.');
+      toast.error('이미 등록된 콘텐츠입니다.');
       return;
     }
 
@@ -233,7 +233,7 @@ export default function AddContentModal({
     if (trimmed === '') {
       setError('name', {
         type: 'required',
-        message: '상품 이름은 필수 입력입니다.',
+        message: '콘텐츠 제목은 필수 입력입니다.',
       });
       return;
     }
@@ -241,7 +241,7 @@ export default function AddContentModal({
     if (liveNameDuplicate) {
       setError('name', {
         type: 'duplicate',
-        message: '이미 등록된 상품입니다.',
+        message: '이미 등록된 콘텐츠입니다.',
       });
       return;
     }
@@ -252,7 +252,7 @@ export default function AddContentModal({
       onClose();
       router.push(`/product/${productId}`);
     } catch {
-      toast.error('상품 등록에 실패했습니다. 잠시 후 다시 시도해 주세요.');
+      toast.error('콘텐츠 등록에 실패했습니다. 잠시 후 다시 시도해 주세요.');
     }
   };
 
@@ -272,11 +272,11 @@ export default function AddContentModal({
   );
 
   return (
-    <BaseModal title='상품 추가' isOpen={isOpen} onClose={onClose} size='L'>
+    <BaseModal title='콘텐츠 추가' isOpen={isOpen} onClose={onClose} size='L'>
       <form onSubmit={handleSubmit(onValid, onInvalid)} className='md:px-5 md:pb-5'>
-        <h2 className='text-xl-semibold md:text-2xl-semibold mb-10'>상품 추가</h2>
+        <h2 className='text-xl-semibold md:text-2xl-semibold mb-10'>콘텐츠 추가</h2>
 
-        <div className='flex flex-col items-start gap-[10px] md:flex-row-reverse md:gap-[15px]'>
+        <div className='flex flex-col items-start justify-end gap-[10px] md:flex-row-reverse md:gap-[15px]'>
           {/* 대표 이미지 (1장만) */}
           <ImageUploader
             value={imageFiles}
@@ -293,9 +293,9 @@ export default function AddContentModal({
             className='w-[140px]'
           />
 
-          {/* 이름 / 카테고리 */}
+          {/* 제목 / 카테고리 */}
           <div className='flex w-full flex-col gap-[10px] md:max-w-90 md:gap-[15px]'>
-            {/* 이름: 표시 전용(자식), 판정/토스트는 부모 onBlur */}
+            {/* 제목: 표시 전용(자식), 판정/토스트는 부모 onBlur */}
             <Controller
               control={control}
               name='name'
@@ -305,7 +305,7 @@ export default function AddContentModal({
                   onChange={(next) => field.onChange(next.slice(0, NAME_MAX_LENGTH))}
                   onBlur={() => {
                     field.onBlur();
-                    handleNameBlur(); // ✅ 여기서만 토스트 1회
+                    handleNameBlur();
                   }}
                   names={productNameCandidates}
                   isLoading={isLoading}
@@ -342,7 +342,7 @@ export default function AddContentModal({
                   field.onChange((next || '').slice(0, DESCRIPTION_MAX_LENGTH))
                 }
                 maxLength={DESCRIPTION_MAX_LENGTH}
-                placeholder='상품 설명을 입력하세요 (최소 10자)'
+                placeholder='콘텐츠 설명을 입력하세요 (최소 10자)'
                 className='mt-1'
                 aria-invalid={Boolean(errors.description)}
                 onBlur={field.onBlur}
@@ -358,7 +358,7 @@ export default function AddContentModal({
           className='mt-5 w-full max-w-none md:mt-10 md:max-w-none'
           disabled={!isSubmitReady}
         >
-          {isSubmitting ? '등록 중…' : '상품 등록'}
+          {isSubmitting ? '등록 중…' : '콘텐츠 등록'}
         </Button>
       </form>
     </BaseModal>
