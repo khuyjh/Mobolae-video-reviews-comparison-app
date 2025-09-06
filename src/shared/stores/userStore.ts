@@ -1,7 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-import { getMe } from '@/features/auth/api/authApi';
 import { getCookie, removeCookie } from '@/features/auth/utils/cookie';
 
 import { UserState } from '../types/userTypes';
@@ -11,25 +10,8 @@ export const useUserStore = create(
     (set, get) => ({
       user: null,
       isLoggedIn: false,
-      setUser: async () => {
-        try {
-          const user = await getMe();
-          if (user) {
-            set({ user, isLoggedIn: true });
-          }
-        } catch (e) {
-          console.log('유저 정보 불러오기 실패');
-          throw e;
-        }
-      },
-      //엑세스 토큰은 있는데 유저정보가 없는 경우 -> 로그인 상태 복구
-      restoreAuth: () => {
-        const accessToken = getCookie('accessToken');
-        const { isLoggedIn, setUser } = get();
-
-        if (accessToken && !isLoggedIn) {
-          setUser();
-        }
+      setUser: (user) => {
+        set({ user, isLoggedIn: true });
       },
       //사용자의 직접적인 로그아웃
       clearUser: () => {
