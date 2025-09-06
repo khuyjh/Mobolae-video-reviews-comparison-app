@@ -29,16 +29,19 @@ interface ProductDetailsPageClientProps {
 }
 
 /**
- * CSR Client Component
- * - 리뷰 목록은 tanstack query hook (useListReviews)
- * - 좋아요/좋아요 취소는 useLikeReview, useUnlikeReview
+ * 콘텐츠 상세 페이지 클라이언트 컴포넌트
+ *
+ * SSR에서 받은 콘텐츠 기본 정보를 표시하고
+ * CSR로 리뷰 목록과 인터랙션 기능을 처리.
+ *
+ * 주요 기능:
+ * - 콘텐츠 정보 표시 (ProductCard, Statistics)
+ * - 리뷰 목록 조회 및 무한 스크롤 (useListReviews)
+ * - 리뷰 좋아요/취소 (useLikeReview, useUnlikeReview)
  */
 export default function ProductDetailsPageClient({ product }: ProductDetailsPageClientProps) {
   const isTablet = useMediaQuery('(min-width: 768px) and (max-width: 1279px)');
   const isPC = useMediaQuery('(min-width: 1280px)');
-
-  console.log('🚀 ProductDetailsPageClient 렌더링 시작');
-  console.log('🚀 product:', product);
 
   let itemHeightEstimate;
   let itemSpacing;
@@ -62,7 +65,7 @@ export default function ProductDetailsPageClient({ product }: ProductDetailsPage
 
   const reviews = useMemo(() => reviewData?.list ?? [], [reviewData]);
 
-  // 좋아요 | 좋아요 취소 mutation
+  /* 좋아요 | 좋아요 취소 mutation 훅 */
   const likeMutation = useLikeReview();
   const unlikeMutation = useUnlikeReview();
 
@@ -124,8 +127,8 @@ export default function ProductDetailsPageClient({ product }: ProductDetailsPage
                     isLiked={review.isLiked}
                     showActions={true}
                     createdAt={review.createdAt}
-                    name={review.user?.nickname ?? '익명'}
-                    avatarSrc={review.user?.image ?? ''}
+                    name={review.user?.nickname ?? '익명'} // 서비스 탈퇴 시 익명 처리 (임시)
+                    avatarSrc={review.user?.image ?? ''} // TODO: 기본 이미지 예정
                     rating={review.rating}
                     onLikeClick={() => onLikeClick(review.id, review.isLiked)}
                     data-index={index}
@@ -135,11 +138,12 @@ export default function ProductDetailsPageClient({ product }: ProductDetailsPage
             }}
             hasNextPage={!!reviewData?.nextCursor}
             fetchNextPage={() => {
-              /* TODO: 현재 useListReviews는 단일 페이지 API 사용.
-                 향후 codegen에서 infinite hook (useListReviewsInfinite) 사용 시
-                 여기에 fetchNextPage를 연결 */
+              /* TODO: 무한 스크롤 구현
+               * 현재는 useListReviews가 단일 페이지만 지원
+               * useListReviewsInfinite 훅 사용 시 이 부분 연결 예정
+               */
             }}
-            isLoading={false} // TODO: review loading 상태를 query에서 꺼내서 연결
+            isLoading={false}
             itemHeightEstimate={itemHeightEstimate}
             scrollKey='product-reviews'
             maxItems={500}
