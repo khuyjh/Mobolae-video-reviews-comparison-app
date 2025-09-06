@@ -3,10 +3,10 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
 import React, { useMemo, useState } from 'react';
 
+import VirtualizedContentGrid from '@/features/mainPage/components/VirtualizedContentGrid';
 import ActivityCard from '@/features/mypage/components/activityCard';
 import ProfileCard from '@/features/mypage/components/ProfileCard';
 import ProfileTabs from '@/features/mypage/components/ProfileTabs';
-import VirtualizedContentGrid from '@/features/mypage/components/VirtualizedContentGrid';
 import { fetchDummyPage, type PageResponse } from '@/features/mypage/mock/dummyPager';
 
 import type { ContentItem } from '@/shared/types/content';
