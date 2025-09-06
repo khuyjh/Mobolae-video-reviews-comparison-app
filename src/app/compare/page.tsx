@@ -1,15 +1,39 @@
 // 비교하기 페이지
 'use client';
 
+import { useMemo } from 'react';
 import { toast } from 'react-toastify';
 
-import { MOCK_CANDIDATES } from '@/features/compare/types/compareMockTypes';
-import { CompareCandidate } from '@/features/compare/types/compareTypes';
+import { PATH_OPTION } from '@/shared/constants/constants';
 import { useCompareStore } from '@/shared/stores/useCompareStore';
 
+import { useListProduct } from '../../../openapi/queries';
 import CompareButton from '../../features/compare/components/CompareButton';
 import CompareResult from '../../features/compare/components/CompareResult';
 import CompareSelect from '../../features/compare/components/CompareSelect';
+
+import type { ListProductDefaultResponse } from '../../../openapi/queries/common';
+import type { CompareCandidate } from '@/features/compare/types/compareTypes';
+
+// 콘텐츠 리스트 아이템 최소 타입
+type ContentList = { id: number; name: string };
+
+// 타입 가드: any 사용 금지용
+const toContentList = (v: unknown): v is ContentList => {
+  if (typeof v !== 'object' || v === null) return false;
+  const o = v as { id?: unknown; name?: unknown };
+  return typeof o.id === 'number' && typeof o.name === 'string';
+};
+
+// 응답 → CompareCandidate[] 로 변환
+function toCandidates(resp: ListProductDefaultResponse | undefined): CompareCandidate[] {
+  if (!resp) return [];
+
+  const listUnknown: unknown = Array.isArray(resp) ? resp : (resp as { list?: unknown }).list;
+  if (!Array.isArray(listUnknown)) return [];
+  const listis = listUnknown.filter(toContentList); // 타입가드로 좁히기
+  return listis.map((p) => ({ id: p.id, name: p.name }));
+}
 
 // 스타일 상수화
 const COMPARE_BASE_STYLE =
@@ -24,6 +48,15 @@ const ComparePage = () => {
   const trySetA = useCompareStore((s) => s.trySetA);
   const trySetB = useCompareStore((s) => s.trySetB);
 
+  const { data, isLoading, isError, error } = useListProduct({ ...PATH_OPTION, query: {} }, [], {
+    staleTime: 60_000,
+  });
+
+  const serverOptions: CompareCandidate[] = useMemo(() => {
+    if (isError || !data) return [];
+    return toCandidates(data);
+  }, [data, isError]);
+
   return (
     <main className='mx-auto max-w-4xl p-[24px]'>
       {/* 비교 입력창 + 버튼 래퍼 - 모바일에선 세로, md 이상에선 가로 */}
@@ -33,11 +66,10 @@ const ComparePage = () => {
           label='콘텐츠 1'
           className={COMPARE_SELECT_BASE_STYLE}
           value={a}
-          scheme='left'
+          scheme='a'
           onChange={() => {}} // fallback용. 실제 업데이트는 onTryChange가 담당
           onTryChange={trySetA} // 핵심: 중복 체크 + 상태 반영
           onError={() => toast.info(TOAST_INFO_MESSAGE)}
-          options={MOCK_CANDIDATES}
           placeholder={PLACEHOLDER_TEXT}
         />
 
@@ -46,11 +78,10 @@ const ComparePage = () => {
           label='콘텐츠 2'
           className={COMPARE_SELECT_BASE_STYLE}
           value={b}
-          scheme='right'
+          scheme='b'
           onChange={() => {}}
           onTryChange={trySetB}
           onError={() => toast.info(TOAST_INFO_MESSAGE)}
-          options={MOCK_CANDIDATES}
           placeholder={PLACEHOLDER_TEXT}
         />
 
