@@ -1,22 +1,26 @@
-// 비교 입력창 리팩토링 버전. 비교 셀렉트 컴포넌트
+// 비교 셀렉트 컴포넌트
 // 기본은 드롭다운 형식
 // 입력창 및 연관 검색어 드롭다운으로 보여줌
 // 입력값 chip으로 토큰화
-
+// 서버 검색
 'use client';
 
 import { X } from 'lucide-react';
 import { forwardRef, useEffect, useId, useMemo, useRef, useState } from 'react';
 
+import { PATH_OPTION } from '@/shared/constants/constants';
 import { cn } from '@/shared/lib/cn';
 
+import { useListProduct } from '../../../../openapi/queries';
+
+import type { ListProductDefaultResponse } from '../../../../openapi/queries/common';
 import type { CompareCandidate } from '@/features/compare/types/compareTypes';
 
 export type CompareSelectProps = {
   label?: string;
   value: CompareCandidate | null; // Chip 선택 값 한번에 1개로 제한
   onChange: (v: CompareCandidate | null) => void; // Chip 선택/해제 콜백
-  options: CompareCandidate[]; // 후보 목록
+  options?: CompareCandidate[]; // 후보 목록
   placeholder?: string;
   disabled?: boolean;
   // 칩 색상용 prop (기본은 left 녹색)
@@ -39,12 +43,31 @@ const defaultFilter = (opt: CompareCandidate, q: string) => {
   return norm(opt.name).includes(norm(q));
 };
 
+// 리스트 아이템 최소 타입 + 타입가드 (any 금지)
+type ContentList = { id: number; name: string };
+const toContentList = (v: unknown): v is ContentList => {
+  if (typeof v !== 'object' || v === null) return false;
+  const o = v as { id?: unknown; name?: unknown };
+  return typeof o.id === 'number' && typeof o.name === 'string';
+};
+
+const toCandidates = (resp: ListProductDefaultResponse | undefined): CompareCandidate[] => {
+  if (!resp) return [];
+  const listUnknown: unknown = Array.isArray(resp) ? resp : (resp as { list?: unknown }).list;
+  if (!Array.isArray(listUnknown)) return [];
+  const listis = listUnknown.filter(toContentList);
+  return listis.map((p) => ({ id: p.id, name: p.name }));
+};
+
+const SUGGESTION_COUNT = 5; // 입력이 비었을 때 보여줄 개수
+const DEBOUNCE_MS = 300;
+
 const CompareSelect = forwardRef<HTMLInputElement, CompareSelectProps>(function CompareSelect(
   {
     label,
     value,
     onChange,
-    options,
+    options = [], // ⬅️ 부모가 초기 추천을 내려줄 수도 있음(없어도 OK),\
     placeholder = '콘텐츠명을 입력해 주세요',
     disabled = false,
     className,
@@ -66,11 +89,46 @@ const CompareSelect = forwardRef<HTMLInputElement, CompareSelectProps>(function 
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
 
-  const filtered = useMemo(() => {
-    if (!query) return [];
-    return options.filter((o) => filterFn(o, query));
-  }, [options, query, filterFn]);
+  // 디바운스된 검색어
+  const [debounced, setDebounced] = useState('');
+  useEffect(() => {
+    const t = setTimeout(() => setDebounced(query.trim()), DEBOUNCE_MS);
+    return () => clearTimeout(t);
+  }, [query]);
 
+  // 서버 검색 호출 (Swagger: keyword 파라미터!)
+  //    - debounced 길이가 1~2+ 이상일 때 enabled (원하시는 기준으로)
+  const { data: serverData, isLoading: isServerLoading } = useListProduct(
+    {
+      ...PATH_OPTION,
+      query: {
+        keyword: debounced || undefined, // ""이면 보내지 않음 → 초기 제안 모드와 구분
+      },
+    },
+    [debounced],
+    {
+      enabled: debounced.length >= 1, // 1글자부터 검색(필요시 2로)
+      staleTime: 30_000,
+    },
+  );
+
+  // 서버 결과 → 후보
+  const serverOptions = useMemo(() => toCandidates(serverData), [serverData]);
+
+  //  최종 후보 소스 결정
+  //   - 입력 있으면: 서버 결과
+  //   - 입력 없으면: 초기 제안(부모 options 또는 서버 첫 페이지를 부모에서 내려주기)
+  const baseOptions: CompareCandidate[] = useMemo(() => {
+    if (debounced.length >= 1) return serverOptions;
+    // 입력이 없을 땐 상위 N개 보여주기(UX 개선)
+    return options.slice(0, SUGGESTION_COUNT);
+  }, [debounced.length, serverOptions, options]);
+
+  // 드롭다운에 보일 리스트 (입력이 없으면 baseOptions 그대로)
+  const filtered = useMemo(() => {
+    if (!baseOptions.length) return [];
+    return debounced.length >= 1 ? baseOptions : baseOptions;
+  }, [baseOptions, debounced.length]);
   // Chip이 있을 때 입력/검색 비활성
   const inputDisabled = disabled || !!value;
 
@@ -278,12 +336,8 @@ const CompareSelect = forwardRef<HTMLInputElement, CompareSelectProps>(function 
             >
               {/* 결과 없음 */}
               {filtered.length === 0 && (
-                <li
-                  role='status'
-                  aria-live='polite'
-                  className='text-md-regular md:text-base-regular rounded-lg px-[16px] py-[12px] text-gray-600 select-none'
-                >
-                  일치하는 결과가 없습니다
+                <li className='text-md-regular md:text-base-regular rounded-lg px-[16px] py-[12px] text-gray-600 select-none'>
+                  {debounced.length >= 1 ? '일치하는 결과가 없습니다' : '입력 후 검색해 주세요'}
                 </li>
               )}
               {/* 결과 리스트 */}
