@@ -42,8 +42,7 @@ const ProductCard = ({
   const [isRedirectModalOpen, setIsRedirectModalOpen] = useState(false);
   const [isEditDeleteModalOpen, setIsEditDeleteModalOpen] = useState(false);
 
-  // 임시 사용자 평점 상태 (실제 리뷰 작성 시 API 응답 기반으로 교체 예정)
-  const [userRating, setUserRating] = useState<number>(4);
+  const [userRating, setUserRating] = useState<number>(4); //TODO: 리뷰 작성 모달 API 연동 후 삭제
 
   // TODO: 실제 로그인 상태 체크 훅으로 교체
   const isAuthenticated = true;
@@ -73,17 +72,23 @@ const ProductCard = ({
     setIsCompareModalOpen(true);
   };
 
+  /** 편집/삭제 버튼 클릭 */
+  const handleEditDeleteClick = () => {
+    setIsEditDeleteModalOpen(true);
+    // TODO: 편집/삭제 API 연결
+  };
+
   return (
     <>
       <div className='flex flex-col md:flex-row md:gap-5'>
-        {/* 📷 이미지 섹션 */}
+        {/* 이미지 섹션 */}
         <div className={IMAGE_CONTAINER_STYLES}>
           <Image src={imageSrc} alt={title} fill className='object-cover' priority />
         </div>
 
-        {/* 📄 콘텐츠 섹션 */}
+        {/* 콘텐츠 섹션 */}
         <div className='mt-5 flex flex-1 flex-col md:mt-0 md:py-0 xl:px-[40px]'>
-          {/* 🔼 상단 헤더 (카테고리, 제목, 찜) */}
+          {/* 상단 헤더 (카테고리, 제목, 찜) */}
           <ProductHeader
             category={category}
             title={title}
@@ -92,10 +97,10 @@ const ProductCard = ({
             favoriteCount={favoriteCount}
           />
 
-          {/* 📃 설명 */}
+          {/* 설명 */}
           <ProductDescription description={description} className='mt-[20px]' />
 
-          {/* 🔘 버튼들 (리뷰 작성, 비교, 편집/삭제 등) */}
+          {/* 버튼들 (리뷰 작성, 비교, 편집/삭제 등) */}
           <ProductButtons
             isEditable={isEditable}
             className='mt-[40px] md:mt-[60px]'
@@ -106,7 +111,7 @@ const ProductCard = ({
         </div>
       </div>
 
-      {/* 📝 리뷰 작성 모달 */}
+      {/* 리뷰 작성 모달 */}
       <ReviewModal
         isOpen={isReviewAddModalOpen}
         onClose={() => setIsReviewAddModalOpen(false)}
@@ -114,10 +119,10 @@ const ProductCard = ({
         mode='add'
       />
 
-      {/* 🔐 비로그인 사용자 리다이렉트 모달 */}
+      {/* 비로그인 사용자 리다이렉트 모달 */}
       <RedirectModal isOpen={isRedirectModalOpen} onClose={() => setIsRedirectModalOpen(false)} />
 
-      {/* 📊 비교 모달 */}
+      {/* 비교 모달 */}
       {compareModalType && (
         <CompareModal
           type={compareModalType}
@@ -127,7 +132,7 @@ const ProductCard = ({
         />
       )}
 
-      {/* ✏️ 편집/삭제 모달 */}
+      {/* 편집/삭제 모달 */}
       <EditDeleteModal
         isOpen={isEditDeleteModalOpen}
         onClose={() => setIsEditDeleteModalOpen(false)}

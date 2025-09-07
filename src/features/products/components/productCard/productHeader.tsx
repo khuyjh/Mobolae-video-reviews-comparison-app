@@ -19,9 +19,9 @@ const ICON_SIZE = 'h-6 w-6 xl:h-7 xl:w-7';
 interface ProductHeaderProps {
   category: { id: number; name: string };
   title: string;
-  productId: number; // ✅ API 호출에 필요
-  isFavorite: boolean; // ✅ SSR 초기 찜 여부
-  favoriteCount?: number; // ✅ SSR 초기 찜 수 (옵션)
+  productId: number;
+  isFavorite: boolean;
+  favoriteCount?: number;
 }
 
 const ProductHeader = ({
@@ -31,7 +31,6 @@ const ProductHeader = ({
   isFavorite,
   favoriteCount = 0,
 }: ProductHeaderProps) => {
-  // ✅ 초기 상태: SSR에서 받은 값
   const [isLiked, setIsLiked] = useState<boolean>(isFavorite);
   const [localFavoriteCount, setLocalFavoriteCount] = useState<number>(favoriteCount);
 
@@ -44,7 +43,7 @@ const ProductHeader = ({
     const prevCount = localFavoriteCount;
 
     if (isLiked) {
-      // 찜 취소
+      /* 찜 취소 */
       setIsLiked(false);
       setLocalFavoriteCount((c) => Math.max(0, c - 1));
 
@@ -52,15 +51,14 @@ const ProductHeader = ({
         { path: { teamId: TEAM_ID!, productId } },
         {
           onError: () => {
-            // 실패 시 롤백
+            /* 실패 시 롤백 */
             setIsLiked(prevIsLiked);
             setLocalFavoriteCount(prevCount);
           },
           onSettled: () => {
-            // ✅ React Query v5 방식 (객체로 queryKey 전달)
-            queryClient.invalidateQueries({ queryKey: ['product', productId] });
-            queryClient.invalidateQueries({ queryKey: ['productList'] });
-            queryClient.invalidateQueries({ queryKey: ['productReviews', productId] });
+            queryClient.invalidateQueries({ queryKey: ['product', productId] }); // 특정 콘텐츠 상세 정보 갱신
+            queryClient.invalidateQueries({ queryKey: ['productList'] }); // 콘텐츠 목록 화면 갱신
+            queryClient.invalidateQueries({ queryKey: ['productReviews', productId] }); // 리뷰 리스트 화면 갱신
           },
         },
       );
@@ -118,7 +116,6 @@ const ProductHeader = ({
             >
               <Heart className={cn(ICON_SIZE, heartIconColor)} fill={isLiked ? 'red' : 'none'} />
             </button>
-            <span className='text-sm text-gray-400'>{localFavoriteCount}</span>
           </div>
         </div>
 
