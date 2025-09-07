@@ -98,9 +98,19 @@ export default function ProductDetailsPageClient({ product }: ProductDetailsPage
             favoriteCount={product.favoriteCount}
             rating={product.rating}
             reviewCount={product.reviewCount}
-            favoriteComparison={20}
-            ratingComparison={0.5}
-            reviewComparison={15}
+            favoriteComparison={
+              product.categoryMetric
+                ? product.favoriteCount - product.categoryMetric.favoriteCount
+                : null
+            }
+            ratingComparison={
+              product.categoryMetric ? product.rating - product.categoryMetric.rating : null
+            }
+            reviewComparison={
+              product.categoryMetric
+                ? product.reviewCount - product.categoryMetric.reviewCount
+                : null
+            }
           />
         </section>
 
@@ -114,30 +124,19 @@ export default function ProductDetailsPageClient({ product }: ProductDetailsPage
           {/* 무한 스크롤 리뷰 리스트 */}
           <InfinityScroll<Review>
             items={reviews}
-            renderItem={(review, index) => {
-              const imageUrls = review.reviewImages?.map((ri) => ri.source) ?? [];
-
-              return (
-                <div
-                  key={String(review.id)}
-                  style={{ marginBottom: index === reviews.length - 1 ? 0 : itemSpacing }}
-                >
-                  <ReviewCard
-                    reviewContent={review.content} // 리뷰 본문
-                    Images={imageUrls}
-                    likeCount={review.likeCount}
-                    isLiked={review.isLiked}
-                    showActions={true}
-                    createdAt={review.createdAt}
-                    name={review.user?.nickname ?? '익명'} // 서비스 탈퇴 시 익명 처리 (임시)
-                    avatarSrc={review.user?.image ?? ''} // TODO: 기본 이미지 예정
-                    rating={review.rating}
-                    onLikeClick={() => onLikeClick(review.id, review.isLiked)}
-                    data-index={index}
-                  />
-                </div>
-              );
-            }}
+            renderItem={(review, index) => (
+              <div
+                key={String(review.id)}
+                style={{ marginBottom: index === reviews.length - 1 ? 0 : itemSpacing }}
+              >
+                <ReviewCard
+                  review={review} // ✅ 이제 전체 Review 객체 전달
+                  showActions={true}
+                  onLikeClick={() => onLikeClick(review.id, review.isLiked)}
+                  data-index={index}
+                />
+              </div>
+            )}
             hasNextPage={!!reviewData?.nextCursor}
             fetchNextPage={() => {
               /* TODO: 무한 스크롤 구현
