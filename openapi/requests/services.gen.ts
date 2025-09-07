@@ -6,6 +6,10 @@ import {
   type Options,
   formDataBodySerializer,
 } from '@hey-api/client-axios';
+import { InternalAxiosRequestConfig } from 'axios';
+import Cookies from 'js-cookie';
+
+import { BASE_URL } from '@/shared/constants/constants';
 
 import type {
   MeData,
@@ -104,6 +108,29 @@ import type {
 } from './types.gen';
 
 export const client = createClient(createConfig());
+
+client.setConfig({
+  baseURL: BASE_URL,
+  timeout: 10000,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+client.instance.interceptors.request.use(
+  (config: InternalAxiosRequestConfig): InternalAxiosRequestConfig => {
+    const accessToken = Cookies.get('accessToken');
+
+    if (accessToken) {
+      config.headers.Authorization = `Bearer ${accessToken}`;
+    }
+
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  },
+);
 
 /**
  * 내 정보 조회
