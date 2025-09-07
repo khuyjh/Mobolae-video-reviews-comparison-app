@@ -1,4 +1,7 @@
 import clsx from 'clsx';
+import { useState } from 'react';
+
+import FollowModal from '@/features/mypage/components/ProfileModal/FollowModal';
 
 type ProfileCardProps = {
   name: string;
@@ -19,12 +22,15 @@ export default function ProfileCard({
   bio,
   followers = 0,
   following = 0,
-  isMe = false,
+  isMe = true,
   isFollowing,
   onFollowToggle,
   onEdit,
   onLogout,
 }: ProfileCardProps) {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalType, setModalType] = useState<'followers' | 'following' | null>(null);
+
   return (
     <div className={CARD_CONTAINER}>
       {/* 프로필 이미지 */}
@@ -40,11 +46,23 @@ export default function ProfileCard({
 
       {/* 팔로워 / 팔로잉 */}
       <div className={FOLLOW_INFO_WRAPPER}>
-        <div className={FOLLOW_BOX_LEFT}>
+        <div
+          className={FOLLOW_BOX_LEFT}
+          onClick={() => {
+            setModalType('followers');
+            setIsModalOpen(true);
+          }}
+        >
           <strong className={FOLLOW_COUNT}>{followers}</strong>
           <span className={FOLLOW_LABEL}>팔로워</span>
         </div>
-        <div className='w-[50%]'>
+        <div
+          className='w-[50%]'
+          onClick={() => {
+            setModalType('following');
+            setIsModalOpen(true);
+          }}
+        >
           <strong className={FOLLOW_COUNT}>{following}</strong>
           <span className={FOLLOW_LABEL}>팔로잉</span>
         </div>
@@ -71,6 +89,9 @@ export default function ProfileCard({
           </button>
         )}
       </div>
+      {isModalOpen && (
+        <FollowModal type={modalType} isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+      )}
     </div>
   );
 }

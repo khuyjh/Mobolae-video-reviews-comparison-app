@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 import React from 'react';
 import { useState } from 'react';
 
@@ -43,21 +45,32 @@ const items = [
   },
 ];
 
-const FollowModal: React.FC = () => {
-  const [open, setOpen] = useState(true);
+type FollowModalProps = {
+  type: 'followers' | 'following' | null;
+  isOpen: boolean;
+  onClose: () => void;
+};
+
+const FollowModal: React.FC<FollowModalProps> = ({ type, isOpen, onClose }) => {
+  if (!type) return null;
+
+  const title = type === 'followers' ? '팔로워' : '팔로잉';
+
   return (
-    <BaseModal title='비교 상품 교체 선택' size='L' isOpen={open} onClose={() => setOpen(false)}>
+    <BaseModal title={title} size='L' isOpen={isOpen} onClose={onClose}>
       <div className='px-[30px]'>
-        <h3 className='text-2xl-semibold mb-[40px]'>surisuri마수리님을 팔로우하는 유저</h3>
+        <h3 className='text-2xl-semibold mb-[40px]'>surisuri마수리님을 {title}하는 유저</h3>
         <div className='h-[514px] overflow-y-scroll'>
           {items.map((items) => (
-            <ProfileBadge
-              key={items.id}
-              variant='follower'
-              id={items.id}
-              name={items.name}
-              avatarSrc={items.avatarSrc}
-            />
+            <Link key={items.id} href={`/users/${items.id}`}>
+              <ProfileBadge
+                key={items.id}
+                variant='follower'
+                id={items.id}
+                name={items.name}
+                avatarSrc={items.avatarSrc}
+              />
+            </Link>
           ))}
         </div>
       </div>
