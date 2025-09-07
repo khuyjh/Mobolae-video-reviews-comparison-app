@@ -58,8 +58,10 @@ const FollowModal: React.FC<FollowModalProps> = ({ type, isOpen, onClose }) => {
 
   return (
     <BaseModal title={title} size='L' isOpen={isOpen} onClose={onClose}>
-      <div className='px-[30px]'>
-        <h3 className='text-2xl-semibold mb-[40px]'>surisuri마수리님을 {title}하는 유저</h3>
+      <div className='px-[10px] md:px-[30px]'>
+        <h3 className='xl:text-2xl-semibold text-xl-semibold mb-[20px] xl:mb-[40px]'>
+          surisuri마수리님을 {title}하는 유저
+        </h3>
         <div className='h-[514px] overflow-y-scroll'>
           {items.map((items) => (
             <Link key={items.id} href={`/users/${items.id}`}>
