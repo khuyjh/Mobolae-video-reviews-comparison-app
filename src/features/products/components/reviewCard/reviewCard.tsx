@@ -14,12 +14,39 @@ import type { Review } from '../../../../../openapi/requests';
 interface ReviewCardProps {
   review: Review;
   showActions: boolean;
-  onLikeClick: () => void;
+  onLikeClick: (reviewId: number, isLiked: boolean) => Promise<void> | void;
 }
 
 const ReviewCard = ({ review, showActions, onLikeClick }: ReviewCardProps) => {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+
+  /* Optimistic UI */
+  const [localIsLiked, setLocalIsLiked] = useState(review.isLiked);
+  const [localLikeCount, setLocalLikeCount] = useState(review.likeCount);
+
+  /*좋아요 클릭 핸들러 추가*/
+  const handleLikeClick = async () => {
+    const prevIsLiked = localIsLiked;
+    const prevCount = localLikeCount;
+
+    /* 즉시 반영 */
+    if (localIsLiked) {
+      setLocalIsLiked(false);
+      setLocalLikeCount((c) => Math.max(0, c - 1));
+    } else {
+      setLocalIsLiked(true);
+      setLocalLikeCount((c) => c + 1);
+    }
+
+    try {
+      await onLikeClick(review.id, prevIsLiked);
+    } catch (err) {
+      setLocalIsLiked(prevIsLiked);
+      setLocalLikeCount(prevCount);
+      console.error('리뷰 좋아요 실패:', err);
+    }
+  };
 
   const handleDeleteConfirm = () => {
     console.log(`삭제 API 호출: reviewId=${review.id}`);
@@ -45,11 +72,11 @@ const ReviewCard = ({ review, showActions, onLikeClick }: ReviewCardProps) => {
           </div>
           <div>
             <ReviewMeta
-              likeCount={review.likeCount}
-              isLiked={review.isLiked}
+              likeCount={localLikeCount}
+              isLiked={localIsLiked}
               showActions={showActions}
               createdAt={review.createdAt}
-              onLikeClick={onLikeClick}
+              onLikeClick={handleLikeClick}
               onEditClick={() => setIsEditOpen(true)}
               onDeleteClick={() => setIsDeleteOpen(true)}
             />

@@ -145,7 +145,7 @@ export default function ProductDetailsPageClient({
                 <ReviewCard
                   review={review}
                   showActions={true}
-                  onLikeClick={() => onLikeClick(review.id, review.isLiked)}
+                  onLikeClick={onLikeClick}
                   data-index={index}
                 />
               </div>
