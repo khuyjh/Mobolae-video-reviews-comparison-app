@@ -58,7 +58,7 @@ export default function ProductDetailsPageClient({ product }: ProductDetailsPage
   }
 
   const { data: reviewData } = useListReviews(
-    { path: { teamId: TEAM_ID as string, productId: product.id } },
+    { path: { teamId: TEAM_ID!, productId: product.id } },
     [],
     { enabled: !!TEAM_ID },
   );
@@ -71,9 +71,9 @@ export default function ProductDetailsPageClient({ product }: ProductDetailsPage
 
   const onLikeClick = (reviewId: number, isLiked: boolean) => {
     if (isLiked) {
-      unlikeMutation.mutate({ path: { teamId: TEAM_ID as string, reviewId } });
+      unlikeMutation.mutate({ path: { teamId: TEAM_ID!, reviewId } });
     } else {
-      likeMutation.mutate({ path: { teamId: TEAM_ID as string, reviewId } });
+      likeMutation.mutate({ path: { teamId: TEAM_ID!, reviewId } });
     }
   };
 
@@ -87,6 +87,8 @@ export default function ProductDetailsPageClient({ product }: ProductDetailsPage
           title={product.name}
           description={product.description}
           isEditable={true}
+          productId={product.id}
+          isFavorite={product.isFavorite}
         />
 
         {/* 통계 섹션 */}

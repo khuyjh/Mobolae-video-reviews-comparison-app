@@ -5,19 +5,45 @@ import { TEAM_ID } from '@/shared/constants/constants';
 
 import { retrieveProduct } from '../../../../openapi/requests/services.gen';
 
-export const metadata: Metadata = {
-  title: '콘텐츠 상세',
-  description: '콘텐츠 상세 페이지',
-};
-
 interface ProductPageProps {
-  params: {
+  params: Promise<{
     productId: string;
+  }>;
+}
+
+/* 메타데이터 */
+export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
+  const { productId } = await params;
+
+  const response = await retrieveProduct({
+    path: {
+      teamId: TEAM_ID!,
+      productId: Number(productId),
+    },
+  });
+
+  const product = response.data;
+
+  if (!product) {
+    return {
+      title: '콘텐츠 상세',
+      description: '콘텐츠 상세 페이지',
+    };
+  }
+
+  return {
+    title: `${product.name} | 콘텐츠 상세`,
+    description: product.description || '콘텐츠 상세 페이지',
+    openGraph: {
+      title: product.name,
+      description: product.description,
+      images: product.image ? [product.image] : [],
+    },
   };
 }
 
 export default async function Page({ params }: ProductPageProps) {
-  const { productId } = params;
+  const { productId } = await params;
 
   /* 서버에서 콘텐츠 상세 정보 조회 */
   const response = await retrieveProduct({
