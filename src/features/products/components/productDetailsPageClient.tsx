@@ -16,7 +16,11 @@ import {
   useUnlikeReview,
 } from '../../../../openapi/queries/queries';
 
-import type { ProductDetailType, Review } from '../../../../openapi/requests/types.gen';
+import type {
+  ProductDetailType,
+  Review,
+  ListReviewsResponse,
+} from '../../../../openapi/requests/types.gen';
 
 const MAIN_LAYOUT =
   'mx-auto px-[20px] pt-[30px] pb-[223px] md:max-w-[684px] md:px-[30px] md:pt-[40px] md:pb-[147px] xl:max-w-[940px] xl:pt-[60px] xl:pb-[120px]';
@@ -26,6 +30,7 @@ const SECTION_TITLE = 'text-lg-semibold md:text-base-semibold xl:text-xl-semibol
 
 interface ProductDetailsPageClientProps {
   product: ProductDetailType;
+  initialReviews: ListReviewsResponse;
 }
 
 /**
@@ -39,7 +44,11 @@ interface ProductDetailsPageClientProps {
  * - 리뷰 목록 조회 및 무한 스크롤 (useListReviews)
  * - 리뷰 좋아요/취소 (useLikeReview, useUnlikeReview)
  */
-export default function ProductDetailsPageClient({ product }: ProductDetailsPageClientProps) {
+
+export default function ProductDetailsPageClient({
+  product,
+  initialReviews,
+}: ProductDetailsPageClientProps) {
   const isTablet = useMediaQuery('(min-width: 768px) and (max-width: 1279px)');
   const isPC = useMediaQuery('(min-width: 1280px)');
 
@@ -57,10 +66,14 @@ export default function ProductDetailsPageClient({ product }: ProductDetailsPage
     itemSpacing = 15;
   }
 
+  /* CSR 훅에서 SSR 초기값 사용 */
   const { data: reviewData } = useListReviews(
     { path: { teamId: TEAM_ID!, productId: product.id } },
     [],
-    { enabled: !!TEAM_ID },
+    {
+      enabled: !!TEAM_ID,
+      initialData: initialReviews, // SSR 데이터 주입
+    },
   );
 
   const reviews = useMemo(() => reviewData?.list ?? [], [reviewData]);
@@ -130,7 +143,7 @@ export default function ProductDetailsPageClient({ product }: ProductDetailsPage
                 style={{ marginBottom: index === reviews.length - 1 ? 0 : itemSpacing }}
               >
                 <ReviewCard
-                  review={review} // ✅ 이제 전체 Review 객체 전달
+                  review={review}
                   showActions={true}
                   onLikeClick={() => onLikeClick(review.id, review.isLiked)}
                   data-index={index}

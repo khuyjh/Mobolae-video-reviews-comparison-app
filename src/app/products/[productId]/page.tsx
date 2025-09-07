@@ -3,7 +3,9 @@ import { Metadata } from 'next';
 import ProductDetailsPageClient from '@/features/products/components/productDetailsPageClient';
 import { TEAM_ID } from '@/shared/constants/constants';
 
-import { retrieveProduct } from '../../../../openapi/requests/services.gen';
+import { retrieveProduct, listReviews } from '../../../../openapi/requests/services.gen';
+
+import type { ListReviewsResponse } from '../../../../openapi/requests/types.gen';
 
 interface ProductPageProps {
   params: Promise<{
@@ -55,10 +57,18 @@ export default async function Page({ params }: ProductPageProps) {
 
   const product = response.data;
 
+  /* SSR에서 리뷰 첫 페이지 조회 */
+  const reviewResponse = await listReviews({
+    path: { teamId: TEAM_ID!, productId: Number(productId) },
+    query: { order: 'recent' }, // 최신순 1페이지
+  });
+
+  const initialReviews: ListReviewsResponse = reviewResponse.data!;
+
   /* 콘텐츠 데이터가 없을 시 */
   if (!product) {
     return <div>Loading...</div>; // 임시
   }
 
-  return <ProductDetailsPageClient product={product} />;
+  return <ProductDetailsPageClient product={product} initialReviews={initialReviews} />;
 }
