@@ -1,15 +1,19 @@
 // 비교하기 페이지
 'use client';
 
+import { useMemo } from 'react';
 import { toast } from 'react-toastify';
 
-import { MOCK_CANDIDATES } from '@/features/compare/types/compareMockTypes';
-import { CompareCandidate } from '@/features/compare/types/compareTypes';
+import { toCandidates } from '@/features/compare/utils/contentMapper';
+import { PATH_OPTION } from '@/shared/constants/constants';
 import { useCompareStore } from '@/shared/stores/useCompareStore';
 
+import { useListProduct } from '../../../openapi/queries';
 import CompareButton from '../../features/compare/components/CompareButton';
 import CompareResult from '../../features/compare/components/CompareResult';
 import CompareSelect from '../../features/compare/components/CompareSelect';
+
+import type { CompareCandidate } from '@/features/compare/types/compareTypes';
 
 // 스타일 상수화
 const COMPARE_BASE_STYLE =
@@ -24,6 +28,15 @@ const ComparePage = () => {
   const trySetA = useCompareStore((s) => s.trySetA);
   const trySetB = useCompareStore((s) => s.trySetB);
 
+  const { data, isLoading, isError, error } = useListProduct({ ...PATH_OPTION, query: {} }, [], {
+    staleTime: 60_000,
+  });
+
+  const serverOptions: CompareCandidate[] = useMemo(() => {
+    if (isError || !data) return [];
+    return toCandidates(data);
+  }, [data, isError]);
+
   return (
     <main className='mx-auto max-w-4xl p-[24px]'>
       {/* 비교 입력창 + 버튼 래퍼 - 모바일에선 세로, md 이상에선 가로 */}
@@ -33,11 +46,10 @@ const ComparePage = () => {
           label='콘텐츠 1'
           className={COMPARE_SELECT_BASE_STYLE}
           value={a}
-          scheme='left'
+          scheme='a'
           onChange={() => {}} // fallback용. 실제 업데이트는 onTryChange가 담당
           onTryChange={trySetA} // 핵심: 중복 체크 + 상태 반영
           onError={() => toast.info(TOAST_INFO_MESSAGE)}
-          options={MOCK_CANDIDATES}
           placeholder={PLACEHOLDER_TEXT}
         />
 
@@ -46,11 +58,10 @@ const ComparePage = () => {
           label='콘텐츠 2'
           className={COMPARE_SELECT_BASE_STYLE}
           value={b}
-          scheme='right'
+          scheme='b'
           onChange={() => {}}
           onTryChange={trySetB}
           onError={() => toast.info(TOAST_INFO_MESSAGE)}
-          options={MOCK_CANDIDATES}
           placeholder={PLACEHOLDER_TEXT}
         />
 
