@@ -85,12 +85,12 @@ const IMG_STYLE = 'h-full w-full object-cover';
 const PROFILE_TEXT_WRAPPER = 'mt-[30px] flex flex-col items-center gap-[10px] text-center';
 
 const FOLLOW_INFO_WRAPPER = 'mt-[30px] flex justify-between text-center';
-const FOLLOW_BOX_LEFT = 'w-[50%] border-r border-r-black-700';
-const FOLLOW_COUNT = 'text-base-semibold block text-white';
-const FOLLOW_LABEL = 'text-md-regular block text-gray-400';
+const FOLLOW_BOX_LEFT = 'w-[50%] border-r border-r-black-700  cursor-pointer';
+const FOLLOW_COUNT = 'text-base-semibold block text-white  cursor-pointer';
+const FOLLOW_LABEL = 'text-md-regular block text-gray-400  cursor-pointer';
 
 const BUTTON_GROUP = 'mt-[30px] flex flex-col gap-[10px]';
-const BUTTON_BASE = 'text-base-semibold w-full rounded-[8px] py-[15px] transition';
+const BUTTON_BASE = 'text-base-semibold w-full rounded-[8px] py-[15px] transition cursor-pointer';
 
 const BTN_EDIT = 'bg-main text-black-800 hover:opacity-90';
 const BTN_LOGOUT = 'border border-black-700 text-gray-400 hover:bg-black-700/40';
