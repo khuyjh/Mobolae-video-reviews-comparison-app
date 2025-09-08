@@ -1,5 +1,7 @@
+export const revalidate = 300; // 5분마다 캐시 재생성
+
 import CategoryMenu from '@/features/mainPage/components/CategoryMenu';
-import ContentList from '@/features/mainPage/components/ContentList';
+import FilterSwitch from '@/features/mainPage/components/FilterSwitch';
 import FloatingButton from '@/features/mainPage/components/FloatingButton';
 import MostReviewed from '@/features/mainPage/components/MostReviewed';
 import {
@@ -7,31 +9,34 @@ import {
   ReviewerRankingSidebar,
 } from '@/features/mainPage/components/ReviewerRanking';
 import TopShowcase from '@/features/mainPage/components/TopShowcase';
-import { mockContents } from '@/features/mainPage/mock/mockContents';
+import { BASE_URL, PATH_OPTION } from '@/shared/constants/constants';
+import { ContentItem } from '@/shared/types/content';
+import { toContentItem } from '@/shared/utils/mapApiToItem';
+import { sortByRatingDescending, sortByReviewCountDescending } from '@/shared/utils/productSorters';
 
-type PageProps = {
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
-};
+async function fetchTop6ByRating(): Promise<ContentItem[]> {
+  const res = await fetch(
+    `${BASE_URL?.replace(/\/$/, '')}/${PATH_OPTION.path.teamId}/products?order=rating`,
+    { next: { revalidate: 300 } },
+  );
+  const data = await res.json();
+  return (data.list ?? []).sort(sortByRatingDescending).slice(0, 6).map(toContentItem);
+}
 
-const Home = async ({ searchParams }: PageProps) => {
-  const sp = await searchParams;
+async function fetchTop6ByReviewCount(): Promise<ContentItem[]> {
+  const res = await fetch(
+    `${BASE_URL?.replace(/\/$/, '')}/${PATH_OPTION.path.teamId}/products?order=reviewCount`,
+    { next: { revalidate: 300 } },
+  );
+  const data = await res.json();
+  return (data.list ?? []).sort(sortByReviewCountDescending).slice(0, 6).map(toContentItem);
+}
 
-  // category, keyword 타입을 안전하게 string으로 변환
-  const category =
-    typeof sp.category === 'string'
-      ? sp.category
-      : Array.isArray(sp.category)
-        ? sp.category[0]
-        : undefined;
-
-  const keyword =
-    typeof sp.keyword === 'string'
-      ? sp.keyword
-      : Array.isArray(sp.keyword)
-        ? sp.keyword[0]
-        : undefined;
-
-  const hasFilter = Boolean(category || (keyword && keyword.trim()));
+const Home = async () => {
+  const [top6ByRating, top6ByReview] = await Promise.all([
+    fetchTop6ByRating(),
+    fetchTop6ByReviewCount(),
+  ]);
 
   return (
     <main className='mx-auto w-full max-w-[1540px]'>
@@ -59,16 +64,12 @@ const Home = async ({ searchParams }: PageProps) => {
             <ReviewerRankingHorizontal />
           </div>
           <div className='px-5 md:px-[30px] xl:px-[60px]'>
-            {hasFilter ? (
-              // 검색어나 카테고리가 있을 때만 리스트 렌더 (클라이언트 컴포넌트)
-              <ContentList />
-            ) : (
-              // 없으면 Top/Most만 SSR로 렌더
+            <FilterSwitch>
               <>
-                <TopShowcase items={mockContents} />
-                <MostReviewed items={mockContents} />
+                <TopShowcase items={top6ByRating} />
+                <MostReviewed items={top6ByReview} />
               </>
-            )}
+            </FilterSwitch>
           </div>
         </section>
 
