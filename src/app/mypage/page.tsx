@@ -11,7 +11,6 @@ import { fetchDummyPage, type PageResponse } from '@/features/mypage/mock/dummyP
 
 import type { ContentItem } from '@/shared/types/content';
 
-const AVATAR = '/images/profileImg.jpg';
 type TabKey = 'reviews' | 'items' | 'wishlist';
 
 export default function MyPage() {
@@ -44,15 +43,7 @@ export default function MyPage() {
   return (
     <div className='mt-[30px] px-[20px] md:px-[117px] xl:mx-auto xl:flex xl:max-w-[1340px] xl:px-[0px]'>
       <div className='mb-[60px] xl:mr-[60px]'>
-        <ProfileCard
-          name='surisuri마수리'
-          avatarSrc={AVATAR}
-          bio='자기소개 입니다자기소개 입니다자기소개 입니다자기소개 입니다자기소개 입니다'
-          followers={762}
-          following={102}
-          isFollowing={isFollowing}
-          onFollowToggle={() => setIsFollowing((p) => !p)}
-        />
+        <ProfileCard />
       </div>
 
       <div className='flex-1'>

@@ -1,8 +1,59 @@
+'use client';
+
 import clsx from 'clsx';
 import { useState } from 'react';
 
 import FollowModal from '@/features/mypage/components/ProfileModal/FollowModal';
+import { TEAM_ID } from '@/shared/constants/constants';
 
+import { useMe } from '../../../../openapi/queries/queries';
+
+import type { MeDefaultResponse } from '../../../../openapi/queries/common';
+
+//사용할 카드 데이터 타입
+type CardData = {
+  name: string;
+  avatarSrc: string;
+  bio: string;
+  followers: number;
+  following: number;
+  isMe: true;
+  isFollowing: false;
+};
+
+// API 응답
+const mapMeToCard = (u?: MeDefaultResponse): CardData => ({
+  name: u?.nickname ?? '',
+  avatarSrc: u?.image ?? '/images/profileImg.jpg',
+  bio: u?.description ?? '',
+  followers: u?.followersCount ?? 0,
+  following: u?.followeesCount ?? 0,
+  isMe: true,
+  isFollowing: false,
+});
+
+//데이터 가져오기
+export default function ProfileCard() {
+  const { data } = useMe({ path: { teamId: TEAM_ID! } }, ['me']);
+
+  const card = mapMeToCard(data);
+
+  return (
+    <ProfileCardView
+      name={card.name}
+      avatarSrc={card.avatarSrc}
+      bio={card.bio}
+      followers={card.followers}
+      following={card.following}
+      isMe={true}
+      isFollowing={false}
+      onEdit={() => {}}
+      onLogout={() => {}}
+    />
+  );
+}
+
+// UI 그리기
 type ProfileCardProps = {
   name: string;
   avatarSrc: string;
@@ -16,7 +67,7 @@ type ProfileCardProps = {
   onLogout?: () => void;
 };
 
-export default function ProfileCard({
+function ProfileCardView({
   name,
   avatarSrc,
   bio,
@@ -52,6 +103,8 @@ export default function ProfileCard({
             setModalType('followers');
             setIsModalOpen(true);
           }}
+          role='button'
+          tabIndex={0}
         >
           <strong className={FOLLOW_COUNT}>{followers}</strong>
           <span className={FOLLOW_LABEL}>팔로워</span>
@@ -62,6 +115,8 @@ export default function ProfileCard({
             setModalType('following');
             setIsModalOpen(true);
           }}
+          role='button'
+          tabIndex={0}
         >
           <strong className={FOLLOW_COUNT}>{following}</strong>
           <span className={FOLLOW_LABEL}>팔로잉</span>
@@ -89,6 +144,7 @@ export default function ProfileCard({
           </button>
         )}
       </div>
+
       {isModalOpen && (
         <FollowModal type={modalType} isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
       )}
@@ -96,6 +152,7 @@ export default function ProfileCard({
   );
 }
 
+// ======================== 스타일 상수 ========================
 const CARD_CONTAINER =
   'bg-black-800 border border-black-700 w-full md:w-[509px] mx-auto xl:w-[340px] rounded-[12px] px-[30px] py-[20px] md:py-[30px] xl:py-[20px] xl:pt-[40px] xl:pb-[30px]';
 
