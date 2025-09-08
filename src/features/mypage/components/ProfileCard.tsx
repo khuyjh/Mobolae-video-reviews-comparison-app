@@ -19,7 +19,7 @@ export default function ProfileCard({
   bio,
   followers = 0,
   following = 0,
-  isMe = false,
+  isMe = true,
   isFollowing,
   onFollowToggle,
   onEdit,
