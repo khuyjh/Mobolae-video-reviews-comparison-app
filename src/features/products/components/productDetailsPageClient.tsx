@@ -1,5 +1,7 @@
 'use client';
 
+import Script from 'next/script';
+
 import { useMemo } from 'react';
 
 import ProductCard from '@/features/products/components/productCard/productCard';
@@ -83,6 +85,8 @@ export default function ProductDetailsPageClient({
 
   return (
     <main className={MAIN_LAYOUT}>
+      <Script src='https://developers.kakao.com/sdk/js/kakao.js' strategy='afterInteractive' />
+
       <div className='flex flex-col gap-[60px] xl:gap-[80px]'>
         {/* 상세 섹션 */}
         <ProductCard
