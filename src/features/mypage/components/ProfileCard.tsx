@@ -1,5 +1,7 @@
 import clsx from 'clsx';
 
+import SafeProfileImage from '@/shared/components/SafeProfileImage';
+
 type ProfileCardProps = {
   name: string;
   avatarSrc: string;
@@ -28,9 +30,7 @@ export default function ProfileCard({
   return (
     <div className={CARD_CONTAINER}>
       {/* 프로필 이미지 */}
-      <div className={IMG_WRAPPER}>
-        <img src={avatarSrc} alt={`${name} 프로필 이미지`} className={IMG_STYLE} />
-      </div>
+      <SafeProfileImage src={avatarSrc} alt={name} width={120} height={120} />
 
       {/* 프로필 이름 / 소개글 */}
       <div className={PROFILE_TEXT_WRAPPER}>
@@ -77,10 +77,6 @@ export default function ProfileCard({
 
 const CARD_CONTAINER =
   'bg-black-800 border border-black-700 w-full md:w-[509px] mx-auto xl:w-[340px] rounded-[12px] px-[30px] py-[20px] md:py-[30px] xl:py-[20px] xl:pt-[40px] xl:pb-[30px]';
-
-const IMG_WRAPPER =
-  'mx-auto h-[120px] w-[120px] xl:w-[180px] xl:h-[180px] overflow-hidden rounded-full';
-const IMG_STYLE = 'h-full w-full object-cover';
 
 const PROFILE_TEXT_WRAPPER = 'mt-[30px] flex flex-col items-center gap-[10px] text-center';
 
