@@ -54,13 +54,14 @@ type FollowModalProps = {
 const FollowModal: React.FC<FollowModalProps> = ({ type, isOpen, onClose }) => {
   if (!type) return null;
 
-  const title = type === 'followers' ? '팔로워' : '팔로잉';
+  const followTitle = type === 'followers' ? '님을 팔로우하는' : '님이 팔로잉하는';
+  const title = type === 'followers' ? '팔로우 목록' : '팔로잉 목록';
 
   return (
-    <BaseModal title={title} size='L' isOpen={isOpen} onClose={onClose}>
+    <BaseModal title={title} size='M' isOpen={isOpen} onClose={onClose}>
       <div className='px-[10px] md:px-[30px]'>
         <h3 className='xl:text-2xl-semibold text-xl-semibold mb-[20px] xl:mb-[40px]'>
-          surisuri마수리님을 {title}하는 유저
+          surisuri마수리{followTitle}유저
         </h3>
         <div className='h-[514px] overflow-y-scroll'>
           {items.map((items) => (
