@@ -17,7 +17,7 @@ interface TextAreaWithCounterProps {
 }
 
 const TEXTAREA_CLASSES =
-  'bg-black-800 w-full h-full resize-none rounded-[8px] border border-black-700 p-4 pr-12 text-white placeholder-gray-500  focus:outline-none focus:ring-1 focus:ring-main';
+  'bg-black-800 w-full h-full hide-scrollbar resize-none rounded-[8px] border border-black-700 p-4 pb-8 text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-main';
 
 export default function TextAreaWithCounter({
   value,
