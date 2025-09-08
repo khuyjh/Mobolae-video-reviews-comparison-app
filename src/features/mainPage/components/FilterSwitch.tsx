@@ -12,7 +12,7 @@ import ContentList from '@/features/mainPage/components/ContentList';
  * - 목적: 홈을 기본적으로는 정적 페이지로 유지하면서,
  *   검색/필터 시에는 CSR로 동적으로 전환
  */
-export default function FilterSwitch({ children }: { children: React.ReactNode }) {
+const FilterSwitch = ({ children }: { children: React.ReactNode }) => {
   // 현재 URL의 쿼리스트링 접근 (예: /?category=MOVIE&keyword=테스트)
   const sp = useSearchParams();
 
@@ -30,4 +30,6 @@ export default function FilterSwitch({ children }: { children: React.ReactNode }
 
   // 필터가 없다면 → 서버에서 미리 렌더된 children 노출
   return <>{children}</>;
-}
+};
+
+export default FilterSwitch;
