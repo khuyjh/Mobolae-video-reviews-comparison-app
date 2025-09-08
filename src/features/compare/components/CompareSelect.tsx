@@ -12,8 +12,8 @@ import { PATH_OPTION } from '@/shared/constants/constants';
 import { cn } from '@/shared/lib/cn';
 
 import { useListProduct } from '../../../../openapi/queries';
+import { toCandidates } from '../utils/contentMapper';
 
-import type { ListProductDefaultResponse } from '../../../../openapi/queries/common';
 import type { CompareCandidate } from '@/features/compare/types/compareTypes';
 
 export type CompareSelectProps = {
@@ -40,24 +40,6 @@ export type CompareSelectProps = {
 const defaultFilter = (opt: CompareCandidate, q: string) => {
   const norm = (s: string) => s.toLowerCase().replace(/\s+/g, '');
   return norm(opt.name).includes(norm(q));
-};
-
-// 콘텐츠 리스트 아이템 최소 타입
-type ContentList = { id: number; name: string };
-
-// 타입 가드: any 사용 금지용
-const toContentList = (v: unknown): v is ContentList => {
-  if (typeof v !== 'object' || v === null) return false;
-  const o = v as { id?: unknown; name?: unknown };
-  return typeof o.id === 'number' && typeof o.name === 'string';
-};
-
-const toCandidates = (resp: ListProductDefaultResponse | undefined): CompareCandidate[] => {
-  if (!resp) return [];
-  const listUnknown: unknown = Array.isArray(resp) ? resp : (resp as { list?: unknown }).list;
-  if (!Array.isArray(listUnknown)) return [];
-  const listis = listUnknown.filter(toContentList);
-  return listis.map((p) => ({ id: p.id, name: p.name }));
 };
 
 const CompareSelect = forwardRef<HTMLInputElement, CompareSelectProps>(function CompareSelect(
@@ -93,6 +75,8 @@ const CompareSelect = forwardRef<HTMLInputElement, CompareSelectProps>(function 
     return () => clearTimeout(t);
   }, [query]);
 
+  /* 탄스택 쿼리 선언 부분 */
+
   // 사용자가 입력한 값(query)을 DEBOUNCE_MS(ms기준) 기다린 후 debounced에 반영
   const DEBOUNCE_MS = 150;
 
@@ -107,7 +91,7 @@ const CompareSelect = forwardRef<HTMLInputElement, CompareSelectProps>(function 
     [debounced],
     {
       enabled: debounced.length >= 1, // 1글자부터 검색(서버 요청이 너무 자주 일어닐 시 2글자로 수정)
-      staleTime: 30_000,
+      staleTime: 30_000, //30초, 같은 검색어를 다시 입력하면 30초 내에는 네트워크 요청 없이 캐시 사용
     },
   );
 
@@ -295,7 +279,7 @@ const CompareSelect = forwardRef<HTMLInputElement, CompareSelectProps>(function 
             }}
             onFocus={() => !inputDisabled && setOpen(true)}
             onKeyDown={handleKeyDown}
-            placeholder={debounced.length >= 1 ? '검색 중...' : placeholder}
+            placeholder={placeholder}
             disabled={inputDisabled}
             role='combobox'
             aria-expanded={open}

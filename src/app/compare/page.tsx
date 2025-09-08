@@ -4,6 +4,7 @@
 import { useMemo } from 'react';
 import { toast } from 'react-toastify';
 
+import { toCandidates } from '@/features/compare/utils/contentMapper';
 import { PATH_OPTION } from '@/shared/constants/constants';
 import { useCompareStore } from '@/shared/stores/useCompareStore';
 
@@ -12,28 +13,7 @@ import CompareButton from '../../features/compare/components/CompareButton';
 import CompareResult from '../../features/compare/components/CompareResult';
 import CompareSelect from '../../features/compare/components/CompareSelect';
 
-import type { ListProductDefaultResponse } from '../../../openapi/queries/common';
 import type { CompareCandidate } from '@/features/compare/types/compareTypes';
-
-// 콘텐츠 리스트 아이템 최소 타입
-type ContentList = { id: number; name: string };
-
-// 타입 가드: any 사용 금지용
-const toContentList = (v: unknown): v is ContentList => {
-  if (typeof v !== 'object' || v === null) return false;
-  const o = v as { id?: unknown; name?: unknown };
-  return typeof o.id === 'number' && typeof o.name === 'string';
-};
-
-// 응답 → CompareCandidate[] 로 변환
-function toCandidates(resp: ListProductDefaultResponse | undefined): CompareCandidate[] {
-  if (!resp) return [];
-
-  const listUnknown: unknown = Array.isArray(resp) ? resp : (resp as { list?: unknown }).list;
-  if (!Array.isArray(listUnknown)) return [];
-  const listis = listUnknown.filter(toContentList); // 타입가드로 좁히기
-  return listis.map((p) => ({ id: p.id, name: p.name }));
-}
 
 // 스타일 상수화
 const COMPARE_BASE_STYLE =
