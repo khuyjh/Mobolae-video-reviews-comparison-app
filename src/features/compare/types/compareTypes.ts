@@ -19,14 +19,14 @@ export const WINNER_CONFIG: Record<WinnerCode, { text: string; color: string }> 
 
 // 사용자가 드롭다운에서 고르는 “후보” 타입 (Select 전용)
 export type CompareCandidate = {
-  id: string | number;
+  id: number;
   name: string;
   disabled?: boolean; // 비활성 UI 제어용 혹시 모를 확장성 대비
 };
 
 // 실제 비교에 쓰이는 “지표” 타입 (Result 전용)
 export type CompareMetrics = {
-  id: string | number;
+  id: number;
   rating: number; // 별점 0~5
   reviewCount: number; // 리뷰 개수
   favoriteCount: number; // 찜 개수
