@@ -10,11 +10,8 @@ import { InfinityScroll } from '@/shared/components/infinityScroll';
 import { TEAM_ID } from '@/shared/constants/constants';
 import useMediaQuery from '@/shared/hooks/useMediaQuery';
 
-import {
-  useListReviews,
-  useLikeReview,
-  useUnlikeReview,
-} from '../../../../openapi/queries/queries';
+import { useInfiniteApi } from '../../../../openapi/queries/infiniteQueries';
+import { useLikeReview, useUnlikeReview } from '../../../../openapi/queries/queries';
 
 import type {
   ProductDetailType,
@@ -32,18 +29,6 @@ interface ProductDetailsPageClientProps {
   product: ProductDetailType;
   initialReviews: ListReviewsResponse;
 }
-
-/**
- * 콘텐츠 상세 페이지 클라이언트 컴포넌트
- *
- * SSR에서 받은 콘텐츠 기본 정보를 표시하고
- * CSR로 리뷰 목록과 인터랙션 기능을 처리.
- *
- * 주요 기능:
- * - 콘텐츠 정보 표시 (ProductCard, Statistics)
- * - 리뷰 목록 조회 및 무한 스크롤 (useListReviews)
- * - 리뷰 좋아요/취소 (useLikeReview, useUnlikeReview)
- */
 
 export default function ProductDetailsPageClient({
   product,
@@ -66,17 +51,23 @@ export default function ProductDetailsPageClient({
     itemSpacing = 15;
   }
 
-  /* CSR 훅에서 SSR 초기값 사용 */
-  const { data: reviewData } = useListReviews(
-    { path: { teamId: TEAM_ID!, productId: product.id } },
-    [],
+  /*  CSR 무한스크롤 훅 (SSR 첫 페이지 주입) */
+  const {
+    data: reviewData,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteApi<Review>(
+    ['reviews', product.id],
+    '/{teamId}/products/{productId}/reviews',
     {
-      enabled: !!TEAM_ID,
-      initialData: initialReviews, // SSR 데이터 주입
+      path: { teamId: TEAM_ID!, productId: product.id },
+      query: { order: 'recent' },
     },
+    initialReviews, // SSR 첫 페이지
   );
 
-  const reviews = useMemo(() => reviewData?.list ?? [], [reviewData]);
+  const reviews = useMemo(() => reviewData?.items ?? [], [reviewData]);
 
   /* 좋아요 | 좋아요 취소 mutation 훅 */
   const likeMutation = useLikeReview();
@@ -145,19 +136,14 @@ export default function ProductDetailsPageClient({
                 <ReviewCard
                   review={review}
                   showActions={true}
-                  onLikeClick={onLikeClick}
                   data-index={index}
+                  onLikeClick={onLikeClick}
                 />
               </div>
             )}
-            hasNextPage={!!reviewData?.nextCursor}
-            fetchNextPage={() => {
-              /* TODO: 무한 스크롤 구현
-               * 현재는 useListReviews가 단일 페이지만 지원
-               * useListReviewsInfinite 훅 사용 시 이 부분 연결 예정
-               */
-            }}
-            isLoading={false}
+            hasNextPage={!!hasNextPage}
+            fetchNextPage={fetchNextPage}
+            isLoading={isFetchingNextPage}
             itemHeightEstimate={itemHeightEstimate}
             scrollKey='product-reviews'
             maxItems={500}
