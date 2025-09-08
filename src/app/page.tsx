@@ -1,3 +1,5 @@
+import { cookies } from 'next/headers';
+
 import CategoryMenu from '@/features/mainPage/components/CategoryMenu';
 import ContentList from '@/features/mainPage/components/ContentList';
 import FloatingButton from '@/features/mainPage/components/FloatingButton';
@@ -15,6 +17,9 @@ type PageProps = {
 
 const Home = async ({ searchParams }: PageProps) => {
   const sp = await searchParams;
+
+  const accessToken = (await cookies()).get('accessToken')?.value; // ← get으로 읽기
+  const isLoggedIn = Boolean(accessToken);
 
   // category, keyword 타입을 안전하게 string으로 변환
   const category =
@@ -35,7 +40,7 @@ const Home = async ({ searchParams }: PageProps) => {
 
   return (
     <main className='mx-auto w-full max-w-[1540px]'>
-      <FloatingButton />
+      {isLoggedIn && <FloatingButton />}
 
       <div className='flex'>
         {/* 좌측: 카테고리 메뉴 (md↑) */}
