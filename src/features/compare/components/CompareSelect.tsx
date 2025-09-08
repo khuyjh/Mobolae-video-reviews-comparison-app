@@ -81,7 +81,7 @@ const CompareSelect = forwardRef<HTMLInputElement, CompareSelectProps>(function 
     {
       ...PATH_OPTION,
       query: {
-        keyword: debounced || undefined, // ""이면 보내지 않음 → 초기 제안 모드와 구분
+        keyword: debounced || undefined,
       },
     },
     [debounced],

@@ -45,7 +45,7 @@ function toSelected(raw: ProductRes): Selected {
  * ------------------------------------------- */
 function ResultPlaceholder({ variant }: { variant: 'idle' | 'ready' | 'error' }) {
   const map = {
-    idle: { text: '콘텐츠를 입력 후 엔터 혹은 클릭해 주세요.' },
+    idle: { text: '콘텐츠를 입력 후 엔터 혹은 검색결과를 클릭해 주세요.' },
     ready: {
       text: '비교하기 버튼을 눌러 결과를 확인해 주세요!',
     },
@@ -65,7 +65,7 @@ function ResultPlaceholder({ variant }: { variant: 'idle' | 'ready' | 'error' })
 
 /** --------------------------------------------
  * 비교 결과 컨테이너: 상태 분기(입력전/준비/로딩/에러/성공)를 한곳에서 관리
- * - Summary/Table은 "데이터 준비 완료" 시에만 렌더
+ * - CompareResultSummary, CompareResultTable은 데이터 준비 완료시에만 렌더
  * ------------------------------------------- */
 const CompareResult = () => {
   // 1) a/b 선택값 + "비교하기" 버튼 눌림 여부
@@ -135,7 +135,6 @@ const CompareResult = () => {
   // 요약 문구용 승/무/패 집계 (계산 유틸 사용)
   const { aWins, bWins, ties } = compareCalc(
     rows.map((r) => ({
-      // calcCompare는 higherIsBetter 정보를 필요로 하므로 config에서 참조해 전달
       id: r.id,
       label: r.label,
       valueA: r.valueA,

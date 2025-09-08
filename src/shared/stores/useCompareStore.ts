@@ -1,6 +1,6 @@
 // 비교 콘텐츠 a,b의 상태를 한 곳에서 일관되게 관리하는 zustand 스토어
 // - a,b: 선택된 후보(입력창에 확정된 값)
-// - 동일 categoryId끼리만 비교 로직 추가
+// - 동일 categoryId끼리만 비교 가능 로직 추가
 'use client';
 
 import { create } from 'zustand';

@@ -21,16 +21,16 @@ const toastByReason = (
 ) => {
   switch (reason) {
     case 'duplicate':
-      toast.info('동일한 콘텐츠끼리는 비교할 수 없어요.');
+      toast.info('같은 콘텐츠끼리는 비교할 수 없어요.');
       break;
     case 'category-mismatch':
-      toast.info('동일한 카테고리끼리만 비교할 수 있어요.');
+      toast.info('같은 카테고리끼리만 비교할 수 있어요.');
       break;
     case 'missing-category':
-      toast.error('카테고리 정보가 없는 콘텐츠가 있어 비교할 수 없어요.');
+      toast.error('카테고리가 없는 콘텐츠가 있어 비교할 수 없어요.');
       break;
     default:
-      toast.info('선택을 완료할 수 없어요. 다시 시도해 주세요.');
+      toast.error('선택을 완료할 수 없어요. 다시 시도해 주세요.');
   }
 };
 
