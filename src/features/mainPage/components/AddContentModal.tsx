@@ -22,7 +22,6 @@ import {
   productCreateSchema,
   NAME_MAX_LENGTH,
   DESCRIPTION_MAX_LENGTH,
-  DESCRIPTION_MIN_LENGTH,
   MAX_IMAGE_COUNT,
   type ProductFormValues,
 } from '../services/productForm.schema';
@@ -64,22 +63,33 @@ function CategoryDropdown({
 }
 
 /* ───────── 콘텐츠 추가 모달 ─────────
- * - 제목 onBlur 한 곳에서만: 빈값/중복 판정 + 토스트 1회
- * - 버튼 비활성화는 "라이브 중복"도 반영(토스트는 onBlur만)
- * - 설명 blur 시 에러 토스트(필수/10자 미만) 재도입
- * - 제출 시엔 조용히 가드(토스트 X)
+ * - 검증은 zod 스키마 한 곳에서만, UI는 결과만 반영
+ * - 제목 onBlur에서만 토스트(빈값/중복)
+ * - 설명 onBlur에서만 토스트(스키마 메시지)
+ * - 버튼 활성화는 formState.isValid + 라이브중복만
  */
 const AddContentModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
   const router = useRouter();
 
-  const { control, handleSubmit, watch, setValue, reset, formState, setError, clearErrors } =
-    useForm<ProductFormValues>({
-      resolver: zodResolver(productCreateSchema), // ← 여기만 변경
-      mode: 'onBlur',
-      defaultValues: { name: '', categoryId: 0, description: '', images: [] },
-    });
+  const {
+    control,
+    handleSubmit,
+    watch,
+    setValue,
+    reset,
+    formState,
+    setError,
+    clearErrors,
+    trigger,
+    getFieldState,
+  } = useForm<ProductFormValues>({
+    resolver: zodResolver(productCreateSchema),
+    mode: 'onChange', // ← isValid 즉시 반영
+    reValidateMode: 'onChange',
+    defaultValues: { name: '', categoryId: 0, description: '', images: [] },
+  });
 
-  const { errors, isSubmitting, touchedFields } = formState;
+  const { errors, isSubmitting, touchedFields, isValid } = formState;
 
   /* 열릴 때 폼 초기화 */
   useEffect(() => {
@@ -147,58 +157,34 @@ const AddContentModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
     return norm !== '' && normalizedCandidates.has(norm);
   }, [nameValue, normalizedCandidates]);
 
-  /* onBlur에서만 토스트 + 에러 설정(빈값/중복) */
-  const handleNameBlur = (): void => {
-    const trimmed = nameValue.trim();
-
-    if (trimmed === '') {
-      setError('name', {
-        type: 'required',
-        message: '콘텐츠 제목은 필수 입력입니다.',
-      });
-      toast.error('콘텐츠 제목은 필수 입력입니다.');
+  /* 제목 onBlur: zod 에러 메시지 or 라이브 중복만 토스트 */
+  const handleNameBlur = async (): Promise<void> => {
+    await trigger('name');
+    const msg = getFieldState('name').error?.message;
+    if (msg) {
+      toast.error(msg);
       return;
     }
-
     if (liveNameDuplicate) {
-      setError('name', {
-        type: 'duplicate',
-        message: '이미 등록된 콘텐츠입니다.',
-      });
+      setError('name', { type: 'duplicate', message: '이미 등록된 콘텐츠입니다.' });
       toast.error('이미 등록된 콘텐츠입니다.');
       return;
     }
-
-    if (errors.name) {
-      clearErrors('name');
-    }
+    if (errors.name) clearErrors('name');
   };
 
-  /* 설명: blur 시 에러 토스트(필수/10자 미만) */
+  /* 설명: blur 시 스키마 에러 메시지만 토스트 */
   useEffect(() => {
     if (touchedFields.description && errors.description?.message) {
       toast.error(errors.description.message);
     }
   }, [touchedFields.description, errors.description?.message]);
 
-  /* 버튼 활성화: name 에러 또는 "라이브 중복"이면 비활성화 */
-  const isSubmitReady =
-    nameValue.trim().length > 0 &&
-    categoryId > 0 &&
-    descriptionValue.trim().length >= DESCRIPTION_MIN_LENGTH &&
-    imageFiles.length === MAX_IMAGE_COUNT &&
-    !isSubmitting &&
-    !errors.name &&
-    !liveNameDuplicate;
+  /* 버튼 활성화는 스키마 판정 + 라이브중복만 반영 */
+  const isSubmitReady = isValid && !liveNameDuplicate && !isSubmitting;
 
-  /* 제출: blur 없이 바로 눌러도 조용히 가드(토스트 X) */
+  /* 제출 */
   const onValid = async (_values: ProductFormValues): Promise<void> => {
-    const trimmed = nameValue.trim();
-
-    if (!trimmed) {
-      setError('name', { type: 'required', message: '콘텐츠 제목은 필수 입력입니다.' });
-      return;
-    }
     if (liveNameDuplicate) {
       setError('name', { type: 'duplicate', message: '이미 등록된 콘텐츠입니다.' });
       return;
@@ -223,7 +209,7 @@ const AddContentModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
       const createRes = await createProduct({
         ...PATH_OPTION,
         body: {
-          name: trimmed,
+          name: nameValue.trim(),
           categoryId,
           description: descriptionValue.trim(),
           image: imageUrl,
@@ -289,9 +275,9 @@ const AddContentModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
                 <NameDuplicateGuideInput
                   value={field.value ?? ''}
                   onChange={(next) => field.onChange(next.slice(0, NAME_MAX_LENGTH))}
-                  onBlur={() => {
+                  onBlur={async () => {
                     field.onBlur();
-                    handleNameBlur();
+                    await handleNameBlur();
                   }}
                   names={productNameCandidates}
                   isLoading={isLoading}
@@ -331,7 +317,12 @@ const AddContentModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
                 placeholder='콘텐츠 설명을 입력하세요 (최소 10자)'
                 className='[&>textarea]:text-md-regular md:[&>textarea]:text-base-regular mt-1 [&>textarea]:pl-5'
                 aria-invalid={Boolean(errors.description)}
-                onBlur={field.onBlur}
+                onBlur={async () => {
+                  field.onBlur();
+                  await trigger('description');
+                  const msg = getFieldState('description').error?.message;
+                  if (msg) toast.error(msg);
+                }}
               />
             )}
           />
