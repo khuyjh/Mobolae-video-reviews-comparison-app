@@ -6,14 +6,13 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useMemo } from 'react';
 import { Controller, SubmitErrorHandler, useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
-import { z } from 'zod';
 
 import BaseModal from '@/shared/components/BaseModal';
 import Button from '@/shared/components/Button';
 import Dropdown from '@/shared/components/Dropdown';
 import ImageUploader from '@/shared/components/imageUploader';
 import TextAreaWithCounter from '@/shared/components/textAreaWithCounter';
-import { CATEGORIES, TEAM_ID } from '@/shared/constants/constants';
+import { CATEGORIES, TEAM_ID, PATH_OPTION } from '@/shared/constants/constants';
 import { normalizeForCompare } from '@/shared/utils/normalize';
 
 import NameDuplicateGuideInput from './NameDuplicateGuideInput';
@@ -131,7 +130,7 @@ const AddContentModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
   const categoryId = watch('categoryId') ?? 0;
 
   const { data: productNameCandidates = [], isLoading } = useProductNameSearch(
-    TEAM_ID,
+    TEAM_ID as string,
     nameValue,
     10,
   );
@@ -214,7 +213,7 @@ const AddContentModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
     try {
       // 1) 이미지 업로드
       const uploadRes = await imageUpload({
-        path: { teamId: TEAM_ID as string },
+        ...PATH_OPTION,
         body: { image: file },
         throwOnError: true,
       });
@@ -222,7 +221,7 @@ const AddContentModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
 
       // 2) 생성
       const createRes = await createProduct({
-        path: { teamId: TEAM_ID as string },
+        ...PATH_OPTION,
         body: {
           name: trimmed,
           categoryId,
