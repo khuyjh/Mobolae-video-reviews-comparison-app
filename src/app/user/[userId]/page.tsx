@@ -19,6 +19,7 @@ import type { ContentItem } from '@/shared/types/content';
 
 type TabKey = 'reviews' | 'items' | 'wishlist';
 
+type UserDetailNN = NonNullable<UserDetailDefaultResponse>;
 const mapUserToCard = (userDetail?: UserDetailDefaultResponse): CardData => ({
   name: userDetail?.nickname ?? '',
   avatarSrc: userDetail?.image ?? '',
@@ -33,16 +34,7 @@ export default function UserPage() {
   const { userId } = useParams<{ userId: string }>();
   const uidNum = Number(userId);
   const enabled = Number.isFinite(uidNum) && !!TEAM_ID;
-
-  const { data } = useUserDetail(
-    { path: { teamId: TEAM_ID as string, userId: uidNum } },
-    undefined,
-    { enabled, retry: false },
-  );
-  const card = mapUserToCard(data);
-
   const [tab, setTab] = useState<TabKey>('reviews');
-
   const {
     data: pages,
     fetchNextPage,
@@ -55,7 +47,6 @@ export default function UserPage() {
     initialPageParam: 0,
     getNextPageParam: (last) => last.nextCursor ?? undefined,
   });
-
   const items: ContentItem[] = useMemo(
     () =>
       (pages?.pages ?? []).flatMap((p) =>
@@ -70,6 +61,14 @@ export default function UserPage() {
       ),
     [pages],
   );
+
+  const { data: userDetail, isLoading: isUserLoading } = useUserDetail(
+    { path: { teamId: TEAM_ID as string, userId: uidNum } },
+    undefined,
+    { enabled, retry: false },
+  );
+  if (isUserLoading || !userDetail) return null;
+  const card = mapUserToCard(userDetail);
 
   return (
     <div className='mt-[30px] px-[20px] md:px-[117px] xl:mx-auto xl:flex xl:max-w-[1340px] xl:px-[0px]'>
@@ -88,7 +87,11 @@ export default function UserPage() {
       <div className='flex-1'>
         <div className='mb-[60px]'>
           <h2 className='text-lg-semibold mb-[30px] text-white'>활동 내역</h2>
-          <ActivityCard rating={5} reviewCount={156} topCategoryId={2} />
+          <ActivityCard
+            rating={userDetail.averageRating}
+            reviewCount={userDetail.reviewCount}
+            topCategoryId={userDetail.mostFavoriteCategory?.id ?? null}
+          />
         </div>
 
         <ProfileTabs value={tab} onChange={setTab} />

@@ -19,6 +19,7 @@ import type { ContentItem } from '@/shared/types/content';
 
 type TabKey = 'reviews' | 'items' | 'wishlist';
 
+type MeNN = NonNullable<MeDefaultResponse>;
 const mapMeToCard = (meDetail?: MeDefaultResponse): CardData => ({
   name: meDetail?.nickname as string,
   avatarSrc: meDetail?.image ?? '',
@@ -30,10 +31,7 @@ const mapMeToCard = (meDetail?: MeDefaultResponse): CardData => ({
 });
 
 export default function MyPage() {
-  const { data } = useMe({ path: { teamId: TEAM_ID as string } }, []);
-  const card = mapMeToCard(data);
   const [tab, setTab] = useState<TabKey>('reviews');
-
   const {
     data: pages,
     fetchNextPage,
@@ -62,6 +60,12 @@ export default function MyPage() {
     [pages],
   );
 
+  const { data: me, isLoading: isMeLoading } = useMe({ path: { teamId: TEAM_ID as string } }, []);
+  if (isMeLoading || !me) return null;
+
+  const card = mapMeToCard(me);
+  const topCategoryId = me.mostFavoriteCategory?.id ?? null;
+
   return (
     <div className='mt-[30px] px-[20px] md:px-[117px] xl:mx-auto xl:flex xl:max-w-[1340px] xl:px-[0px]'>
       <div className='mb-[60px] xl:mr-[60px]'>
@@ -81,7 +85,11 @@ export default function MyPage() {
       <div className='flex-1'>
         <div className='mb-[60px]'>
           <h2 className='text-lg-semibold mb-[30px] text-white'>활동 내역</h2>
-          <ActivityCard rating={5} reviewCount={156} topCategoryId={2} />
+          <ActivityCard
+            rating={me.averageRating}
+            reviewCount={me.reviewCount}
+            topCategoryId={topCategoryId}
+          />
         </div>
 
         <ProfileTabs value={tab} onChange={setTab} />
