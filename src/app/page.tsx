@@ -9,15 +9,22 @@ import {
   ReviewerRankingSidebar,
 } from '@/features/mainPage/components/ReviewerRanking';
 import TopShowcase from '@/features/mainPage/components/TopShowcase';
-// import { BASE_URL, TEAM_ID } from '@/shared/constants/constants';
-//TODO: 환경변수로 변경
+import { BASE_URL, TEAM_ID } from '@/shared/constants/constants';
 import { ContentItem } from '@/shared/types/content';
 import { toContentItem } from '@/shared/utils/mapApiToItem';
 import { sortByRatingDescending, sortByReviewCountDescending } from '@/shared/utils/productSorters';
 
+if (process.env.NODE_ENV === 'production') {
+  if (!BASE_URL) throw new Error('NEXT_PUBLIC_BASE_URL 누락');
+  if (!TEAM_ID) throw new Error('NEXT_PUBLIC_TEAM_ID 누락');
+}
+
+// BASE_URL 끝의 슬래시(/) 제거 → 안전한 base URL
+const base = (BASE_URL ?? '').replace(/\/$/, '');
+
 // 별점 높은 순 Top6 데이터 조회
 async function fetchTop6ByRating(): Promise<ContentItem[]> {
-  const res = await fetch(`https://mogazoa-api.vercel.app/16-7/products?order=rating`);
+  const res = await fetch(`${base}/${TEAM_ID}/products?order=rating`);
   if (!res.ok) {
     throw new Error(`[fetchTop6ByRating] HTTP ${res.status} ${res.statusText}`);
   }
@@ -29,10 +36,10 @@ async function fetchTop6ByRating(): Promise<ContentItem[]> {
 }
 
 // 리뷰 많은 순 Top6 데이터 조회
-async function fetchTop6ByReviewCount(): Promise<ContentItem[]> {
-  const res = await fetch(`https://mogazoa-api.vercel.app/16-7/products?order=reviewCount`);
+async function fetchTop6ByReview(): Promise<ContentItem[]> {
+  const res = await fetch(`${base}/${TEAM_ID}/products?order=reviewCount`);
   if (!res.ok) {
-    throw new Error(`[fetchTop6ByReviewCount] HTTP ${res.status} ${res.statusText}`);
+    throw new Error(`[fetchTop6ByReview] HTTP ${res.status} ${res.statusText}`);
   }
   const data = await res.json();
   return (data.list ?? [])
@@ -42,11 +49,13 @@ async function fetchTop6ByReviewCount(): Promise<ContentItem[]> {
 }
 
 const Home = async () => {
-  // 두 API를 병렬 호출 → 성능 최적화
-  const [top6ByRating, top6ByReview] = await Promise.all([
-    fetchTop6ByRating(),
-    fetchTop6ByReviewCount(),
-  ]);
+  let top6ByRating: ContentItem[] = [];
+  let top6ByReview: ContentItem[] = [];
+  try {
+    [top6ByRating, top6ByReview] = await Promise.all([fetchTop6ByRating(), fetchTop6ByReview()]);
+  } catch (e) {
+    console.error('[Home] fetch error:', e);
+  }
 
   return (
     <main className='mx-auto w-full max-w-[1540px]'>
