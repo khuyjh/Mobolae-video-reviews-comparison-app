@@ -1,5 +1,7 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
+
 import { useQueryClient } from '@tanstack/react-query';
 import { useState, useMemo, useEffect } from 'react';
 import { toast } from 'react-toastify';
@@ -39,6 +41,7 @@ export default function EditDeleteModal({
   imageUrl,
 }: EditDeleteModalProps) {
   const queryClient = useQueryClient();
+  const router = useRouter();
 
   const [images, setImages] = useState<File[]>([]);
   const [text, setText] = useState(description);
@@ -95,6 +98,7 @@ export default function EditDeleteModal({
       toast.success('삭제되었습니다.');
       queryClient.invalidateQueries({ queryKey: ['products'] });
       onClose();
+      router.push('/');
     } catch {
       toast.error('삭제에 실패했습니다.');
     }
