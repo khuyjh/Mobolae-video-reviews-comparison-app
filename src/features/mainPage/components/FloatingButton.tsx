@@ -3,7 +3,9 @@
 import { Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
+import RedirectModal from '@/features/auth/components/RedirectModal';
 import { cn } from '@/shared/lib/cn';
+import { useUserStore } from '@/shared/stores/userStore';
 
 import AddContentModal from './AddContentModal';
 
@@ -11,11 +13,13 @@ import AddContentModal from './AddContentModal';
  * FloatingButton 컴포넌트
  *
  * - 화면 우측 하단에 고정된 플로팅 버튼
- * - 클릭 시 콘텐츠 추가 모달(AddContentModal) 오픈
+ * - 클릭 시:
+ *   - 로그인 O: AddContentModal 오픈
+ *   - 로그인 X: RedirectModal 오픈
  * - 스크롤 방향에 따라 버튼 투명도(opacity) 변경
  *
- * SSR 페이지에서 로그인 여부에 따라 조건부로 렌더링되며,
- * 자체적으로 모달 open 상태를 관리합니다.
+ * SSG/SSR 페이지에서도 항상 렌더링되며,
+ * 클릭 시점에만 로그인 여부를 확인해 분기한다.
  */
 const BASE_CLASSES = `
   fixed z-30 h-[60px] w-[60px] rounded-full bg-main text-white
@@ -31,10 +35,14 @@ const FloatingButton = () => {
   // 현재 스크롤 방향 ('up' | 'down' | null)
   const [scrollDirection, setScrollDirection] = useState<'up' | 'down' | null>(null);
 
-  // 모달 오픈 여부
-  const [open, setOpen] = useState(false);
+  // 모달 오픈 상태 분리
+  const [openAdd, setOpenAdd] = useState(false); //
+  const [openRedirect, setOpenRedirect] = useState(false);
 
-  // 스크롤 이벤트 등록: 이전 Y 위치와 비교해 방향 판별
+  // 전역 로그인 상태
+  const isLoggedIn = useUserStore((state) => state.isLoggedIn);
+
+  // 스크롤 방향 감지
   useEffect(() => {
     let prevY = window.scrollY;
 
@@ -52,12 +60,21 @@ const FloatingButton = () => {
   // 스크롤 방향이 아래일 때는 투명도 낮춤
   const OPACITY_CLASS = scrollDirection === 'down' ? 'opacity-60' : 'opacity-100';
 
+  // 클릭 시 로그인 여부로 분기
+  const handleClick = () => {
+    if (!isLoggedIn) {
+      setOpenRedirect(true); // 미로그인 → 리다이렉트 모달
+      return;
+    }
+    setOpenAdd(true); // 로그인 → 콘텐츠 추가 모달
+  };
+
   return (
     <>
       {/* 플로팅 버튼 */}
       <button
         type='button'
-        onClick={() => setOpen(true)}
+        onClick={handleClick}
         aria-label='콘텐츠 추가'
         className={cn(
           BASE_CLASSES,
@@ -69,8 +86,9 @@ const FloatingButton = () => {
         <span className='sr-only'>콘텐츠 추가</span>
       </button>
 
-      {/* 버튼 클릭 시 열리는 모달 */}
-      <AddContentModal isOpen={open} onClose={() => setOpen(false)} />
+      {/* 모달들 */}
+      <AddContentModal isOpen={openAdd} onClose={() => setOpenAdd(false)} />
+      <RedirectModal isOpen={openRedirect} onClose={() => setOpenRedirect(false)} />
     </>
   );
 };
