@@ -29,9 +29,11 @@ export const useUserStore = create(
         }
       },
       updateUser: (updatedUser) => {
-        set((prev) => {
-          return { ...prev, user: updatedUser };
-        });
+        const { user } = get();
+
+        if (!user) return;
+
+        set({ user: { ...user, ...updatedUser } });
       },
     }),
     {
