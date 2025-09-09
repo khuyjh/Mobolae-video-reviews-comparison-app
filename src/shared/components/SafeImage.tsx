@@ -5,7 +5,7 @@ import Image, { ImageProps } from 'next/image';
 
 import { useState } from 'react';
 
-const fallbackImage = '/images/fallbackImage.png';
+const fallbackImage = '/images/FallbackImg.png';
 
 type Props = ImageProps;
 
@@ -19,7 +19,7 @@ const SafeImage = ({ src, alt, ...props }: Props) => {
       src={errored ? fallbackImage : src}
       alt={alt}
       onError={() => setError(true)}
-      className={isFallback ? 'bg-black-800 object-contain p-4' : 'object-cover'}
+      className={isFallback ? 'bg-black-800 object-contain' : 'object-cover'}
     />
   );
 };
