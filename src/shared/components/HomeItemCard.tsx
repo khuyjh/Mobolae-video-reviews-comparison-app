@@ -79,9 +79,9 @@ const HomeItemCard = ({
             <div className={STAR_CONTAINER_STYLE}>
               {/* 별 아이콘 lucide 사용 */}
               <Star className='aria-hidden="true" h-auto w-[12px] fill-yellow-400 stroke-yellow-400 md:w-[15px] xl:w-[16px]' />
-              {/* 별점 */}
+              {/* 별점 - 소수점 1자리수까지 반올림, 정수로 떨어져도 .0까지는 표시,  string값으로 반환 */}
               <span className='text-sm-regular md:text-md-regular xl:text-base-regular text-gray-400'>
-                {rating ? parseFloat(rating.toFixed(1)) : 0.0}
+                {rating !== undefined && rating !== null ? rating.toFixed(1) : '0.0'}
               </span>
             </div>
           </div>
