@@ -57,13 +57,29 @@ export default async function Page({ params }: ProductPageProps) {
 
   const product = response.data;
 
-  /* SSR에서 리뷰 첫 페이지 조회 */
-  const reviewResponse = await listReviews({
-    path: { teamId: TEAM_ID!, productId: Number(productId) },
-    query: { order: 'recent' }, // 최신순 1페이지
-  });
+  type SortType = 'recent' | 'ratingDesc' | 'ratingAsc' | 'likeCount';
 
-  const initialReviews: ListReviewsResponse = reviewResponse.data!;
+  /* 정렬 옵션 SSR 첫 페이지 패치 */
+  const ORDERS = ['recent', 'ratingDesc', 'ratingAsc', 'likeCount'] as const;
+
+  /* SSR에서 리뷰 첫 페이지 조회 */
+  const reviewResponses = await Promise.all(
+    ORDERS.map((order) =>
+      listReviews({
+        path: { teamId: TEAM_ID!, productId: Number(productId) },
+        query: { order },
+      }),
+    ),
+  );
+
+  /* 정렬한 리뷰 데이터 전달 */
+  const initialReviews = ORDERS.reduce(
+    (acc, order, i) => {
+      acc[order as SortType] = reviewResponses[i].data!;
+      return acc;
+    },
+    {} as Record<SortType, ListReviewsResponse>,
+  );
 
   /* 콘텐츠 데이터가 없을 시 */
   if (!product) {

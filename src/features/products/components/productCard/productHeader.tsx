@@ -25,6 +25,7 @@ interface ProductHeaderProps {
   productId: number;
   isFavorite: boolean;
   favoriteCount?: number;
+  onFavoriteChange?: (newIsFavorite: boolean) => void;
 }
 
 const ProductHeader = ({
@@ -33,6 +34,7 @@ const ProductHeader = ({
   productId,
   isFavorite,
   favoriteCount = 0,
+  onFavoriteChange,
 }: ProductHeaderProps) => {
   const [isLiked, setIsLiked] = useState<boolean>(isFavorite);
   const [localFavoriteCount, setLocalFavoriteCount] = useState<number>(favoriteCount);
@@ -49,6 +51,7 @@ const ProductHeader = ({
       /* 찜 취소 */
       setIsLiked(false);
       setLocalFavoriteCount((c) => Math.max(0, c - 1));
+      onFavoriteChange?.(false);
 
       unfavoriteMut.mutate(
         { path: { teamId: TEAM_ID!, productId } },
@@ -57,6 +60,7 @@ const ProductHeader = ({
             /* 실패 시 롤백 */
             setIsLiked(prevIsLiked);
             setLocalFavoriteCount(prevCount);
+            onFavoriteChange?.(prevIsLiked);
           },
           onSettled: () => {
             queryClient.invalidateQueries({ queryKey: ['product', productId] }); // 특정 콘텐츠 상세 정보 갱신
@@ -69,6 +73,7 @@ const ProductHeader = ({
       // 찜 추가
       setIsLiked(true);
       setLocalFavoriteCount((c) => c + 1);
+      onFavoriteChange?.(true);
 
       favoriteMut.mutate(
         { path: { teamId: TEAM_ID!, productId } },
@@ -76,6 +81,7 @@ const ProductHeader = ({
           onError: () => {
             setIsLiked(prevIsLiked);
             setLocalFavoriteCount(prevCount);
+            onFavoriteChange?.(prevIsLiked);
           },
           onSettled: () => {
             queryClient.invalidateQueries({ queryKey: ['product', productId] });

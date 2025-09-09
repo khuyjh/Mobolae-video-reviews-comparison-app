@@ -22,6 +22,7 @@ interface ProductCardProps {
   productId: number; // 상품 ID (찜/리뷰 API에 필요)
   isFavorite: boolean; // SSR 초기 찜 여부
   favoriteCount?: number; // SSR 초기 찜 수
+  onFavoriteChange?: (newIsFavorite: boolean) => void;
 }
 
 const IMAGE_CONTAINER_STYLES =
@@ -36,6 +37,7 @@ const ProductCard = ({
   productId,
   isFavorite,
   favoriteCount = 0,
+  onFavoriteChange,
 }: ProductCardProps) => {
   /** 모달 상태들 */
   const [isReviewAddModalOpen, setIsReviewAddModalOpen] = useState(false);
@@ -95,6 +97,7 @@ const ProductCard = ({
             productId={productId}
             isFavorite={isFavorite}
             favoriteCount={favoriteCount}
+            onFavoriteChange={onFavoriteChange}
           />
 
           {/* 설명 */}
@@ -117,6 +120,9 @@ const ProductCard = ({
         onClose={() => setIsReviewAddModalOpen(false)}
         rating={userRating}
         mode='add'
+        productId={productId}
+        productName={title}
+        productCategory={category}
       />
 
       {/* 비로그인 사용자 리다이렉트 모달 */}

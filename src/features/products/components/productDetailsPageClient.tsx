@@ -2,7 +2,7 @@
 
 import Script from 'next/script';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 
 import ProductCard from '@/features/products/components/productCard/productCard';
 import ReviewCard from '@/features/products/components/reviewCard/reviewCard';
@@ -29,7 +29,7 @@ const SECTION_TITLE = 'text-lg-semibold md:text-base-semibold xl:text-xl-semibol
 
 interface ProductDetailsPageClientProps {
   product: ProductDetailType;
-  initialReviews: ListReviewsResponse;
+  initialReviews: Record<'recent' | 'ratingDesc' | 'ratingAsc' | 'likeCount', ListReviewsResponse>;
 }
 
 export default function ProductDetailsPageClient({
@@ -53,6 +53,14 @@ export default function ProductDetailsPageClient({
     itemSpacing = 15;
   }
 
+  type SortType = 'recent' | 'ratingDesc' | 'ratingAsc' | 'likeCount';
+
+  /* 정렬 상태 관리 */
+  const [sortValue, setSortValue] = useState<SortType>('recent');
+
+  const [localFavoriteCount, setLocalFavoriteCount] = useState(product.favoriteCount);
+  const [localIsFavorite, setLocalIsFavorite] = useState(product.isFavorite);
+
   /*  CSR 무한스크롤 훅 (SSR 첫 페이지 주입) */
   const {
     data: reviewData,
@@ -60,13 +68,13 @@ export default function ProductDetailsPageClient({
     hasNextPage,
     isFetchingNextPage,
   } = useInfiniteApi<Review>(
-    ['reviews', product.id],
+    ['reviews', product.id, sortValue],
     '/{teamId}/products/{productId}/reviews',
     {
       path: { teamId: TEAM_ID!, productId: product.id },
-      query: { order: 'recent' },
+      query: { order: sortValue },
     },
-    initialReviews, // SSR 첫 페이지
+    initialReviews[sortValue], // SSR 첫 페이지
   );
 
   const reviews = useMemo(() => reviewData?.items ?? [], [reviewData]);
@@ -83,6 +91,11 @@ export default function ProductDetailsPageClient({
     }
   };
 
+  const handleFavoriteChange = (newIsFavorite: boolean) => {
+    setLocalIsFavorite(newIsFavorite);
+    setLocalFavoriteCount((prev) => (newIsFavorite ? prev + 1 : Math.max(0, prev - 1)));
+  };
+
   return (
     <main className={MAIN_LAYOUT}>
       <Script src='https://developers.kakao.com/sdk/js/kakao.js' strategy='afterInteractive' />
@@ -96,19 +109,20 @@ export default function ProductDetailsPageClient({
           description={product.description}
           isEditable={true}
           productId={product.id}
-          isFavorite={product.isFavorite}
+          isFavorite={localIsFavorite}
+          onFavoriteChange={handleFavoriteChange}
         />
 
         {/* 통계 섹션 */}
         <section className={SUBSECTION_GAP}>
           <h2 className={SECTION_TITLE}>콘텐츠 통계</h2>
           <Statistics
-            favoriteCount={product.favoriteCount}
+            favoriteCount={localFavoriteCount}
             rating={product.rating}
             reviewCount={product.reviewCount}
             favoriteComparison={
               product.categoryMetric
-                ? product.favoriteCount - product.categoryMetric.favoriteCount
+                ? localFavoriteCount - product.categoryMetric.favoriteCount
                 : null
             }
             ratingComparison={
@@ -126,7 +140,7 @@ export default function ProductDetailsPageClient({
         <div className={SUBSECTION_GAP}>
           <section className='flex items-center justify-between'>
             <h2 className={SECTION_TITLE}>콘텐츠 리뷰</h2>
-            <ReviewSortDropdown />
+            <ReviewSortDropdown value={sortValue} onChange={setSortValue} />
           </section>
 
           {/* 무한 스크롤 리뷰 리스트 */}
@@ -142,6 +156,8 @@ export default function ProductDetailsPageClient({
                   showActions={true}
                   data-index={index}
                   onLikeClick={onLikeClick}
+                  productName={product.name}
+                  productCategory={product.category}
                 />
               </div>
             )}
@@ -149,7 +165,7 @@ export default function ProductDetailsPageClient({
             fetchNextPage={fetchNextPage}
             isLoading={isFetchingNextPage}
             itemHeightEstimate={itemHeightEstimate}
-            scrollKey='product-reviews'
+            scrollKey={`product-reviews-${sortValue}`}
             maxItems={500}
           />
         </div>

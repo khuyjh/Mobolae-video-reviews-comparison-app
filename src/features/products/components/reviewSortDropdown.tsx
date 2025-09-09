@@ -1,29 +1,19 @@
 'use client';
 
-import { useState } from 'react';
+import SortDropdown from '@/shared/components/SortDropdown';
+import { ReviewOrderKey, REVIEW_ORDER_OPTIONS } from '@/shared/types/SortDropdownTypes';
 
-import SortDropdown, { OrderOption } from '@/shared/components/SortDropdown';
-const DROPDOWN_OPTIONS: OrderOption[] = [
-  { label: '최신순', value: 'latest' },
-  { label: '별점 높은순', value: 'rating_desc' },
-  { label: '별점 낮은순', value: 'rating_asc' },
-  { label: '좋아요순', value: 'likes' },
-];
+interface ReviewSortDropdownProps {
+  value: ReviewOrderKey;
+  onChange: (value: ReviewOrderKey) => void;
+}
 
-const ReviewSortDropdown = () => {
-  const [sortValue, setSortValue] = useState('latest');
-  const handleSortChange = (value: string) => {
-    console.log('정렬 기준이 변경되었습니다:', value);
-    setSortValue(value);
-    // TODO: API 연결
-  };
-
+const ReviewSortDropdown = ({ value, onChange }: ReviewSortDropdownProps) => {
   return (
-    <SortDropdown
-      options={DROPDOWN_OPTIONS}
-      value={sortValue}
-      onChange={handleSortChange}
-      placeholder='정렬'
+    <SortDropdown<ReviewOrderKey>
+      options={REVIEW_ORDER_OPTIONS}
+      value={value}
+      onChange={onChange}
     />
   );
 };

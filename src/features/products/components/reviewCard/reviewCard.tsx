@@ -15,9 +15,17 @@ interface ReviewCardProps {
   review: Review;
   showActions: boolean;
   onLikeClick: (reviewId: number, isLiked: boolean) => Promise<void> | void;
+  productName: string;
+  productCategory: { id: number; name: string };
 }
 
-const ReviewCard = ({ review, showActions, onLikeClick }: ReviewCardProps) => {
+const ReviewCard = ({
+  review,
+  showActions,
+  onLikeClick,
+  productName,
+  productCategory,
+}: ReviewCardProps) => {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
@@ -90,7 +98,19 @@ const ReviewCard = ({ review, showActions, onLikeClick }: ReviewCardProps) => {
         isOpen={isEditOpen}
         onClose={() => setIsEditOpen(false)}
         rating={review.rating}
-        // review={review}
+        productId={review.productId}
+        productName={productName}
+        productCategory={productCategory}
+        review={{
+          id: review.id,
+          content: review.content,
+          rating: review.rating,
+          images:
+            review.reviewImages?.map((ri) => ({
+              id: ri.id,
+              url: ri.source,
+            })) ?? [],
+        }}
       />
 
       {/* 삭제 확인 모달 */}
