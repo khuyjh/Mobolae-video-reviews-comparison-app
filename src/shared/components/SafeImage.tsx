@@ -5,7 +5,7 @@ import Image, { ImageProps } from 'next/image';
 
 import { useState } from 'react';
 
-const fallbackImage = '/images/fallbackImage.png';
+const fallbackImage = '/images/FallbackImg.png';
 
 type Props = ImageProps;
 

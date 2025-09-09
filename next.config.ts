@@ -24,6 +24,11 @@ const nextConfig: NextConfig = {
         hostname: 'picsum.photos',
         pathname: '/**', // 목업 이미지 허용
       },
+      {
+        protocol: 'https',
+        hostname: 'example.com',
+        pathname: '/**',
+      },
     ],
   },
 };
