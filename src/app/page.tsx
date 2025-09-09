@@ -14,12 +14,9 @@ import { ContentItem } from '@/shared/types/content';
 import { toContentItem } from '@/shared/utils/mapApiToItem';
 import { sortByRatingDescending, sortByReviewCountDescending } from '@/shared/utils/productSorters';
 
-// BASE_URL 끝의 슬래시(/) 제거 → 안전한 base URL
-const base = (BASE_URL ?? '').replace(/\/$/, '');
-
 // 별점 높은 순 Top6 데이터 조회
 async function fetchTop6ByRating(): Promise<ContentItem[]> {
-  const res = await fetch(`${base}/${TEAM_ID}/products?order=rating`);
+  const res = await fetch(`${BASE_URL}${TEAM_ID}/products?order=rating`);
   if (!res.ok) {
     throw new Error(`[fetchTop6ByRating] HTTP ${res.status} ${res.statusText}`);
   }
@@ -32,7 +29,7 @@ async function fetchTop6ByRating(): Promise<ContentItem[]> {
 
 // 리뷰 많은 순 Top6 데이터 조회
 async function fetchTop6ByReviewCount(): Promise<ContentItem[]> {
-  const res = await fetch(`${base}/${TEAM_ID}/products?order=reviewCount`);
+  const res = await fetch(`${BASE_URL}${TEAM_ID}/products?order=reviewCount`);
   if (!res.ok) {
     throw new Error(`[fetchTop6ByReviewCount] HTTP ${res.status} ${res.statusText}`);
   }
