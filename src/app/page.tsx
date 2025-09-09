@@ -9,14 +9,15 @@ import {
   ReviewerRankingSidebar,
 } from '@/features/mainPage/components/ReviewerRanking';
 import TopShowcase from '@/features/mainPage/components/TopShowcase';
-import { BASE_URL, TEAM_ID } from '@/shared/constants/constants';
+// import { BASE_URL, TEAM_ID } from '@/shared/constants/constants';
+//TODO: 환경변수로 변경
 import { ContentItem } from '@/shared/types/content';
 import { toContentItem } from '@/shared/utils/mapApiToItem';
 import { sortByRatingDescending, sortByReviewCountDescending } from '@/shared/utils/productSorters';
 
 // 별점 높은 순 Top6 데이터 조회
 async function fetchTop6ByRating(): Promise<ContentItem[]> {
-  const res = await fetch(`${BASE_URL}${TEAM_ID}/products?order=rating`);
+  const res = await fetch(`https://mogazoa-api.vercel.app/16-7/products?order=rating`);
   if (!res.ok) {
     throw new Error(`[fetchTop6ByRating] HTTP ${res.status} ${res.statusText}`);
   }
@@ -29,7 +30,7 @@ async function fetchTop6ByRating(): Promise<ContentItem[]> {
 
 // 리뷰 많은 순 Top6 데이터 조회
 async function fetchTop6ByReviewCount(): Promise<ContentItem[]> {
-  const res = await fetch(`${BASE_URL}${TEAM_ID}/products?order=reviewCount`);
+  const res = await fetch(`https://mogazoa-api.vercel.app/16-7/products?order=reviewCount`);
   if (!res.ok) {
     throw new Error(`[fetchTop6ByReviewCount] HTTP ${res.status} ${res.statusText}`);
   }
