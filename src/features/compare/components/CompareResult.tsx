@@ -1,6 +1,6 @@
 // 비교 결과 테이블, 비교 결과 문구 담는 컨테이너 컴포넌트
 // 역할: CompareResultTable, CompareResultSummary 포함,
-// useRetrieveProduct 쿼리 훅 사용 예정
+// api 가져오기
 'use client';
 
 import { PATH_OPTION } from '@/shared/constants/constants';
@@ -45,7 +45,7 @@ function toSelected(raw: ProductRes): Selected {
  * ------------------------------------------- */
 function ResultPlaceholder({ variant }: { variant: 'idle' | 'ready' | 'error' }) {
   const map = {
-    idle: { text: '콘텐츠를 입력 후 엔터 혹은 클릭해 주세요.' },
+    idle: { text: '콘텐츠를 입력 후 엔터 혹은 검색결과를 클릭해 주세요.' },
     ready: {
       text: '비교하기 버튼을 눌러 결과를 확인해 주세요!',
     },
@@ -65,26 +65,27 @@ function ResultPlaceholder({ variant }: { variant: 'idle' | 'ready' | 'error' })
 
 /** --------------------------------------------
  * 비교 결과 컨테이너: 상태 분기(입력전/준비/로딩/에러/성공)를 한곳에서 관리
- * - Summary/Table은 "데이터 준비 완료" 시에만 렌더
+ * - CompareResultSummary, CompareResultTable은 데이터 준비 완료시에만 렌더
  * ------------------------------------------- */
 const CompareResult = () => {
   // 1) a/b 선택값 + "비교하기" 버튼 눌림 여부
   const a = useCompareStore((s) => s.a) as CompareCandidate | null;
   const b = useCompareStore((s) => s.b) as CompareCandidate | null;
   const requested = useCompareStore((s) => s.requested);
+  const canCompare = useCompareStore((s) => s.canCompare());
 
   // id 확정값 (없으면 null)
   const productIdA = a ? a.id : null;
   const productIdB = b ? b.id : null;
 
   // 각 쿼리의 실행 조건
-  const enabledA = requested && productIdA !== null;
-  const enabledB = requested && productIdB !== null;
+  const enabledA = requested && canCompare && productIdA !== null;
+  const enabledB = requested && canCompare && productIdB !== null;
 
   // 코드젠 활용 API 불러오기
   const pA = useRetrieveProduct<ProductRes>(
     {
-      path: { ...PATH_OPTION.path, productId: productIdA ?? 0 }, // teamId + productId
+      path: { ...PATH_OPTION.path, productId: productIdA ?? 0 },
     },
     [],
     {
@@ -106,11 +107,12 @@ const CompareResult = () => {
 
   /** ---------- 상태 분기(UI만 담당) ---------- */
   if (!a || !b) return <ResultPlaceholder variant='idle' />; //  입력 전(두 슬롯 중 하나라도 비었을 때)
-  if (!requested) return <ResultPlaceholder variant='ready' />; //  준비 완료(두 슬롯 선택 완료, 비교 버튼 활성화 및 클릭 전)
+  if (!canCompare) return <ResultPlaceholder variant='ready' />;
+  if (!requested) return <ResultPlaceholder variant='ready' />;
   if (pA.isPending || pB.isPending)
-    return <div className='bg-black-800 mt-8 h-48 animate-pulse rounded-xl' />; // 로딩
+    return <div className='bg-black-800 mt-8 h-48 animate-pulse rounded-xl' />;
   if (pA.isError || pB.isError || !pA.data || !pB.data)
-    return <ResultPlaceholder variant='error' />; // 에러
+    return <ResultPlaceholder variant='error' />;
 
   /** ---------- 성공 시: 행/승패 계산 ---------- */
   // 서버에서 A/B 순서로 들어온다고 가정 (확실하지 않다면 id로 매칭하세요)
@@ -133,7 +135,6 @@ const CompareResult = () => {
   // 요약 문구용 승/무/패 집계 (계산 유틸 사용)
   const { aWins, bWins, ties } = compareCalc(
     rows.map((r) => ({
-      // calcCompare는 higherIsBetter 정보를 필요로 하므로 config에서 참조해 전달
       id: r.id,
       label: r.label,
       valueA: r.valueA,
@@ -147,10 +148,8 @@ const CompareResult = () => {
       <h2 id='compare-result' className='sr-only'>
         비교 결과
       </h2>
-
       {/* 요약 문구 */}
       <CompareResultSummary aName={a.name} bName={b.name} aWins={aWins} bWins={bWins} ties={ties} />
-
       {/* 상세 테이블 */}
       <CompareResultTable aName={a.name} bName={b.name} rows={rows} />
     </section>
