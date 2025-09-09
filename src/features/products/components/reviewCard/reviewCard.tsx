@@ -1,12 +1,15 @@
 'use client';
 
+import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 
 import DeleteConfirmModal from '@/shared/components/deleteConfirmModal';
+import { TEAM_ID } from '@/shared/constants/constants';
 
 import ReviewDescription from './reviewDescription';
 import ReviewMeta from './reviewMeta';
 import ReviewUser from './reviewUser';
+import { useDeleteReview } from '../../../../../openapi/queries';
 import ReviewModal from '../productModal/reviewModal';
 
 import type { Review } from '../../../../../openapi/requests';
@@ -56,9 +59,23 @@ const ReviewCard = ({
     }
   };
 
+  /* 리뷰 삭제 */
+  const queryClient = useQueryClient();
+  const deleteReviewMutation = useDeleteReview(undefined, {
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['reviews', review.productId] });
+      setIsDeleteOpen(false);
+    },
+    onError: (err) => {
+      console.error('리뷰 삭제 실패:', err);
+      alert('리뷰 삭제에 실패했습니다. 다시 시도해주세요.');
+    },
+  });
+
   const handleDeleteConfirm = () => {
-    console.log(`삭제 API 호출: reviewId=${review.id}`);
-    setIsDeleteOpen(false);
+    deleteReviewMutation.mutate({
+      path: { teamId: TEAM_ID!, reviewId: review.id },
+    });
   };
 
   return (
