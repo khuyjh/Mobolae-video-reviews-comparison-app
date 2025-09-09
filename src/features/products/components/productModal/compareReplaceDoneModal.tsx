@@ -1,4 +1,6 @@
 // 비교 콘텐츠 선택 후
+import Link from 'next/link';
+
 import BaseModal from '@/shared/components/BaseModal';
 import Button from '@/shared/components/Button';
 
@@ -15,9 +17,11 @@ const CompareReplaceDoneModal = ({ isOpen, onClose }: Props) => {
           비교 콘텐츠가 교체되었습니다. <br />
           바로 확인해 보시겠어요?
         </p>
-        <Button variant='primary' onClick={onClose}>
-          바로가기
-        </Button>
+        <Link href='/compare' className='flex w-full justify-center'>
+          <Button variant='primary' onClick={onClose}>
+            바로가기
+          </Button>
+        </Link>
       </div>
     </BaseModal>
   );

@@ -5,7 +5,9 @@ import Image from 'next/image';
 import React, { useState } from 'react';
 
 import RedirectModal from '@/features/auth/components/RedirectModal';
+import { CompareCandidate } from '@/features/compare/types/compareTypes';
 import CompareModal, { CompareModalType } from '@/features/products/components/productModal';
+import { useCompareStore } from '@/shared/stores/useCompareStore';
 
 import ProductButtons from './productButtons';
 import ProductDescription from './productDescription';
@@ -53,9 +55,13 @@ const ProductCard = ({
   const [compareModalType, setCompareModalType] = useState<CompareModalType | null>(null);
   const [isCompareModalOpen, setIsCompareModalOpen] = useState(false);
 
-  // TODO: 추후 "비교 담기" 로직이 API로 연결되면 교체
-  const mockCompareItems = [1, 2]; // 현재는 테스트용 mock
-  const compareCount = mockCompareItems.length;
+  const a = useCompareStore((s) => s.a);
+  const b = useCompareStore((s) => s.b);
+  const trySetA = useCompareStore((s) => s.trySetA);
+  const trySetB = useCompareStore((s) => s.trySetB);
+
+  /* 현재 비교 대상 product */
+  const [compareTarget, setCompareTarget] = useState<CompareCandidate | null>(null);
 
   /** 리뷰 작성 버튼 클릭 시 */
   const handleReviewButtonClick = () => {
@@ -68,9 +74,33 @@ const ProductCard = ({
 
   /** 비교 버튼 클릭 시 */
   const handleCompareClick = () => {
-    if (compareCount === 0) setCompareModalType('added');
-    else if (compareCount === 1) setCompareModalType('ready');
-    else setCompareModalType('replaceSelect');
+    const newItem = { id: productId, name: title, image: imageSrc, categoryId: category.id };
+
+    console.log('현재 스토어 상태:', { a, b });
+    console.log('선택된 상품:', newItem);
+
+    setCompareTarget(newItem); // 선택된 product 저장
+
+    if (!a) {
+      const result = trySetA(newItem);
+      console.log('trySetA 결과:', result);
+      if (!result.ok) {
+        alert('카테고리가 달라서 비교할 수 없습니다.'); // TODO: 모달로 교체
+        return;
+      }
+      setCompareModalType('added');
+    } else if (!b) {
+      const result = trySetB(newItem);
+      console.log('trySetB 결과:', result);
+      if (!result.ok) {
+        alert('카테고리가 달라서 비교할 수 없습니다.'); // TODO: 모달로 교체
+        return;
+      }
+      setCompareModalType('ready');
+    } else {
+      setCompareModalType('replaceSelect');
+    }
+
     setIsCompareModalOpen(true);
   };
 
@@ -135,6 +165,7 @@ const ProductCard = ({
           isOpen={isCompareModalOpen}
           onClose={() => setIsCompareModalOpen(false)}
           onChangeType={(type) => setCompareModalType(type)}
+          product={compareTarget ?? undefined}
         />
       )}
 
