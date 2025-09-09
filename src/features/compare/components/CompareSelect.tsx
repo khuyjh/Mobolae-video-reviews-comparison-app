@@ -16,6 +16,8 @@ import { toCandidates } from '../utils/contentMapper';
 
 import type { CompareCandidate } from '@/features/compare/types/compareTypes';
 
+type TrySetReason = 'duplicate' | 'category-mismatch' | 'missing-category' | 'unknown';
+
 export type CompareSelectProps = {
   label?: string;
   value: CompareCandidate | null; // Chip 선택 값 한번에 1개로 제한
@@ -25,22 +27,20 @@ export type CompareSelectProps = {
   // 칩 색상용 prop (기본은 a 녹색)
   scheme?: 'a' | 'b';
   //선택을 시도하고 성공/실패를 알려주는 콜백
-  onTryChange?: (v: CompareCandidate | null) => { ok: boolean; reason?: 'duplicate' };
-  // 실패 사유를 외부에서 처리(토스트 등)하고 싶을 때 사용
-  // ex) onError={(reason) => toast.error('동일 콘텐츠는 선택할 수 없습니다.')}
-  onError?: (reason: 'duplicate' | string) => void;
+  onTryChange?: (v: CompareCandidate | null) => {
+    ok: boolean;
+    reason?: Exclude<TrySetReason, 'unknown'>;
+  };
+  onError?: (reason: TrySetReason) => void; // 3가지 에러 이유 + 'unknown'
+
   //커스텀 스타일
   className?: string; // 외곽 컨테이너 스타일
   inputClassName?: string; // 인풋 스타일
   dropdownClassName?: string; // 드롭다운 패널 스타일
-  filterFn?: (opt: CompareCandidate, query: string) => boolean; // 검색 규칙 커스터마이징용 없으면 기본 커스텀 필터 사용
 };
 
-/** 커스텀 필터 (기본: 공백/영문 대소문자 무시 매칭) */
-const defaultFilter = (opt: CompareCandidate, q: string) => {
-  const norm = (s: string) => s.toLowerCase().replace(/\s+/g, '');
-  return norm(opt.name).includes(norm(q));
-};
+// 사용자가 입력한 값(query)을 DEBOUNCE_MS(ms기준) 기다린 후 debounced에 반영
+const DEBOUNCE_MS = 150;
 
 const CompareSelect = forwardRef<HTMLInputElement, CompareSelectProps>(function CompareSelect(
   {
@@ -52,7 +52,6 @@ const CompareSelect = forwardRef<HTMLInputElement, CompareSelectProps>(function 
     className,
     inputClassName,
     dropdownClassName,
-    filterFn = defaultFilter,
     scheme = 'a',
     onTryChange,
     onError, // 실패 알림(토스트 등)을 외부에서 처리할 수 있게 제공
@@ -77,20 +76,17 @@ const CompareSelect = forwardRef<HTMLInputElement, CompareSelectProps>(function 
 
   /* 탄스택 쿼리 선언 부분 */
 
-  // 사용자가 입력한 값(query)을 DEBOUNCE_MS(ms기준) 기다린 후 debounced에 반영
-  const DEBOUNCE_MS = 150;
-
   // 서버 검색 호출 (기본설정은 입력 1글자 이상일 때)
   const { data: serverData } = useListProduct(
     {
       ...PATH_OPTION,
       query: {
-        keyword: debounced || undefined, // ""이면 보내지 않음 → 초기 제안 모드와 구분
+        keyword: debounced || undefined,
       },
     },
     [debounced],
     {
-      enabled: debounced.length >= 1, // 1글자부터 검색(서버 요청이 너무 자주 일어닐 시 2글자로 수정)
+      enabled: debounced.length >= 1 && !value, // 1글자부터 검색(서버 요청이 너무 자주 일어닐 시 2글자로 수정), 칩이 있으면 검색 막기
       staleTime: 30_000, //30초, 같은 검색어를 다시 입력하면 30초 내에는 네트워크 요청 없이 캐시 사용
     },
   );
@@ -102,7 +98,7 @@ const CompareSelect = forwardRef<HTMLInputElement, CompareSelectProps>(function 
   const filtered: CompareCandidate[] = useMemo(() => {
     if (debounced.length >= 1) return serverOptions;
     return [];
-  }, [debounced.length, serverOptions]);
+  }, [debounced, serverOptions]);
 
   // Chip이 있을 때 입력/검색 비활성
   const inputDisabled = disabled || !!value;
@@ -131,10 +127,24 @@ const CompareSelect = forwardRef<HTMLInputElement, CompareSelectProps>(function 
     },
   } as const;
 
-  // 드롭다운 열릴 때 첫 항목 활성화
+  // 드롭다운 열릴 때(또는 검색어가 안정화되면) 첫 항목 활성화
   useEffect(() => {
     if (open) setActiveIndex(0);
-  }, [open, query]);
+  }, [open, debounced]);
+
+  // 필터 결과가 줄어드는 등 리스트 길이가 바뀌었을 때, activeIndex를 범위 안으로 보정
+  useEffect(() => {
+    if (!open) return;
+
+    if (filtered.length === 0) {
+      setActiveIndex(0);
+      return;
+    }
+
+    if (activeIndex >= filtered.length) {
+      setActiveIndex(0);
+    }
+  }, [filtered.length, activeIndex, open]);
 
   /** 후보를 확정 선택 */
   const handleSelect = (opt: CompareCandidate) => {
