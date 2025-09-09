@@ -3,6 +3,7 @@
 import Image from 'next/image';
 
 import React, { useState } from 'react';
+import { toast } from 'react-toastify';
 
 import RedirectModal from '@/features/auth/components/RedirectModal';
 import { CompareCandidate } from '@/features/compare/types/compareTypes';
@@ -85,7 +86,7 @@ const ProductCard = ({
       const result = trySetA(newItem);
       console.log('trySetA 결과:', result);
       if (!result.ok) {
-        alert('카테고리가 달라서 비교할 수 없습니다.'); // TODO: 모달로 교체
+        toast.error('카테고리가 달라서 비교할 수 없습니다.');
         return;
       }
       setCompareModalType('added');
@@ -93,7 +94,7 @@ const ProductCard = ({
       const result = trySetB(newItem);
       console.log('trySetB 결과:', result);
       if (!result.ok) {
-        alert('카테고리가 달라서 비교할 수 없습니다.'); // TODO: 모달로 교체
+        toast.error('카테고리가 달라서 비교할 수 없습니다.');
         return;
       }
       setCompareModalType('ready');
@@ -173,6 +174,11 @@ const ProductCard = ({
       <EditDeleteModal
         isOpen={isEditDeleteModalOpen}
         onClose={() => setIsEditDeleteModalOpen(false)}
+        productId={productId}
+        name={title}
+        category={category}
+        description={description}
+        imageUrl={imageSrc}
       />
     </>
   );
