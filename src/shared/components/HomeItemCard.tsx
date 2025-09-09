@@ -81,7 +81,7 @@ const HomeItemCard = ({
               <Star className='aria-hidden="true" h-auto w-[12px] fill-yellow-400 stroke-yellow-400 md:w-[15px] xl:w-[16px]' />
               {/* 별점 */}
               <span className='text-sm-regular md:text-md-regular xl:text-base-regular text-gray-400'>
-                {rating}
+                {rating ? parseFloat(rating.toFixed(1)) : 0.0}
               </span>
             </div>
           </div>
