@@ -1,13 +1,15 @@
 import BaseModal from '@/shared/components/BaseModal';
 
 import ProfileUpdateForm from './ProfileUpdateForm';
+import { MeResponse } from '../../../../openapi/requests';
 
 interface Props {
   isOpen: boolean;
+  userDetail: MeResponse;
   onClose: () => void;
 }
 
-const ProfileUpdateModal = ({ isOpen, onClose }: Props) => {
+const ProfileUpdateModal = ({ isOpen, userDetail, onClose }: Props) => {
   return (
     <BaseModal
       isOpen={isOpen}
@@ -16,7 +18,7 @@ const ProfileUpdateModal = ({ isOpen, onClose }: Props) => {
       closeOnOutsideClick={false}
       onClose={onClose}
     >
-      <ProfileUpdateForm />
+      <ProfileUpdateForm userDetail={userDetail} onClose={onClose} />
     </BaseModal>
   );
 };

@@ -1,5 +1,7 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
+
 import { useInfiniteQuery } from '@tanstack/react-query';
 import React, { useMemo, useState } from 'react';
 
@@ -7,7 +9,9 @@ import VirtualizedContentGrid from '@/features/mainPage/components/VirtualizedCo
 import ActivityCard from '@/features/mypage/components/activityCard';
 import ProfileCard from '@/features/mypage/components/ProfileCard';
 import ProfileTabs from '@/features/mypage/components/ProfileTabs';
+import ProfileUpdateModal from '@/features/mypage/components/ProfileUpdateModal';
 import { fetchDummyPage, type PageResponse } from '@/features/mypage/mock/dummyPager';
+import { useUserStore } from '@/shared/stores/userStore';
 
 import type { ContentItem } from '@/shared/types/content';
 
@@ -17,6 +21,9 @@ type TabKey = 'reviews' | 'items' | 'wishlist';
 export default function MyPage() {
   const [isFollowing, setIsFollowing] = useState(false);
   const [tab, setTab] = useState<TabKey>('reviews');
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const clearUser = useUserStore((state) => state.clearUser);
+  const router = useRouter();
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useInfiniteQuery({
     queryKey: ['mypage', 'infinite', tab],
@@ -52,8 +59,37 @@ export default function MyPage() {
           following={102}
           isFollowing={isFollowing}
           onFollowToggle={() => setIsFollowing((p) => !p)}
+          onEdit={() => {
+            setIsProfileModalOpen(true);
+          }}
+          onLogout={() => {
+            clearUser();
+            router.replace('/');
+          }}
         />
       </div>
+      <ProfileUpdateModal
+        isOpen={isProfileModalOpen}
+        //임시데이터
+        userDetail={{
+          id: 829,
+          nickname: '몇글자까지되는지확인해보자스물이냐열이냐',
+          description: '안녕하세요',
+          image: 'https://example.com/...',
+          createdAt: '2025-08-19T15:57:35.382Z',
+          updatedAt: '2025-08-23T13:05:21.652Z',
+          teamId: '16-7',
+          isFollowing: false,
+          followersCount: 0,
+          followeesCount: 0,
+          reviewCount: 0,
+          averageRating: 0,
+          mostFavoriteCategory: null,
+        }}
+        onClose={() => {
+          setIsProfileModalOpen(false);
+        }}
+      />
 
       <div className='flex-1'>
         <div className='mb-[60px]'>
