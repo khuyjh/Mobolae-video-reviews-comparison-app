@@ -26,7 +26,7 @@ const AVATAR_WRAPPER =
   'mr-[10px] h-[36px] w-[36px] overflow-hidden rounded-full xl:h-[42px] xl:w-[42px]';
 const AVATAR_IMG = 'h-full w-full object-cover';
 const AVATAR_SIZE_FOLLOWER =
-  'mr-[10px] h-[48px] w-[48px] overflow-hidden rounded-full xl:h-[52px] xl:w-[52px]';
+  'mr-[20px] h-[48px] w-[48px] overflow-hidden rounded-full xl:h-[52px] xl:w-[52px]';
 
 const HEADER_ROW = 'flex items-center gap-[5px]';
 const BADGE_BASE =
@@ -77,10 +77,11 @@ export default function ProfileBadge({
   review = 0,
   rating = 0,
   rankingMap,
+  className,
 }: ProfileBadgeProps) {
   const rankingChip = variant === 'ranking' && rankingMap ? toRankingChip(id, rankingMap) : null;
   return (
-    <div className='flex'>
+    <div className={clsx('flex', variant === 'follower' && 'mb-[40px]')}>
       {/*아바타*/}
       <div
         className={clsx(
@@ -121,7 +122,7 @@ export default function ProfileBadge({
 
       {/*팔로우목록에 들어 갈 아바타 카드*/}
       {variant === 'follower' && (
-        <div className={CENTER_ROW}>
+        <div className={clsx(CENTER_ROW, className)}>
           <span className={FOLLOWER_NAME_TEXT}>{name}</span>
         </div>
       )}

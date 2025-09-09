@@ -1,57 +1,58 @@
-// 비교 입력창 리팩토링 버전. 비교 셀렉트 컴포넌트
+// 비교 셀렉트 컴포넌트
 // 기본은 드롭다운 형식
 // 입력창 및 연관 검색어 드롭다운으로 보여줌
 // 입력값 chip으로 토큰화
-
+// 서버 검색
 'use client';
 
 import { X } from 'lucide-react';
 import { forwardRef, useEffect, useId, useMemo, useRef, useState } from 'react';
 
+import { PATH_OPTION } from '@/shared/constants/constants';
 import { cn } from '@/shared/lib/cn';
 
+import { useListProduct } from '../../../../openapi/queries';
+import { toCandidates } from '../utils/contentMapper';
+
 import type { CompareCandidate } from '@/features/compare/types/compareTypes';
+
+type TrySetReason = 'duplicate' | 'category-mismatch' | 'missing-category' | 'unknown';
 
 export type CompareSelectProps = {
   label?: string;
   value: CompareCandidate | null; // Chip 선택 값 한번에 1개로 제한
   onChange: (v: CompareCandidate | null) => void; // Chip 선택/해제 콜백
-  options: CompareCandidate[]; // 후보 목록
   placeholder?: string;
   disabled?: boolean;
-  // 칩 색상용 prop (기본은 left 녹색)
-  scheme?: 'left' | 'right';
+  // 칩 색상용 prop (기본은 a 녹색)
+  scheme?: 'a' | 'b';
   //선택을 시도하고 성공/실패를 알려주는 콜백
-  onTryChange?: (v: CompareCandidate | null) => { ok: boolean; reason?: 'duplicate' };
-  // 실패 사유를 외부에서 처리(토스트 등)하고 싶을 때 사용
-  // ex) onError={(reason) => toast.error('동일 콘텐츠는 선택할 수 없습니다.')}
-  onError?: (reason: 'duplicate' | string) => void;
+  onTryChange?: (v: CompareCandidate | null) => {
+    ok: boolean;
+    reason?: Exclude<TrySetReason, 'unknown'>;
+  };
+  onError?: (reason: TrySetReason) => void; // 3가지 에러 이유 + 'unknown'
+
   //커스텀 스타일
   className?: string; // 외곽 컨테이너 스타일
   inputClassName?: string; // 인풋 스타일
   dropdownClassName?: string; // 드롭다운 패널 스타일
-  filterFn?: (opt: CompareCandidate, query: string) => boolean; // 검색 규칙 커스터마이징용 없으면 기본 커스텀 필터 사용
 };
 
-/** 커스텀 필터 (기본: 공백/영문 대소문자 무시 매칭) */
-const defaultFilter = (opt: CompareCandidate, q: string) => {
-  const norm = (s: string) => s.toLowerCase().replace(/\s+/g, '');
-  return norm(opt.name).includes(norm(q));
-};
+// 사용자가 입력한 값(query)을 DEBOUNCE_MS(ms기준) 기다린 후 debounced에 반영
+const DEBOUNCE_MS = 150;
 
 const CompareSelect = forwardRef<HTMLInputElement, CompareSelectProps>(function CompareSelect(
   {
     label,
     value,
     onChange,
-    options,
     placeholder = '콘텐츠명을 입력해 주세요',
     disabled = false,
     className,
     inputClassName,
     dropdownClassName,
-    filterFn = defaultFilter,
-    scheme = 'left',
+    scheme = 'a',
     onTryChange,
     onError, // 실패 알림(토스트 등)을 외부에서 처리할 수 있게 제공
   },
@@ -66,10 +67,38 @@ const CompareSelect = forwardRef<HTMLInputElement, CompareSelectProps>(function 
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
 
-  const filtered = useMemo(() => {
-    if (!query) return [];
-    return options.filter((o) => filterFn(o, query));
-  }, [options, query, filterFn]);
+  // 디바운스된 검색어
+  const [debounced, setDebounced] = useState('');
+  useEffect(() => {
+    const t = setTimeout(() => setDebounced(query.trim()), DEBOUNCE_MS);
+    return () => clearTimeout(t);
+  }, [query]);
+
+  /* 탄스택 쿼리 선언 부분 */
+
+  // 서버 검색 호출 (기본설정은 입력 1글자 이상일 때)
+  const { data: serverData } = useListProduct(
+    {
+      ...PATH_OPTION,
+      query: {
+        keyword: debounced || undefined,
+      },
+    },
+    [debounced],
+    {
+      enabled: debounced.length >= 1 && !value, // 1글자부터 검색(서버 요청이 너무 자주 일어닐 시 2글자로 수정), 칩이 있으면 검색 막기
+      staleTime: 30_000, //30초, 같은 검색어를 다시 입력하면 30초 내에는 네트워크 요청 없이 캐시 사용
+    },
+  );
+
+  // 서버 결과 → 후보
+  const serverOptions = useMemo(() => toCandidates(serverData), [serverData]);
+
+  // 드롭다운에 보일 리스트 (입력이 없으면 baseOptions 그대로)
+  const filtered: CompareCandidate[] = useMemo(() => {
+    if (debounced.length >= 1) return serverOptions;
+    return [];
+  }, [debounced, serverOptions]);
 
   // Chip이 있을 때 입력/검색 비활성
   const inputDisabled = disabled || !!value;
@@ -86,22 +115,36 @@ const CompareSelect = forwardRef<HTMLInputElement, CompareSelectProps>(function 
     return () => document.removeEventListener('mousedown', onDocClick);
   }, []);
 
-  // 칩 색상용 prop (기본은 left 녹색 글로벌 css chip 색상 사용)
+  // 칩 색상용 prop (기본은 a 녹색 글로벌 css chip 색상 사용)
   const ChipColor = {
-    left: {
+    a: {
       chip: ' bg-green-50 text-green-500',
       ring: 'focus-within:ring-main', // 필요 시 입력창 포커스 컬러 변경용
     },
-    right: {
+    b: {
       chip: ' bg-pink-50 text-pink-500',
-      ring: 'focus-within:ring-fuchsia-400/70',
+      ring: 'focus-within:ring-main',
     },
   } as const;
 
-  // 드롭다운 열릴 때 첫 항목 활성화
+  // 드롭다운 열릴 때(또는 검색어가 안정화되면) 첫 항목 활성화
   useEffect(() => {
     if (open) setActiveIndex(0);
-  }, [open, query]);
+  }, [open, debounced]);
+
+  // 필터 결과가 줄어드는 등 리스트 길이가 바뀌었을 때, activeIndex를 범위 안으로 보정
+  useEffect(() => {
+    if (!open) return;
+
+    if (filtered.length === 0) {
+      setActiveIndex(0);
+      return;
+    }
+
+    if (activeIndex >= filtered.length) {
+      setActiveIndex(0);
+    }
+  }, [filtered.length, activeIndex, open]);
 
   /** 후보를 확정 선택 */
   const handleSelect = (opt: CompareCandidate) => {
@@ -244,7 +287,7 @@ const CompareSelect = forwardRef<HTMLInputElement, CompareSelectProps>(function 
               setQuery(e.target.value);
               setOpen(true);
             }}
-            onFocus={() => !inputDisabled && setOpen(!!query)}
+            onFocus={() => !inputDisabled && setOpen(true)}
             onKeyDown={handleKeyDown}
             placeholder={placeholder}
             disabled={inputDisabled}
@@ -278,12 +321,8 @@ const CompareSelect = forwardRef<HTMLInputElement, CompareSelectProps>(function 
             >
               {/* 결과 없음 */}
               {filtered.length === 0 && (
-                <li
-                  role='status'
-                  aria-live='polite'
-                  className='text-md-regular md:text-base-regular rounded-lg px-[16px] py-[12px] text-gray-600 select-none'
-                >
-                  일치하는 결과가 없습니다
+                <li className='text-md-regular md:text-base-regular rounded-lg px-[16px] py-[12px] text-gray-600 select-none'>
+                  {debounced.length >= 1 ? '일치하는 결과가 없습니다' : '입력 후 검색해 주세요'}
                 </li>
               )}
               {/* 결과 리스트 */}

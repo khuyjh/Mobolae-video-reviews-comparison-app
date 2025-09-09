@@ -3,8 +3,6 @@
 
 import { toast } from 'react-toastify';
 
-import { MOCK_CANDIDATES } from '@/features/compare/types/compareMockTypes';
-import { CompareCandidate } from '@/features/compare/types/compareTypes';
 import { useCompareStore } from '@/shared/stores/useCompareStore';
 
 import CompareButton from '../../features/compare/components/CompareButton';
@@ -16,7 +14,25 @@ const COMPARE_BASE_STYLE =
   'grid grid-cols-1 items-end gap-y-[30px] md:gap-[24px] md:h-[55px] md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] xl:h-[70px]';
 const COMPARE_SELECT_BASE_STYLE = 'w-full max-w-none min-w-0 md:max-w-[360px] xl:max-w-[400px]';
 const PLACEHOLDER_TEXT = '콘텐츠명을 입력해 주세요';
-const TOAST_INFO_MESSAGE = '동일한 콘텐츠는 선택할 수 없습니다.';
+
+// 사유별 토스트 유틸
+const toastByReason = (
+  reason: 'duplicate' | 'category-mismatch' | 'missing-category' | 'unknown',
+) => {
+  switch (reason) {
+    case 'duplicate':
+      toast.info('같은 콘텐츠끼리는 비교할 수 없어요.');
+      break;
+    case 'category-mismatch':
+      toast.info('같은 카테고리끼리만 비교할 수 있어요.');
+      break;
+    case 'missing-category':
+      toast.error('카테고리가 없는 콘텐츠가 있어 비교할 수 없어요.');
+      break;
+    default:
+      toast.error('선택을 완료할 수 없어요. 다시 시도해 주세요.');
+  }
+};
 
 const ComparePage = () => {
   const a = useCompareStore((s) => s.a);
@@ -33,11 +49,10 @@ const ComparePage = () => {
           label='콘텐츠 1'
           className={COMPARE_SELECT_BASE_STYLE}
           value={a}
-          scheme='left'
+          scheme='a'
           onChange={() => {}} // fallback용. 실제 업데이트는 onTryChange가 담당
           onTryChange={trySetA} // 핵심: 중복 체크 + 상태 반영
-          onError={() => toast.info(TOAST_INFO_MESSAGE)}
-          options={MOCK_CANDIDATES}
+          onError={toastByReason}
           placeholder={PLACEHOLDER_TEXT}
         />
 
@@ -46,16 +61,20 @@ const ComparePage = () => {
           label='콘텐츠 2'
           className={COMPARE_SELECT_BASE_STYLE}
           value={b}
-          scheme='right'
+          scheme='b'
           onChange={() => {}}
           onTryChange={trySetB}
-          onError={() => toast.info(TOAST_INFO_MESSAGE)}
-          options={MOCK_CANDIDATES}
+          onError={toastByReason}
           placeholder={PLACEHOLDER_TEXT}
         />
 
         {/* 비교 버튼: 모바일에선 3번째 아이템으로 아래, md 이상에선 3번째 컬럼 오른쪽 정렬 */}
-        <CompareButton className='justify-self-start md:justify-self-end' />
+        <CompareButton
+          className='justify-self-start md:justify-self-end'
+          onResult={(ok, reason) => {
+            if (!ok && reason) toast.info(reason);
+          }}
+        />
       </div>
       {/* 결과 섹션(상태 전환 확인용) */}
       <div className='mt-[100px] md:mt-[140px]'>
