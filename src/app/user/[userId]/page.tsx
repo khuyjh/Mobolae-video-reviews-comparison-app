@@ -1,28 +1,55 @@
 'use client';
 
-import { useParams, usePathname } from 'next/navigation';
+import { useParams } from 'next/navigation';
 
 import { useInfiniteQuery } from '@tanstack/react-query';
 import React, { useMemo, useState } from 'react';
 
 import VirtualizedContentGrid from '@/features/mainPage/components/VirtualizedContentGrid';
 import ActivityCard from '@/features/mypage/components/activityCard';
-import { UserProfileCard } from '@/features/mypage/components/ProfileCard';
+import ProfileCard, { type CardData } from '@/features/mypage/components/ProfileCard'; // ← 순수 UI 컴포넌트
 import ProfileTabs from '@/features/mypage/components/ProfileTabs';
 import { fetchDummyPage } from '@/features/mypage/mock/dummyPager';
+import { TEAM_ID } from '@/shared/constants/constants';
 
+import { useUserDetail } from '../../../../openapi/queries/queries';
+
+import type { UserDetailDefaultResponse } from '../../../../openapi/queries/common';
 import type { ContentItem } from '@/shared/types/content';
 
 type TabKey = 'reviews' | 'items' | 'wishlist';
 
-export default function UserPage() {
-  const params = useParams<Record<string, string>>();
+const mapUserToCard = (userDetail?: UserDetailDefaultResponse): CardData => ({
+  name: userDetail?.nickname ?? '',
+  avatarSrc: userDetail?.image ?? '',
+  bio: userDetail?.description ?? '',
+  followers: userDetail?.followersCount as number,
+  following: userDetail?.followeesCount as number,
+  isMe: false,
+  isFollowing: Boolean(userDetail?.isFollowing),
+});
 
-  const rawId = params.useId ?? params.id ?? params.userId ?? '';
+export default function UserPage() {
+  const { userId } = useParams<{ userId: string }>();
+  const uidNum = Number(userId);
+  const enabled = Number.isFinite(uidNum) && !!TEAM_ID;
+
+  const { data } = useUserDetail(
+    { path: { teamId: TEAM_ID as string, userId: uidNum } },
+    undefined,
+    { enabled, retry: false },
+  );
+  const card = mapUserToCard(data);
 
   const [tab, setTab] = useState<TabKey>('reviews');
 
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useInfiniteQuery({
+  const {
+    data: pages,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+  } = useInfiniteQuery({
     queryKey: ['mypage', 'infinite', tab],
     queryFn: ({ pageParam = 0 }) => fetchDummyPage({ cursor: pageParam, limit: 12 }),
     initialPageParam: 0,
@@ -31,7 +58,7 @@ export default function UserPage() {
 
   const items: ContentItem[] = useMemo(
     () =>
-      (data?.pages ?? []).flatMap((p) =>
+      (pages?.pages ?? []).flatMap((p) =>
         p.items.map((it) => ({
           contentId: it.id,
           title: it.title,
@@ -41,13 +68,21 @@ export default function UserPage() {
           rating: it.rating,
         })),
       ),
-    [data],
+    [pages],
   );
 
   return (
     <div className='mt-[30px] px-[20px] md:px-[117px] xl:mx-auto xl:flex xl:max-w-[1340px] xl:px-[0px]'>
       <div className='mb-[60px] xl:mr-[60px]'>
-        <UserProfileCard userId={rawId} />
+        <ProfileCard
+          name={card.name}
+          avatarSrc={card.avatarSrc}
+          bio={card.bio}
+          followers={card.followers}
+          following={card.following}
+          isMe={false}
+          isFollowing={card.isFollowing}
+        />
       </div>
 
       <div className='flex-1'>
