@@ -21,6 +21,7 @@ export const WINNER_CONFIG: Record<WinnerCode, { text: string; color: string }> 
 export type CompareCandidate = {
   id: number;
   name: string;
+  categoryId: number;
   disabled?: boolean; // 비활성 UI 제어용 혹시 모를 확장성 대비
 };
 

@@ -1,7 +1,7 @@
-import { cookies } from 'next/headers';
+export const revalidate = 300; // 5분마다 캐시 재생성 (ISR)
 
 import CategoryMenu from '@/features/mainPage/components/CategoryMenu';
-import ContentList from '@/features/mainPage/components/ContentList';
+import FilterSwitch from '@/features/mainPage/components/FilterSwitch';
 import FloatingButton from '@/features/mainPage/components/FloatingButton';
 import MostReviewed from '@/features/mainPage/components/MostReviewed';
 import {
@@ -9,41 +9,52 @@ import {
   ReviewerRankingSidebar,
 } from '@/features/mainPage/components/ReviewerRanking';
 import TopShowcase from '@/features/mainPage/components/TopShowcase';
-import { mockContents } from '@/features/mainPage/mock/mockContents';
+// import { BASE_URL, TEAM_ID } from '@/shared/constants/constants';
+//TODO: 환경변수로 변경
+import { ContentItem } from '@/shared/types/content';
+import { toContentItem } from '@/shared/utils/mapApiToItem';
+import { sortByRatingDescending, sortByReviewCountDescending } from '@/shared/utils/productSorters';
 
-type PageProps = {
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
-};
+// 별점 높은 순 Top6 데이터 조회
+async function fetchTop6ByRating(): Promise<ContentItem[]> {
+  const res = await fetch(`https://mogazoa-api.vercel.app/16-7/products?order=rating`);
+  if (!res.ok) {
+    throw new Error(`[fetchTop6ByRating] HTTP ${res.status} ${res.statusText}`);
+  }
+  const data = await res.json();
+  return (data.list ?? [])
+    .sort(sortByRatingDescending) // 별점 내림차순
+    .slice(0, 6) // 상위 6개만
+    .map(toContentItem); // API 응답 → ContentItem 변환
+}
 
-const Home = async ({ searchParams }: PageProps) => {
-  const sp = await searchParams;
+// 리뷰 많은 순 Top6 데이터 조회
+async function fetchTop6ByReviewCount(): Promise<ContentItem[]> {
+  const res = await fetch(`https://mogazoa-api.vercel.app/16-7/products?order=reviewCount`);
+  if (!res.ok) {
+    throw new Error(`[fetchTop6ByReviewCount] HTTP ${res.status} ${res.statusText}`);
+  }
+  const data = await res.json();
+  return (data.list ?? [])
+    .sort(sortByReviewCountDescending) // 리뷰 수 내림차순
+    .slice(0, 6)
+    .map(toContentItem);
+}
 
-  const accessToken = (await cookies()).get('accessToken')?.value; // ← get으로 읽기
-  const isLoggedIn = Boolean(accessToken);
-
-  // category, keyword 타입을 안전하게 string으로 변환
-  const category =
-    typeof sp.category === 'string'
-      ? sp.category
-      : Array.isArray(sp.category)
-        ? sp.category[0]
-        : undefined;
-
-  const keyword =
-    typeof sp.keyword === 'string'
-      ? sp.keyword
-      : Array.isArray(sp.keyword)
-        ? sp.keyword[0]
-        : undefined;
-
-  const hasFilter = Boolean(category || (keyword && keyword.trim()));
+const Home = async () => {
+  // 두 API를 병렬 호출 → 성능 최적화
+  const [top6ByRating, top6ByReview] = await Promise.all([
+    fetchTop6ByRating(),
+    fetchTop6ByReviewCount(),
+  ]);
 
   return (
     <main className='mx-auto w-full max-w-[1540px]'>
-      {isLoggedIn && <FloatingButton />}
+      {/* 콘텐츠 등록 플로팅 버튼 */}
+      <FloatingButton />
 
       <div className='flex'>
-        {/* 좌측: 카테고리 메뉴 (md↑) */}
+        {/* 좌측: 카테고리 메뉴 (데스크탑 전용) */}
         <aside
           id='desktop-category-slot'
           className='hidden md:block'
@@ -59,31 +70,29 @@ const Home = async ({ searchParams }: PageProps) => {
             메인 콘텐츠
           </h1>
 
-          {/* 태블릿, 모바일: 메인 상단에 가로형 랭킹 */}
+          {/* 모바일/태블릿: 상단 가로형 랭킹 */}
           <div className='mb-[60px] pl-5 md:pl-[30px] lg:hidden'>
             <ReviewerRankingHorizontal />
           </div>
+
+          {/* Top6(별점순) + 리뷰 많은 순 */}
           <div className='px-5 md:px-[30px] xl:px-[60px]'>
-            {hasFilter ? (
-              // 검색어나 카테고리가 있을 때만 리스트 렌더 (클라이언트 컴포넌트)
-              <ContentList />
-            ) : (
-              // 없으면 Top/Most만 SSR로 렌더
+            <FilterSwitch>
               <>
-                <TopShowcase items={mockContents} />
-                <MostReviewed items={mockContents} />
+                <TopShowcase items={top6ByRating} />
+                <MostReviewed items={top6ByReview} />
               </>
-            )}
+            </FilterSwitch>
           </div>
         </section>
 
-        {/* 우측: 랭킹 사이드바 (lg↑) */}
+        {/* 우측: 랭킹 사이드바 (데스크탑 전용) */}
         <div className='border-black-800 hidden flex-none border-l lg:block'>
           <ReviewerRankingSidebar />
         </div>
       </div>
 
-      {/* 전역 카테고리 메뉴 (클라이언트 컴포넌트) */}
+      {/* 전역 카테고리 메뉴 (클라이언트 전용 컴포넌트) */}
       <CategoryMenu />
     </main>
   );

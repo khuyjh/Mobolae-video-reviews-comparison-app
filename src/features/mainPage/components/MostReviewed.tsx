@@ -1,7 +1,3 @@
-'use client';
-
-import React from 'react';
-
 import { ContentItem } from '@/shared/types/content';
 
 import ContentGrid from './ContentGrid';
@@ -18,21 +14,14 @@ type MostReviewedProps = {
 
 /**
  * MostReviewed 컴포넌트
- *
  * - "리뷰 많은 상품" 섹션을 표시
  * - 전달받은 콘텐츠 아이템 배열을 ContentGrid로 렌더링
- *
- * @component
- * @example
- * ```tsx
- * <MostReviewed items={mockContents} />
- * ```
  */
 const MostReviewed = ({ items }: MostReviewedProps) => {
   return (
     <section className='my-[60px]'>
-      <h2 className='text-xl-semibold mb-[30px] text-white'>리뷰 많은 상품</h2>
-      <ContentGrid items={items.slice(0, 6)} />
+      <h2 className='text-xl-semibold mb-[30px] text-white'>리뷰가 많이 달린린 콘텐츠</h2>
+      <ContentGrid items={items} />
     </section>
   );
 };
