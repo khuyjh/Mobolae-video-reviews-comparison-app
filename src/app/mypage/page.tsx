@@ -92,7 +92,6 @@ export default function MyPage() {
       </div>
       <ProfileUpdateModal
         isOpen={isProfileModalOpen}
-        //임시데이터
         userDetail={data}
         onClose={() => {
           setIsProfileModalOpen(false);
