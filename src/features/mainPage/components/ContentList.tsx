@@ -51,7 +51,7 @@ const ContentList = () => {
       query: {
         category: category ?? undefined,
         keyword: keyword || undefined,
-        order: order || 'recent',
+        order: order !== 'recent' ? order : undefined,
         limit: PAGE_SIZE,
       },
     },
