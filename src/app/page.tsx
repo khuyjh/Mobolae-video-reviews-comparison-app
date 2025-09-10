@@ -8,7 +8,7 @@ import {
   ReviewerRankingHorizontal,
   ReviewerRankingSidebar,
 } from '@/features/mainPage/components/ReviewerRanking';
-import TopShowcase from '@/features/mainPage/components/TopShowcase';
+import TopRated from '@/features/mainPage/components/TopRated';
 // import { BASE_URL, TEAM_ID } from '@/shared/constants/constants';
 //TODO: 환경변수로 변경
 import { ContentItem } from '@/shared/types/content';
@@ -79,8 +79,8 @@ const Home = async () => {
           <div className='px-5 md:px-[30px] xl:px-[60px]'>
             <FilterSwitch>
               <>
-                <TopShowcase items={top6ByRating} />
                 <MostReviewed items={top6ByReview} />
+                <TopRated items={top6ByRating} />
               </>
             </FilterSwitch>
           </div>
