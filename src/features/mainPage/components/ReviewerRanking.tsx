@@ -52,6 +52,7 @@ const ReviewerRankingList = ({ reviewers, direction = 'row' }: ReviewerRankingLi
     return (
       <div
         ref={containerRef}
+        role='list'
         className='flex w-full flex-nowrap gap-5 overflow-x-auto scroll-smooth [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'
         // hover 시작 → 끝으로 스크롤
         onMouseEnter={() => {
@@ -73,6 +74,7 @@ const ReviewerRankingList = ({ reviewers, direction = 'row' }: ReviewerRankingLi
           <Link
             key={reviewer.userId}
             href={getHref(reviewer.userId)}
+            role='listitem'
             className='min-w-[147px] flex-none shrink-0'
             draggable={false} // 드래그 시 요소 따라오는 것 방지
           >
@@ -93,11 +95,12 @@ const ReviewerRankingList = ({ reviewers, direction = 'row' }: ReviewerRankingLi
 
   // 세로 모드(col)
   return (
-    <div className='space-y-[30px]'>
+    <div className='role="list" space-y-[30px]'>
       {top.map((reviewer) => (
         <Link
           key={reviewer.userId}
           href={getHref(reviewer.userId)}
+          role='listitem'
           className='block'
           draggable={false}
         >
