@@ -10,32 +10,39 @@ type CompareButtonProps = {
   disabled?: boolean;
   /** 레이블 커스텀 (기본: "비교하기") */
   label?: string;
+  /** 클릭 시도 결과를 부모(page)로 알려주는 콜백 */
+  onResult?: (ok: boolean, reason: string | null) => void;
 };
 
 /**
  * CompareButton
  * - 활성화 판정은 스토어의 파생 셀렉터(canCompare)로 통일
- *   -> a/b가 모두 선택되고, 서로 다른 항목일 때만 true
- * - 부모 disabledProp이 true면 무조건 비활성
  * - 클릭 시 store.requestCompare() 호출(스토어 내부에서도 재검증)
+ * - 결과를 onResult로 부모에게 알림 → 부모가 토스트 처리
  */
 
 const CompareButton = ({
   disabled: disabledProp,
   className,
   label = '비교하기',
+  onResult,
 }: CompareButtonProps) => {
-  // 개별 selector로 원시값만 구독(객체 리턴 금지)
   const canCompare = useCompareStore((s) => s.canCompare());
   const requestCompare = useCompareStore((s) => s.requestCompare);
 
+  // 문자열로 구독하면 클릭 전 계산값일 수 있어서 함수로 구독
+  const invalidReasonFn = useCompareStore((s) => s.invalidReason);
   //  실제 활성화 여부: 스토어 판정 && 부모 강제 비활성 아님
   const enabled = canCompare && !disabledProp;
 
   const handleClick = () => {
-    // button[disabled]면 브라우저가 클릭 자체를 막지만 확실하게 막기 위한 용도
     if (!enabled) return;
-    requestCompare();
+    // 최종 검증 결과(불린)를 받아서 부모에게 전달
+    const ok = requestCompare();
+    if (onResult) {
+      const reason = ok ? null : invalidReasonFn();
+      onResult(ok, reason);
+    }
   };
 
   return (
@@ -43,6 +50,7 @@ const CompareButton = ({
       type='button'
       onClick={handleClick}
       disabled={!enabled} // 비활성화 상태 실제 클릭 방지
+      aria-disabled={!enabled}
       className={cn(
         // 레이아웃- 그리드 정렬 같은 건 부모에서 넣도록 className으로 받습니다
         // 이 부분은 스타일 구분을 위해 상수화 하지 않았습니다. 추후 수정 가능

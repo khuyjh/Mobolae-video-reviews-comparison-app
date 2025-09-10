@@ -29,7 +29,7 @@ interface HomeItemCardProps {
 
 // 카드 내부 스타일 정리
 const CARD_BASE_STYLE =
-  'block relative no-underline text-inherit cursor-pointer border border-black-700 bg-black-800 rounded-lg p-[10px] w-full h-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-500/60 transition hover:shadow-lg hover:border-gray-400';
+  'block relative no-underline text-inherit cursor-pointer border border-black-700 bg-black-800 rounded-lg p-[10px] w-full h-auto transition hover:shadow-lg hover:border-[var(--color-main)] focus:outline-none focus:ring-2 focus:ring-[var(--color-main)] focus:ring-offset-2 focus:ring-offset-black-900';
 const REVIEW_FAVORITE_TEXT_STYLE =
   'text-sm-regular md:text-md-regular xl:text-base-regular flex items-center gap-1 text-gray-600';
 const STAR_CONTAINER_STYLE =
@@ -46,7 +46,7 @@ const HomeItemCard = ({
 }: HomeItemCardProps) => {
   return (
     // 가장 바깥 컨테이너 - 고정값 제거, w-full로 변경, className props 추가
-    <Link href={`/product/${contentId}`} className={clsx(CARD_BASE_STYLE, className)}>
+    <Link href={`/products/${contentId}`} className={clsx(CARD_BASE_STYLE, className)}>
       {/* 아이템 요소 컨테이너 */}
       <div className='flex w-full flex-col gap-[10px]'>
         {/* 이미지 컨테이너 - api 이미지 비율이 다를 경우 깨질 수 있어 고정 값 대신 해당 사항 적용 + 최소 너비 min-w 추가 이미지에 rounded-lg 적용 */}
@@ -79,9 +79,9 @@ const HomeItemCard = ({
             <div className={STAR_CONTAINER_STYLE}>
               {/* 별 아이콘 lucide 사용 */}
               <Star className='aria-hidden="true" h-auto w-[12px] fill-yellow-400 stroke-yellow-400 md:w-[15px] xl:w-[16px]' />
-              {/* 별점 */}
+              {/* 별점 - 소수점 1자리수까지 반올림, 정수로 떨어져도 .0까지는 표시,  string값으로 반환 */}
               <span className='text-sm-regular md:text-md-regular xl:text-base-regular text-gray-400'>
-                {rating}
+                {rating !== undefined && rating !== null ? rating.toFixed(1) : '0.0'}
               </span>
             </div>
           </div>

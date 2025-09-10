@@ -2,35 +2,34 @@
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
-import { useInfiniteQuery } from '@tanstack/react-query';
 import React, { useMemo, useCallback } from 'react';
 
 import SortDropdown from '@/shared/components/SortDropdown';
-import { CATEGORIES } from '@/shared/constants/constants';
+import { CATEGORIES, TEAM_ID } from '@/shared/constants/constants';
+import { ContentApi } from '@/shared/types/content';
 import { PRODUCT_ORDER_OPTIONS, type ProductOrderKey } from '@/shared/types/SortDropdownTypes';
 import { toContentItem } from '@/shared/utils/mapApiToItem';
 import { readQuery } from '@/shared/utils/query';
 
 import VirtualizedContentGrid from './VirtualizedContentGrid';
-import { serverListContents } from '../mock/mockContents';
+import { useInfiniteApi } from '../../../../openapi/queries/infiniteQueries';
 
 const PAGE_SIZE = 24;
 
 /**
  * ContentList
  * - URL 쿼리(category/keyword/order)를 단일 소스로 사용
- * - useInfiniteQuery로 커서 기반 페이지네이션
- * - 응답을 UI 모델로 변환 후 VirtualizedContentGrid로 가상화 렌더
+ * - useInfiniteApi(cursor)로 무한스크롤 CSR 목록 렌더
  */
 const ContentList = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
 
-  /** URL → 안전 파싱 (기본값: { category:null, keyword:'', order:'recent' }) */
+  /** URL → 필터값 파싱 */
   const { category, keyword, order } = useMemo(() => readQuery(searchParams), [searchParams]);
 
-  /** 상단 타이틀 (검색어/카테고리 상황에 따라 가변) */
+  /** 상단 타이틀 */
   const title = useMemo(() => {
     if (keyword && keyword.trim()) return `‘${keyword}’로 검색한 콘텐츠`;
     if (category !== null) {
@@ -40,48 +39,51 @@ const ContentList = () => {
     return null;
   }, [keyword, category]);
 
-  /** 무한 스크롤 쿼리 (커서 기반) */
-  const { data, isFetchingNextPage, fetchNextPage, hasNextPage, status } = useInfiniteQuery({
-    queryKey: ['contents', { category, keyword, order }], // 조건별 캐시 키
-    initialPageParam: 0 as number, // 첫 커서
-    queryFn: ({ pageParam }) =>
-      serverListContents({
-        category,
-        keyword,
-        order,
-        cursor: pageParam ?? 0,
-        limit: PAGE_SIZE,
-      }),
-    getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined, // 다음 커서 없으면 종료
-  });
+  /**
+   * 무한스크롤 API
+   * - queryKey에 필터 포함 → 변경 시 자동 리패치
+   * - keyword: 공백제거 + 소문자 변환 (API는 내부에서 처리하지만, 캐싱 효율 위해 여기도 적용)
+   * - order: recent는 API 기본값이므로 undefined 처리 (캐싱 효율 위해 여기도 적용)
+   */
+  const normKeyword = (keyword ?? '').trim().toLowerCase();
+  const normOrder: ProductOrderKey = order ?? 'recent';
 
-  /** pages → 단일 배열로 평탄화 + UI 전용 모델 매핑 */
-  const items = useMemo(() => {
-    const pages = data?.pages ?? [];
-    return pages.flatMap((p) => p.list.map(toContentItem));
-  }, [data]);
+  const { data, isFetchingNextPage, fetchNextPage, hasNextPage, isPending } = useInfiniteApi(
+    ['contents', TEAM_ID!, category ?? 'all', normKeyword, normOrder, PAGE_SIZE],
+    '/{teamId}/products',
+    {
+      path: { teamId: TEAM_ID! },
+      query: {
+        category: category ?? undefined,
+        keyword: normKeyword || undefined,
+        order: normOrder !== 'recent' ? normOrder : undefined,
+        limit: PAGE_SIZE,
+      },
+    },
+  );
+
+  /** API → UI 모델 매핑 */
+  const items = useMemo(
+    () => ((data?.items ?? []) as ContentApi[]).map(toContentItem),
+    [data?.items],
+  );
 
   /**
    * 정렬 변경
-   * - URL에만 반영 (cursor 초기화)
-   * - queryKey 갱신으로 자동 리패치
-   * - scroll:false로 뒤로가기 시 스크롤 보존
+   * - URL만 갱신, cursor 초기화(→ 자동 리패치)
    */
   const handleChangeOrder = useCallback(
     (nextOrder: ProductOrderKey) => {
       if (nextOrder === order) return;
 
       const next = new URLSearchParams(searchParams);
-      if (nextOrder === 'recent') {
-        next.delete('order');
-      } else {
-        next.set('order', nextOrder);
-      }
+      if (nextOrder === 'recent') next.delete('order');
+      else next.set('order', nextOrder);
 
-      next.delete('cursor'); // 커서 초기화
+      next.delete('cursor');
       router.replace(`${pathname}?${next.toString()}`, { scroll: false });
     },
-    [searchParams, router, pathname],
+    [searchParams, router, pathname, order],
   );
 
   return (
@@ -98,12 +100,11 @@ const ContentList = () => {
         </div>
       </div>
 
-      {/* 가상화 + 무한스크롤 (행 단위) */}
       <VirtualizedContentGrid
         items={items}
         hasNextPage={!!hasNextPage}
         fetchNextPage={fetchNextPage}
-        isLoading={isFetchingNextPage || status === 'pending'}
+        isLoading={isFetchingNextPage || isPending}
         itemHeightEstimate={276}
       />
     </section>

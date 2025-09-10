@@ -1,9 +1,13 @@
+import Image from 'next/image';
+
 import clsx from 'clsx';
 import { Star } from 'lucide-react';
 import React from 'react';
 
 import { Chip } from '@/shared/components/chip';
 import { toRankingChip } from '@/shared/utils/rankingUtil';
+
+import profileFallbackImg from '../../../../public/images/ProfileFallbackImg.png';
 
 /***************** 메인페이지 랭킹 / 팔로워 목록 / 리뷰   **************/
 type Variant = 'ranking' | 'follower' | 'reviewProfile';
@@ -26,7 +30,7 @@ const AVATAR_WRAPPER =
   'mr-[10px] h-[36px] w-[36px] overflow-hidden rounded-full xl:h-[42px] xl:w-[42px]';
 const AVATAR_IMG = 'h-full w-full object-cover';
 const AVATAR_SIZE_FOLLOWER =
-  'mr-[10px] h-[48px] w-[48px] overflow-hidden rounded-full xl:h-[52px] xl:w-[52px]';
+  'mr-[20px] h-[48px] w-[48px] overflow-hidden rounded-full xl:h-[52px] xl:w-[52px]';
 
 const HEADER_ROW = 'flex items-center gap-[5px]';
 const BADGE_BASE =
@@ -77,10 +81,18 @@ export default function ProfileBadge({
   review = 0,
   rating = 0,
   rankingMap,
+  className,
 }: ProfileBadgeProps) {
   const rankingChip = variant === 'ranking' && rankingMap ? toRankingChip(id, rankingMap) : null;
+
+  /* variant별로 Image 크기 설정 */
+  const getImageSize = () => {
+    if (variant === 'follower') return { width: 52, height: 52 };
+    return { width: 42, height: 42 };
+  };
+
   return (
-    <div className='flex'>
+    <div className={clsx('flex', variant === 'follower' && 'mb-[40px]')}>
       {/*아바타*/}
       <div
         className={clsx(
@@ -89,7 +101,14 @@ export default function ProfileBadge({
           variant === 'follower' && AVATAR_SIZE_FOLLOWER,
         )}
       >
-        <img src={avatarSrc} alt='프로필 이미지' draggable={false} className={AVATAR_IMG} />
+        <Image
+          src={avatarSrc || profileFallbackImg}
+          alt='프로필 이미지'
+          draggable={false}
+          className={AVATAR_IMG}
+          {...getImageSize()}
+          onError={(e) => ((e.target as HTMLImageElement).src = profileFallbackImg.src)}
+        />
       </div>
       {/*메인페이지에 들어 갈 아바타 카드*/}
       {variant === 'ranking' && (
@@ -121,7 +140,7 @@ export default function ProfileBadge({
 
       {/*팔로우목록에 들어 갈 아바타 카드*/}
       {variant === 'follower' && (
-        <div className={CENTER_ROW}>
+        <div className={clsx(CENTER_ROW, className)}>
           <span className={FOLLOWER_NAME_TEXT}>{name}</span>
         </div>
       )}

@@ -1,34 +1,62 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
+
 import { useInfiniteQuery } from '@tanstack/react-query';
 import React, { useMemo, useState } from 'react';
+import { toast } from 'react-toastify';
 
 import VirtualizedContentGrid from '@/features/mainPage/components/VirtualizedContentGrid';
 import ActivityCard from '@/features/mypage/components/activityCard';
-import ProfileCard from '@/features/mypage/components/ProfileCard';
+import ProfileCard, { type CardData } from '@/features/mypage/components/ProfileCard';
 import ProfileTabs from '@/features/mypage/components/ProfileTabs';
-import { fetchDummyPage, type PageResponse } from '@/features/mypage/mock/dummyPager';
+import ProfileUpdateModal from '@/features/mypage/components/ProfileUpdateModal';
+import { fetchDummyPage } from '@/features/mypage/mock/dummyPager';
+import { TEAM_ID } from '@/shared/constants/constants';
+import { useUserStore } from '@/shared/stores/userStore';
 
+import { useMe } from '../../../openapi/queries/queries';
+
+import type { MeDefaultResponse } from '../../../openapi/queries/common';
 import type { ContentItem } from '@/shared/types/content';
 
-const AVATAR = '/images/profileImg.jpg';
 type TabKey = 'reviews' | 'items' | 'wishlist';
 
-export default function MyPage() {
-  const [isFollowing, setIsFollowing] = useState(false);
-  const [tab, setTab] = useState<TabKey>('reviews');
+const mapMeToCard = (meDetail?: MeDefaultResponse): CardData => ({
+  name: meDetail?.nickname as string,
+  avatarSrc: meDetail?.image ?? '',
+  bio: meDetail?.description ?? '',
+  followers: meDetail?.followersCount as number,
+  following: meDetail?.followeesCount as number,
+  isMe: true,
+  isFollowing: false,
+});
 
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useInfiniteQuery({
+export default function MyPage() {
+  const { data } = useMe({ path: { teamId: TEAM_ID as string } }, []);
+  const card = mapMeToCard(data);
+  const [tab, setTab] = useState<TabKey>('reviews');
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const clearUser = useUserStore((state) => state.clearUser);
+  const router = useRouter();
+
+  const {
+    data: pages,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+  } = useInfiniteQuery({
     queryKey: ['mypage', 'infinite', tab],
     queryFn: ({ pageParam = 0 }) => fetchDummyPage({ cursor: pageParam, limit: 12 }),
     initialPageParam: 0,
     getNextPageParam: (last) => last.nextCursor ?? undefined,
   });
 
-  // 더미 → ContentItem 매핑
   const items: ContentItem[] = useMemo(
     () =>
-      (data?.pages ?? []).flatMap((p) =>
+      (pages?.pages ?? []).flatMap((p) =>
         p.items.map((it) => ({
           contentId: it.id,
           title: it.title,
@@ -38,22 +66,39 @@ export default function MyPage() {
           rating: it.rating,
         })),
       ),
-    [data],
+    [pages],
   );
+
+  if (!data) return;
 
   return (
     <div className='mt-[30px] px-[20px] md:px-[117px] xl:mx-auto xl:flex xl:max-w-[1340px] xl:px-[0px]'>
       <div className='mb-[60px] xl:mr-[60px]'>
         <ProfileCard
-          name='surisuri마수리'
-          avatarSrc={AVATAR}
-          bio='자기소개 입니다자기소개 입니다자기소개 입니다자기소개 입니다자기소개 입니다'
-          followers={762}
-          following={102}
-          isFollowing={isFollowing}
-          onFollowToggle={() => setIsFollowing((p) => !p)}
+          name={card.name}
+          avatarSrc={card.avatarSrc}
+          bio={card.bio}
+          followers={card.followers}
+          following={card.following}
+          isMe={true}
+          isFollowing={false}
+          onEdit={() => {
+            setIsProfileModalOpen(true);
+          }}
+          onLogout={() => {
+            clearUser();
+            router.replace('/');
+            toast.success('로그아웃 되었습니다.');
+          }}
         />
       </div>
+      <ProfileUpdateModal
+        isOpen={isProfileModalOpen}
+        userDetail={data}
+        onClose={() => {
+          setIsProfileModalOpen(false);
+        }}
+      />
 
       <div className='flex-1'>
         <div className='mb-[60px]'>

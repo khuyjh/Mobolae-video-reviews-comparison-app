@@ -1,42 +1,68 @@
-// 비교 입력창 리팩토링 버전. 비교 셀렉트 컴포넌트
+// 비교 셀렉트 컴포넌트
 // 기본은 드롭다운 형식
 // 입력창 및 연관 검색어 드롭다운으로 보여줌
 // 입력값 chip으로 토큰화
-
+// 서버 검색
 'use client';
 
 import { X } from 'lucide-react';
 import { forwardRef, useEffect, useId, useMemo, useRef, useState } from 'react';
 
+import { PATH_OPTION } from '@/shared/constants/constants';
 import { cn } from '@/shared/lib/cn';
 
+import { useListProduct } from '../../../../openapi/queries';
+import { toCandidates } from '../utils/contentMapper';
+
 import type { CompareCandidate } from '@/features/compare/types/compareTypes';
+
+type TrySetReason = 'duplicate' | 'category-mismatch' | 'missing-category' | 'unknown';
 
 export type CompareSelectProps = {
   label?: string;
   value: CompareCandidate | null; // Chip 선택 값 한번에 1개로 제한
   onChange: (v: CompareCandidate | null) => void; // Chip 선택/해제 콜백
-  options: CompareCandidate[]; // 후보 목록
   placeholder?: string;
   disabled?: boolean;
-  // 칩 색상용 prop (기본은 left 녹색)
-  scheme?: 'left' | 'right';
+  // 칩 색상용 prop (기본은 a 녹색)
+  scheme?: 'a' | 'b';
   //선택을 시도하고 성공/실패를 알려주는 콜백
-  onTryChange?: (v: CompareCandidate | null) => { ok: boolean; reason?: 'duplicate' };
-  // 실패 사유를 외부에서 처리(토스트 등)하고 싶을 때 사용
-  // ex) onError={(reason) => toast.error('동일 콘텐츠는 선택할 수 없습니다.')}
-  onError?: (reason: 'duplicate' | string) => void;
+  onTryChange?: (v: CompareCandidate | null) => {
+    ok: boolean;
+    reason?: Exclude<TrySetReason, 'unknown'>;
+  };
+  onError?: (reason: TrySetReason) => void; // 3가지 에러 이유 + 'unknown'
+
   //커스텀 스타일
   className?: string; // 외곽 컨테이너 스타일
   inputClassName?: string; // 인풋 스타일
   dropdownClassName?: string; // 드롭다운 패널 스타일
-  filterFn?: (opt: CompareCandidate, query: string) => boolean; // 검색 규칙 커스터마이징용 없으면 기본 커스텀 필터 사용
 };
 
-/** 커스텀 필터 (기본: 공백/영문 대소문자 무시 매칭) */
-const defaultFilter = (opt: CompareCandidate, q: string) => {
-  const norm = (s: string) => s.toLowerCase().replace(/\s+/g, '');
-  return norm(opt.name).includes(norm(q));
+// 사용자가 입력한 값(query)을 DEBOUNCE_MS(ms기준) 기다린 후 debounced에 반영
+const DEBOUNCE_MS = 150;
+
+// 문자열 비교 유틸: 공백/대소문자/유니코드 정규화 등을 정리해서 완전 일치 판정 신뢰도 높임
+const normalizeForExactMatch = (input: string, locale: string = 'ko-KR'): string =>
+  input.normalize('NFKC').trim().toLocaleLowerCase(locale);
+
+// 완전 일치 항목의 인덱스를 찾아주는 헬퍼
+const findExactMatchIndex = (options: CompareCandidate[], query: string): number => {
+  const normalizedQuery = normalizeForExactMatch(query);
+  return options.findIndex((option) => normalizeForExactMatch(option.name) === normalizedQuery);
+};
+
+// IME(한글 등) 조합 중 여부를 추적하는 ref
+const isComposingRefGlobal = { current: false } as { current: boolean };
+
+// KeyboardEvent.isComposing 존재 여부 타입가드 (any 타입 사용 금지)
+const hasIsComposing = (evt: unknown): evt is { isComposing: boolean } => {
+  return (
+    typeof evt === 'object' &&
+    evt !== null &&
+    'isComposing' in evt &&
+    typeof (evt as { isComposing: unknown }).isComposing === 'boolean'
+  );
 };
 
 const CompareSelect = forwardRef<HTMLInputElement, CompareSelectProps>(function CompareSelect(
@@ -44,14 +70,12 @@ const CompareSelect = forwardRef<HTMLInputElement, CompareSelectProps>(function 
     label,
     value,
     onChange,
-    options,
     placeholder = '콘텐츠명을 입력해 주세요',
     disabled = false,
     className,
     inputClassName,
     dropdownClassName,
-    filterFn = defaultFilter,
-    scheme = 'left',
+    scheme = 'a',
     onTryChange,
     onError, // 실패 알림(토스트 등)을 외부에서 처리할 수 있게 제공
   },
@@ -64,12 +88,40 @@ const CompareSelect = forwardRef<HTMLInputElement, CompareSelectProps>(function 
 
   const [query, setQuery] = useState('');
   const [open, setOpen] = useState(false);
-  const [activeIndex, setActiveIndex] = useState(0);
+  const [activeIndex, setActiveIndex] = useState<number>(-1);
 
-  const filtered = useMemo(() => {
-    if (!query) return [];
-    return options.filter((o) => filterFn(o, query));
-  }, [options, query, filterFn]);
+  // 디바운스된 검색어
+  const [debounced, setDebounced] = useState('');
+  useEffect(() => {
+    const t = setTimeout(() => setDebounced(query.trim()), DEBOUNCE_MS);
+    return () => clearTimeout(t);
+  }, [query]);
+
+  /* 탄스택 쿼리 선언 부분 */
+
+  // 서버 검색 호출 (기본설정은 입력 1글자 이상일 때)
+  const { data: serverData } = useListProduct(
+    {
+      ...PATH_OPTION,
+      query: {
+        keyword: debounced || undefined,
+      },
+    },
+    [debounced],
+    {
+      enabled: debounced.length >= 1 && !value, // 1글자부터 검색(서버 요청이 너무 자주 일어닐 시 2글자로 수정), 칩이 있으면 검색 막기
+      staleTime: 30_000, //30초, 같은 검색어를 다시 입력하면 30초 내에는 네트워크 요청 없이 캐시 사용
+    },
+  );
+
+  // 서버 결과 → 후보
+  const serverOptions = useMemo(() => toCandidates(serverData), [serverData]);
+
+  // 드롭다운에 보일 리스트 (입력이 없으면 baseOptions 그대로)
+  const filtered: CompareCandidate[] = useMemo(() => {
+    if (debounced.length >= 1) return serverOptions;
+    return [];
+  }, [debounced, serverOptions]);
 
   // Chip이 있을 때 입력/검색 비활성
   const inputDisabled = disabled || !!value;
@@ -86,28 +138,46 @@ const CompareSelect = forwardRef<HTMLInputElement, CompareSelectProps>(function 
     return () => document.removeEventListener('mousedown', onDocClick);
   }, []);
 
-  // 칩 색상용 prop (기본은 left 녹색 글로벌 css chip 색상 사용)
+  // 칩 색상용 prop (기본은 a 녹색 글로벌 css chip 색상 사용)
   const ChipColor = {
-    left: {
+    a: {
       chip: ' bg-green-50 text-green-500',
       ring: 'focus-within:ring-main', // 필요 시 입력창 포커스 컬러 변경용
     },
-    right: {
+    b: {
       chip: ' bg-pink-50 text-pink-500',
-      ring: 'focus-within:ring-fuchsia-400/70',
+      ring: 'focus-within:ring-main',
     },
   } as const;
 
-  // 드롭다운 열릴 때 첫 항목 활성화
+  // 드롭다운이 열리거나(query가 안정화되거나) 목록이 바뀔 때 완전 일치가 있으면 그 항목을 하이라이트
   useEffect(() => {
-    if (open) setActiveIndex(0);
-  }, [open, query]);
+    if (!open) return;
+    if (filtered.length === 0) {
+      setActiveIndex(-1);
+      return;
+    }
+    const exactIdx = findExactMatchIndex(filtered, query);
+    setActiveIndex(exactIdx !== -1 ? exactIdx : 0);
+  }, [open, debounced, filtered, query]);
+
+  // 리스트 길이가 바뀌었을 때 activeIndex 보정
+  useEffect(() => {
+    if (!open) return;
+    if (filtered.length === 0) {
+      setActiveIndex(-1);
+      return;
+    }
+    if (activeIndex >= filtered.length) {
+      setActiveIndex(filtered.length - 1);
+    }
+  }, [filtered.length, activeIndex, open]);
 
   /** 후보를 확정 선택 */
   const handleSelect = (opt: CompareCandidate) => {
     if (opt.disabled) return;
 
-    // 1) onTryChange가 있으면 먼저 시도 → 실패(중복 등) 시 에러만 표시 후 종료
+    // onTryChange가 있으면 먼저 시도 → 실패(중복 등) 시 에러만 표시 후 종료
     if (onTryChange) {
       const res = onTryChange(opt);
       if (!res.ok) {
@@ -120,7 +190,7 @@ const CompareSelect = forwardRef<HTMLInputElement, CompareSelectProps>(function 
       return; //  onChange는 호출하지 않음 (이중 업데이트 방지)
     }
 
-    // 2) fallback: 기존 onChange 사용(스토어 없이 로컬 사용 등)
+    // fallback: 기존 onChange 사용(스토어 없이 로컬 사용 등)
     onChange(opt);
     setOpen(false);
     setQuery('');
@@ -144,42 +214,78 @@ const CompareSelect = forwardRef<HTMLInputElement, CompareSelectProps>(function 
     requestAnimationFrame(() => inputRef.current?.focus());
   };
 
+  // 타입가드 + composition 이벤트(ref)로 IME 조합 안전 처리
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    // IME 조합 중이면 Enter는 조합 확정이므로 선택 로직을 실행시키지 않도록 수정
+    const composing =
+      isComposingRefGlobal.current || (hasIsComposing(e.nativeEvent) && e.nativeEvent.isComposing);
+
     if (!open && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
       setOpen(true);
       return;
     }
 
+    // 드롭다운이 닫혀 있는 상태에서 Enter:
+    // 1) 완전 일치가 있으면 그걸 선택, 2) 없으면 첫 항목(옵션)
     if (!open) {
-      if (e.key === 'Enter' && filtered[0] && !filtered[0].disabled) {
-        // 필터 결과가 있을 때 Enter로 첫 항목 선택(일반 검색처럼 보이도록 UX 보완)
-        handleSelect(filtered[0]);
+      if (e.key === 'Enter' && !composing) {
+        const exactIdx = findExactMatchIndex(filtered, query);
+        if (exactIdx !== -1 && !filtered[exactIdx]?.disabled) {
+          e.preventDefault();
+          handleSelect(filtered[exactIdx]);
+          return;
+        }
+        if (filtered[0] && !filtered[0].disabled) {
+          e.preventDefault();
+          handleSelect(filtered[0]);
+        }
       }
       return;
     }
 
+    // 드롭다운이 열려 있는 상태
     if (e.key === 'ArrowDown') {
       e.preventDefault();
       if (!filtered.length) return;
-      let next = activeIndex;
+      let next = activeIndex < 0 ? 0 : activeIndex;
       do {
         next = (next + 1) % filtered.length;
       } while (filtered[next]?.disabled && next !== activeIndex);
       setActiveIndex(next);
-    } else if (e.key === 'ArrowUp') {
+      return;
+    }
+
+    if (e.key === 'ArrowUp') {
       e.preventDefault();
       if (!filtered.length) return;
-      let prev = activeIndex;
+      let prev = activeIndex < 0 ? 0 : activeIndex;
       do {
         prev = (prev - 1 + filtered.length) % filtered.length;
       } while (filtered[prev]?.disabled && prev !== activeIndex);
       setActiveIndex(prev);
-    } else if (e.key === 'Enter') {
+      return;
+    }
+
+    if (e.key === 'Enter' && !composing) {
       e.preventDefault();
-      const target = filtered[activeIndex];
-      if (target && !target.disabled) handleSelect(target);
-    } else if (e.key === 'Escape') {
+
+      // ★ 변경: 우선순위 — 1) 완전 일치 2) 활성 항목 3) 첫 항목(옵션)
+      const exactIdx = findExactMatchIndex(filtered, query);
+      if (exactIdx !== -1 && !filtered[exactIdx]?.disabled) {
+        handleSelect(filtered[exactIdx]);
+        return;
+      }
+      const target =
+        activeIndex !== -1 && filtered[activeIndex] ? filtered[activeIndex] : filtered[0];
+      if (target && !target.disabled) {
+        handleSelect(target);
+      }
+      return;
+    }
+
+    if (e.key === 'Escape') {
       setOpen(false);
+      setActiveIndex(-1);
     }
   };
 
@@ -244,8 +350,14 @@ const CompareSelect = forwardRef<HTMLInputElement, CompareSelectProps>(function 
               setQuery(e.target.value);
               setOpen(true);
             }}
-            onFocus={() => !inputDisabled && setOpen(!!query)}
+            onFocus={() => !inputDisabled && setOpen(true)}
             onKeyDown={handleKeyDown}
+            onCompositionStart={() => {
+              isComposingRefGlobal.current = true;
+            }}
+            onCompositionEnd={() => {
+              isComposingRefGlobal.current = false;
+            }}
             placeholder={placeholder}
             disabled={inputDisabled}
             role='combobox'
@@ -278,12 +390,8 @@ const CompareSelect = forwardRef<HTMLInputElement, CompareSelectProps>(function 
             >
               {/* 결과 없음 */}
               {filtered.length === 0 && (
-                <li
-                  role='status'
-                  aria-live='polite'
-                  className='text-md-regular md:text-base-regular rounded-lg px-[16px] py-[12px] text-gray-600 select-none'
-                >
-                  일치하는 결과가 없습니다
+                <li className='text-md-regular md:text-base-regular rounded-lg px-[16px] py-[12px] text-gray-600 select-none'>
+                  {debounced.length >= 1 ? '일치하는 결과가 없습니다' : '입력 후 검색해 주세요'}
                 </li>
               )}
               {/* 결과 리스트 */}
