@@ -1,10 +1,10 @@
 'use client';
 /* eslint-disable @next/next/no-img-element */
 import Link from 'next/link';
-import { usePathname, useSearchParams } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import clsx from 'clsx';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 
 import { cn } from '@/shared/lib/cn';
@@ -14,7 +14,11 @@ import { useCompareStore } from '../stores/useCompareStore';
 import { useUserStore } from '../stores/userStore';
 
 export default function GlobalNav() {
+  const router = useRouter(); //
+  const params = useSearchParams();
+
   const [searchOpen, setSearchOpen] = useState(false);
+  const [keyword, setKeyword] = useState('');
   const isLoggedIn = useUserStore((state) => state.isLoggedIn);
   const { a: compareItemA, b: compareItemB } = useCompareStore(
     useShallow((state) => ({
@@ -23,17 +27,35 @@ export default function GlobalNav() {
     })),
   );
   const isCompareReady = compareItemA && compareItemB;
-  const params = useSearchParams();
+
   const currentPath = usePathname();
   const redirectUrl = params.get('redirect_url') ? params.get('redirect_url') : currentPath;
   const query = `?redirect_url=${redirectUrl}`;
 
   const triggerBtnRef = useRef<HTMLButtonElement>(null);
   const mobileSearchRef = useRef<HTMLDivElement>(null);
+  const mobileInputRef = useRef<HTMLInputElement>(null);
 
-  {
-    /* 모바일 검색창 닫힘*/
-  }
+  /* URL - 입력창 동기화 (뒤로가기/새로고침 대응)*/
+  useEffect(() => {
+    setKeyword(params.get('keyword') ?? '');
+  }, [params]);
+
+  /* 검색 제출: 현재 category는 보존, order/cursor는 초기화 */
+  const submitSearch = useCallback(() => {
+    const normKeyword = (keyword ?? '').trim().toLowerCase(); // 정규화
+    if (!normKeyword) return;
+
+    const next = new URLSearchParams();
+    const category = params.get('category');
+    if (category) next.set('category', category); // 카테고리 동시 적용
+    next.set('keyword', normKeyword);
+
+    router.push(`/?${next.toString()}`, { scroll: true });
+    setSearchOpen(false); // 모바일 닫기
+  }, [keyword, params, router]);
+
+  /* 모바일 검색창 닫힘*/
   useEffect(() => {
     if (!searchOpen) return;
 
@@ -50,6 +72,13 @@ export default function GlobalNav() {
     return () => document.removeEventListener('mousedown', onMouseDown);
   }, [searchOpen]);
 
+  /* 모바일 검색창 열림 → 포커스 */
+  useEffect(() => {
+    if (searchOpen) {
+      mobileInputRef.current?.focus();
+    }
+  }, [searchOpen]);
+
   return (
     <header className='border-black-800 bg-black-900 sticky top-0 z-40 border py-[11px] pb-[11px] md:py-[15px] md:pb-[15px] xl:py-[22px] xl:pb-[22px]'>
       <nav className={NAV_CONTAINER}>
@@ -57,16 +86,30 @@ export default function GlobalNav() {
         <Link href='/' className='flex items-center'>
           <img src='/icons/Logo.svg' alt='로고' className='h-[20px] md:h-[24px] xl:h-[32px]' />
         </Link>
+
         {/*PC 검색창*/}
         <div className='hidden md:flex md:items-center'>
           <div className={SEARCH_BOX}>
-            <button type='button' className='cursor-pointer'>
+            <button
+              type='button'
+              className='cursor-pointer'
+              aria-label='검색 실행'
+              onClick={submitSearch}
+            >
               <img src='/icons/SearchIcon.svg' alt='검색' className='h-[24px] w-[24px]' />
             </button>
             <input
               type='text'
               placeholder='상품 이름을 검색해 보세요'
               className='ml-[12px] w-full bg-transparent outline-none'
+              value={keyword}
+              onChange={(e) => setKeyword(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  submitSearch();
+                }
+              }}
             />
           </div>
 
@@ -128,13 +171,27 @@ export default function GlobalNav() {
                 : 'pointer-events-none w-0 opacity-0 ease-in',
             )}
           >
-            <button className='h-[24px] w-[24px] place-items-center' aria-label='검색'>
+            <button
+              className='h-[24px] w-[24px] place-items-center'
+              aria-label='검색 실행'
+              onClick={submitSearch}
+              type='button'
+            >
               <img src='/icons/SearchIcon.svg' alt='검색' />
             </button>
             <input
+              ref={mobileInputRef}
               type='text'
               placeholder='상품 이름을 검색해 보세요'
               className='ml-[15px] w-full rounded-md bg-transparent outline-none'
+              value={keyword}
+              onChange={(e) => setKeyword(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  submitSearch();
+                }
+              }}
             />
           </div>
           {searchOpen && (

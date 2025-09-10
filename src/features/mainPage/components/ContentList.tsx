@@ -42,16 +42,21 @@ const ContentList = () => {
   /**
    * 무한스크롤 API
    * - queryKey에 필터 포함 → 변경 시 자동 리패치
+   * - keyword: 공백제거 + 소문자 변환 (API는 내부에서 처리하지만, 캐싱 효율 위해 여기도 적용)
+   * - order: recent는 API 기본값이므로 undefined 처리 (캐싱 효율 위해 여기도 적용)
    */
+  const normKeyword = (keyword ?? '').trim().toLowerCase();
+  const normOrder: ProductOrderKey = order ?? 'recent';
+
   const { data, isFetchingNextPage, fetchNextPage, hasNextPage, isPending } = useInfiniteApi(
-    ['contents', TEAM_ID!, category ?? 'all', keyword ?? '', order ?? 'recent', PAGE_SIZE],
+    ['contents', TEAM_ID!, category ?? 'all', normKeyword, normOrder, PAGE_SIZE],
     '/{teamId}/products',
     {
       path: { teamId: TEAM_ID! },
       query: {
         category: category ?? undefined,
-        keyword: keyword || undefined,
-        order: order !== 'recent' ? order : undefined,
+        keyword: normKeyword || undefined,
+        order: normOrder !== 'recent' ? normOrder : undefined,
         limit: PAGE_SIZE,
       },
     },
