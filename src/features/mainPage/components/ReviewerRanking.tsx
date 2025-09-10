@@ -4,10 +4,14 @@ import Link from 'next/link';
 
 import React, { useMemo } from 'react';
 
-import { mockReviewers } from '@/features/mainPage/mock/mockContents';
 import ProfileBadge from '@/shared/components/card/avatarCard';
+import { PATH_OPTION } from '@/shared/constants/constants';
 import { useUserStore } from '@/shared/stores/userStore';
+import { mapUserRankingToReviewer } from '@/shared/utils/reviewerMapper';
 
+import { useUserRanking } from '../../../../openapi/queries';
+
+import type { UserRanking } from '../../../../openapi/requests/types.gen';
 import type { Reviewer } from '@/shared/types/reviewer';
 
 type Direction = 'row' | 'col';
@@ -27,31 +31,23 @@ const ReviewerRankingList: React.FC<ReviewerRankingListProps> = ({
   reviewers,
   direction = 'row',
 }) => {
-  // store에서 유저 정보 가져옴
   const meId = useUserStore((state) => state.user?.id);
 
-  // 팔로워 수 기준 내림차순 정렬
-  // reviewers 배열을 얕은 복사 후 sort (원본 불변)
   const sorted = useMemo(
     () => [...reviewers].sort((a, b) => (b.followers ?? 0) - (a.followers ?? 0)),
     [reviewers],
   );
 
-  // 상위 5명만 제한
   const topN = 5;
   const top = useMemo(() => sorted.slice(0, topN), [sorted]);
 
-  // 등수 매핑: userId → rank
-  // 예: {1: 1위, 2: 2위, ...}
   const rankingMap = useMemo(
     () => new Map(top.map((reviewer, i) => [reviewer.userId, i + 1])),
     [top],
   );
 
-  // href 생성 (내 id와 해당 프로필의 user.id 비교하여 분기)
   const getHref = (userId: number) => (meId && userId === meId ? '/mypage' : `/user/${userId}`);
 
-  // --- 가로 스크롤 버전 ---
   if (direction === 'row') {
     return (
       <div className='flex w-full snap-x snap-mandatory flex-nowrap gap-5 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'>
@@ -63,7 +59,7 @@ const ReviewerRankingList: React.FC<ReviewerRankingListProps> = ({
           >
             <ProfileBadge
               variant='ranking'
-              id={reviewer.userId} // ProfileBadge는 id prop 사용
+              id={reviewer.userId}
               name={reviewer.name}
               avatarSrc={reviewer.profileImageUrl}
               followers={reviewer.followers ?? 0}
@@ -76,7 +72,6 @@ const ReviewerRankingList: React.FC<ReviewerRankingListProps> = ({
     );
   }
 
-  // --- 세로 리스트 버전 ---
   return (
     <div className='space-y-[30px]'>
       {top.map((reviewer) => (
@@ -98,30 +93,44 @@ const ReviewerRankingList: React.FC<ReviewerRankingListProps> = ({
 
 /**
  * ReviewerRankingHorizontal
- * - 모바일·태블릿 전용
- * - 가로 스크롤 리스트 형태로 리뷰어 랭킹을 표시
  */
-export const ReviewerRankingHorizontal: React.FC<{ reviewers?: Reviewer[] }> = ({
-  reviewers = mockReviewers as Reviewer[],
-}) => (
-  <section>
-    <h2 className='text-md-regular mb-3 text-white'>리뷰어 랭킹</h2>
-    <ReviewerRankingList reviewers={reviewers} direction='row' />
-  </section>
-);
+export const ReviewerRankingHorizontal: React.FC = () => {
+  const { data, isLoading, isError } = useUserRanking(PATH_OPTION, [], {
+    staleTime: 30_000,
+  });
+
+  if (isLoading) return <div>리뷰어 랭킹 불러오는 중...</div>;
+  if (isError || !data) return <div>리뷰어 랭킹 불러오기 실패</div>;
+
+  const reviewers: Reviewer[] = (data ?? []).map(mapUserRankingToReviewer);
+
+  return (
+    <section>
+      <h2 className='text-md-regular mb-3 text-white'>리뷰어 랭킹</h2>
+      <ReviewerRankingList reviewers={reviewers} direction='row' />
+    </section>
+  );
+};
 
 /**
  * ReviewerRankingSidebar
- * - 데스크탑 전용
- * - 좌측 레일에 세로 리스트 형태로 리뷰어 랭킹을 표시
  */
-export const ReviewerRankingSidebar: React.FC<{ reviewers?: Reviewer[] }> = ({
-  reviewers = mockReviewers as Reviewer[],
-}) => (
-  <aside className='border-black-800 h-fit border-l px-[30px] py-[45px] xl:min-w-[250px]'>
-    <div className='sticky top-24'>
-      <h2 className='text-base-regular mb-[30px] text-white'>리뷰어 랭킹</h2>
-      <ReviewerRankingList reviewers={reviewers} direction='col' />
-    </div>
-  </aside>
-);
+export const ReviewerRankingSidebar: React.FC = () => {
+  const { data, isLoading, isError } = useUserRanking(PATH_OPTION, [], {
+    staleTime: 30_000,
+  });
+
+  if (isLoading) return <div>리뷰어 랭킹 불러오는 중...</div>;
+  if (isError || !data) return <div>리뷰어 랭킹 불러오기 실패</div>;
+
+  const reviewers: Reviewer[] = (data ?? []).map(mapUserRankingToReviewer);
+
+  return (
+    <aside className='border-black-800 h-fit border-l px-[30px] py-[45px] xl:min-w-[250px]'>
+      <div className='sticky top-24'>
+        <h2 className='text-base-regular mb-[30px] text-white'>리뷰어 랭킹</h2>
+        <ReviewerRankingList reviewers={reviewers} direction='col' />
+      </div>
+    </aside>
+  );
+};
