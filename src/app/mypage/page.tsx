@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 
 import { useInfiniteQuery } from '@tanstack/react-query';
 import React, { useMemo, useState } from 'react';
+import { toast } from 'react-toastify';
 
 import VirtualizedContentGrid from '@/features/mainPage/components/VirtualizedContentGrid';
 import ActivityCard from '@/features/mypage/components/activityCard';
@@ -87,6 +88,7 @@ export default function MyPage() {
           onLogout={() => {
             clearUser();
             router.replace('/');
+            toast.success('로그아웃 되었습니다.');
           }}
         />
       </div>
