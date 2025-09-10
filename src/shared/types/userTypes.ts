@@ -21,7 +21,7 @@ export interface UserState {
   user: DetailUser | null;
   isLoggedIn: boolean;
   setUser: (user: DetailUser) => void;
-  updateUser: (updatedUser: DetailUser) => void;
+  updateUser: (updatedUser: BaseUser) => void;
   initializeAuth: () => void;
   clearUser: () => void;
 }

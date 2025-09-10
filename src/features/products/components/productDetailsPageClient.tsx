@@ -22,7 +22,7 @@ import type {
 } from '../../../../openapi/requests/types.gen';
 
 const MAIN_LAYOUT =
-  'mx-auto px-[20px] pt-[30px] pb-[223px] md:max-w-[684px] md:px-[30px] md:pt-[40px] md:pb-[147px] xl:max-w-[940px] xl:pt-[60px] xl:pb-[120px]';
+  'mx-auto px-[20px] pt-[30px] pb-[158px] md:max-w-[684px] md:px-[30px] md:pt-[40px] md:pb-[147px] xl:max-w-[940px] xl:pt-[60px] xl:pb-[120px]';
 
 const SUBSECTION_GAP = 'flex flex-col gap-[30px]';
 const SECTION_TITLE = 'text-lg-semibold md:text-base-semibold xl:text-xl-semibold text-white';

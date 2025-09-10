@@ -75,6 +75,16 @@
   .bg-main-gradient {
     @apply from-main to-main-dark bg-gradient-to-r;
   }
+
+  /* 가로 스크롤 ui 숨기기 */
+  .hide-scrollbar {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+  }
 }
 
 @layer components {

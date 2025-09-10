@@ -5,7 +5,7 @@ import { Heart } from 'lucide-react';
 import React, { useState } from 'react';
 import { toast } from 'react-toastify';
 
-import { TEAM_ID } from '@/shared/constants/constants';
+import { PATH_OPTION } from '@/shared/constants/constants';
 import { cn } from '@/shared/lib/cn';
 import { shareToKakao } from '@/shared/lib/kakaoShare';
 import { toCategoryChip } from '@/shared/utils/categoryUtil';
@@ -15,9 +15,10 @@ import KakaotalkIcon from '../../../../../public/icons/kakaotalk.svg';
 import ShareIcon from '../../../../../public/icons/share.svg';
 import { Chip } from '../../../../shared/components/chip';
 
-const ICON_BUTTON_STYLES = 'cursor-pointer rounded-[6px] p-[5px]';
+const ICON_BUTTON_STYLES =
+  'cursor-pointer rounded-[6px] p-[5px] hover:scale-105 hover:brightness-125';
 const ICON_STYLE = 'h-[14px] w-[14px] xl:h-[18px] xl:w-[18px] text-black';
-const HEART_ICON_STYLE = 'h-6 w-6 xl:h-7 xl:w-7';
+const HEART_ICON_STYLE = 'h-6 w-6 xl:h-7 xl:w-7 hover:scale-105 hover:brightness-125';
 
 interface ProductHeaderProps {
   category: { id: number; name: string };
@@ -54,7 +55,7 @@ const ProductHeader = ({
       onFavoriteChange?.(false);
 
       unfavoriteMut.mutate(
-        { path: { teamId: TEAM_ID!, productId } },
+        { ...PATH_OPTION, path: { ...PATH_OPTION.path, productId } },
         {
           onError: () => {
             /* 실패 시 롤백 */
@@ -76,7 +77,7 @@ const ProductHeader = ({
       onFavoriteChange?.(true);
 
       favoriteMut.mutate(
-        { path: { teamId: TEAM_ID!, productId } },
+        { ...PATH_OPTION, path: { ...PATH_OPTION.path, productId } },
         {
           onError: () => {
             setIsLiked(prevIsLiked);
@@ -94,12 +95,18 @@ const ProductHeader = ({
   };
 
   const handleKakaoShare = () => {
-    shareToKakao({
-      title,
-      description: '콘텐츠를 확인해보세요',
-      imageUrl: `${window.location.origin}/default-thumbnail.png`,
-      url: `${window.location.origin}/product/${productId}`,
-    });
+    try {
+      shareToKakao({
+        title,
+        description: '콘텐츠를 확인해보세요',
+        imageUrl: `${window.location.origin}/default-thumbnail.png`,
+        url: `${window.location.origin}/product/${productId}`,
+      });
+    } catch (err) {
+      console.error('카카오톡 공유 실패:', err);
+      toast.warning('카카오톡 공유가 원활하지 않아 페이지로 돌아왔습니다.');
+      window.location.href = `${window.location.origin}/product/${productId}`;
+    }
   };
 
   /* 클립보드 복사 */

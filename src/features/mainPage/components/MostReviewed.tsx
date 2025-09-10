@@ -20,7 +20,13 @@ type MostReviewedProps = {
 const MostReviewed = ({ items }: MostReviewedProps) => {
   return (
     <section className='my-[60px]'>
-      <h2 className='text-xl-semibold mb-[30px] text-white'>리뷰가 많이 달린린 콘텐츠</h2>
+      <div className='mb-[30px] flex justify-between'>
+        <h2 className='text-xl-semibold text-white'>
+          지금 핫한 콘텐츠 <span className='text-main'>TOP 6</span>
+        </h2>
+        <div id='mobile-category-slot' className='md:hidden' />
+      </div>
+
       <ContentGrid items={items} />
     </section>
   );
