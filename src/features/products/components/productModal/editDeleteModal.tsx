@@ -12,7 +12,7 @@ import { Chip } from '@/shared/components/chip';
 import DeleteConfirmModal from '@/shared/components/deleteConfirmModal';
 import ImageUploader from '@/shared/components/imageUploader';
 import TextAreaWithCounter from '@/shared/components/textAreaWithCounter';
-import { TEAM_ID, PATH_OPTION } from '@/shared/constants/constants';
+import { PATH_OPTION } from '@/shared/constants/constants';
 import { toCategoryChip } from '@/shared/utils/categoryUtil';
 
 import {
@@ -112,14 +112,15 @@ export default function EditDeleteModal({
       /* 새 이미지 업로드 */
       if (images.length > 0) {
         const res = await uploadImageMutation.mutateAsync({
-          path: { teamId: TEAM_ID as string },
+          ...PATH_OPTION,
           body: { image: images[0] },
         });
         finalImageUrl = res?.data?.url ?? '';
       }
 
       const payload = {
-        path: { teamId: TEAM_ID as string, productId },
+        ...PATH_OPTION,
+        path: { ...PATH_OPTION.path, productId },
         body: {
           categoryId: category.id,
           name,
