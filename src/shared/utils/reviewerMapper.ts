@@ -7,4 +7,5 @@ export const mapUserRankingToReviewer = (item: UserRanking): Reviewer => ({
   profileImageUrl: item.image ?? '',
   followers: item.followersCount,
   review: item.reviewCount,
+  createdAt: item.createdAt,
 });
