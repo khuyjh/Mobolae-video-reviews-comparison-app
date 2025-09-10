@@ -1,6 +1,6 @@
 'use client';
 
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { ReactNode, useCallback, useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
@@ -27,6 +27,8 @@ const AuthGuard = ({ children }: Props) => {
   const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
+  const params = useSearchParams();
+  const hasRedirectUrl = !!(params.get('redirect_url') || params.get('state'));
   const isAuthPath = AUTH_ROUTES.includes(pathname);
   const isNeedAuthPath = NEED_AUTH_ROUTES.includes(pathname);
   const accessToken = getCookie('accessToken');
@@ -67,13 +69,16 @@ const AuthGuard = ({ children }: Props) => {
     restoreAuth();
 
     if (isLoggedIn && isAuthPath) {
-      router.replace('/');
+      //정상적인 로그인, 회원가입 프로세스중 리다이렉트 url을 가지고 있을 때에는 홈으로 보내는 동작을 막음
+      if (!hasRedirectUrl) {
+        router.replace('/');
+      }
     }
 
     if (!isLoggedIn && isNeedAuthPath) {
       router.replace('/');
     }
-  }, [isLoggedIn, isAuthPath, isNeedAuthPath, router, isMounted, restoreAuth]);
+  }, [isLoggedIn, isAuthPath, isNeedAuthPath, router, isMounted, hasRedirectUrl, restoreAuth]);
 
   if (!isMounted || (isLoggedIn && isAuthPath) || (!isLoggedIn && isNeedAuthPath)) {
     return (

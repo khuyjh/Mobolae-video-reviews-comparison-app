@@ -1,7 +1,7 @@
 'use client';
 /* eslint-disable @next/next/no-img-element */
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 
 import clsx from 'clsx';
 import { useEffect, useRef, useState } from 'react';
@@ -24,7 +24,8 @@ export default function GlobalNav() {
   );
   const isCompareReady = compareItemA && compareItemB;
   const params = useSearchParams();
-  const redirectUrl = params.get('redirect_url');
+  const currentPath = usePathname();
+  const redirectUrl = params.get('redirect_url') ? params.get('redirect_url') : currentPath;
   const query = `?redirect_url=${redirectUrl}`;
 
   const triggerBtnRef = useRef<HTMLButtonElement>(null);
@@ -87,16 +88,10 @@ export default function GlobalNav() {
             </div>
           ) : (
             <div className={DESKTOP_AUTH}>
-              <Link
-                href={redirectUrl ? `/signin${query}` : '/signin'}
-                className='hover:text-gray-600'
-              >
+              <Link href={`/signin${query}`} className='hover:text-gray-600'>
                 로그인
               </Link>
-              <Link
-                href={redirectUrl ? `/signup${query}` : '/signup'}
-                className='hover:text-gray-600'
-              >
+              <Link href={`/signup${query}`} className='hover:text-gray-600'>
                 회원가입
               </Link>
             </div>
