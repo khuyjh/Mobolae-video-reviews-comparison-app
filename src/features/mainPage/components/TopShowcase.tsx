@@ -1,7 +1,3 @@
-'use client';
-
-import React from 'react';
-
 import { ContentItem } from '@/shared/types/content';
 
 import ContentGrid from './ContentGrid';
@@ -21,21 +17,15 @@ type TopShowcaseProps = {
  *
  * - 상단에 "Top 6" 제목과 모바일 전용 카테고리 슬롯을 표시
  * - 전달받은 콘텐츠 아이템 배열을 ContentGrid를 통해 렌더링
- *
- * @component
- * @example
- * ```tsx
- * <TopShowcase items={mockContents} />
- * ```
  */
 const TopShowcase = ({ items }: TopShowcaseProps) => {
   return (
     <section>
       <div className='mb-[30px] flex justify-between'>
-        <h2 className='text-xl-semibold text-white'>Top 6</h2>
+        <h2 className='text-xl-semibold text-white'>지금 인기있는 콘텐츠</h2>
         <div id='mobile-category-slot' className='mb-4 md:hidden' />
       </div>
-      <ContentGrid items={items.slice(0, 6)} />
+      <ContentGrid items={items} />
     </section>
   );
 };
