@@ -88,7 +88,7 @@ const ProductCard = ({
       const result = trySetA(newItem);
       console.log('trySetA 결과:', result);
       if (!result.ok) {
-        toast.error('카테고리가 달라서 비교할 수 없습니다.');
+        toast.error('카테고리가 다른 콘텐츠는 \n삭제 후 다시 비교할 수 있습니다. ');
         return;
       }
       setCompareModalType('added');
@@ -96,7 +96,7 @@ const ProductCard = ({
       const result = trySetB(newItem);
       console.log('trySetB 결과:', result);
       if (!result.ok) {
-        toast.error('카테고리가 달라서 비교할 수 없습니다.');
+        toast.error('카테고리가 다른 콘텐츠는 \n삭제 후 다시 비교할 수 있습니다.');
         return;
       }
       setCompareModalType('ready');
