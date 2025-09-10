@@ -7,7 +7,7 @@ import React, { useMemo, useState } from 'react';
 
 import VirtualizedContentGrid from '@/features/mainPage/components/VirtualizedContentGrid';
 import ActivityCard from '@/features/mypage/components/activityCard';
-import ProfileCard, { type CardData } from '@/features/mypage/components/ProfileCard'; // ← 순수 UI 컴포넌트
+import ProfileCard, { type CardData } from '@/features/mypage/components/ProfileCard';
 import ProfileTabs from '@/features/mypage/components/ProfileTabs';
 import { fetchDummyPage } from '@/features/mypage/mock/dummyPager';
 import { TEAM_ID } from '@/shared/constants/constants';

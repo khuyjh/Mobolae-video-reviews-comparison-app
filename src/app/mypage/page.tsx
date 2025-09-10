@@ -1,16 +1,20 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useParams } from 'next/navigation';
 
 import { useInfiniteQuery } from '@tanstack/react-query';
 import React, { useMemo, useState } from 'react';
+import { toast } from 'react-toastify';
 
 import VirtualizedContentGrid from '@/features/mainPage/components/VirtualizedContentGrid';
 import ActivityCard from '@/features/mypage/components/activityCard';
 import ProfileCard, { type CardData } from '@/features/mypage/components/ProfileCard';
 import ProfileTabs from '@/features/mypage/components/ProfileTabs';
+import ProfileUpdateModal from '@/features/mypage/components/ProfileUpdateModal';
 import { fetchDummyPage } from '@/features/mypage/mock/dummyPager';
 import { TEAM_ID } from '@/shared/constants/constants';
+import { useUserStore } from '@/shared/stores/userStore';
 
 import { useMe } from '../../../openapi/queries/queries';
 
@@ -32,6 +36,7 @@ const mapMeToCard = (meDetail?: MeDefaultResponse): CardData => ({
 
 export default function MyPage() {
   const [tab, setTab] = useState<TabKey>('reviews');
+
   const {
     data: pages,
     fetchNextPage,
@@ -60,12 +65,6 @@ export default function MyPage() {
     [pages],
   );
 
-  const { data: me, isLoading: isMeLoading } = useMe({ path: { teamId: TEAM_ID as string } }, []);
-  if (isMeLoading || !me) return null;
-
-  const card = mapMeToCard(me);
-  const topCategoryId = me.mostFavoriteCategory?.id ?? null;
-
   return (
     <div className='mt-[30px] px-[20px] md:px-[117px] xl:mx-auto xl:flex xl:max-w-[1340px] xl:px-[0px]'>
       <div className='mb-[60px] xl:mr-[60px]'>
@@ -77,10 +76,23 @@ export default function MyPage() {
           following={card.following}
           isMe={true}
           isFollowing={false}
-          onEdit={() => {}}
-          onLogout={() => {}}
+          onEdit={() => {
+            setIsProfileModalOpen(true);
+          }}
+          onLogout={() => {
+            clearUser();
+            router.replace('/');
+            toast.success('로그아웃 되었습니다.');
+          }}
         />
       </div>
+      <ProfileUpdateModal
+        isOpen={isProfileModalOpen}
+        userDetail={data}
+        onClose={() => {
+          setIsProfileModalOpen(false);
+        }}
+      />
 
       <div className='flex-1'>
         <div className='mb-[60px]'>

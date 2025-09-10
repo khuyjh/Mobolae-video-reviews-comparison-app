@@ -4,6 +4,7 @@ import clsx from 'clsx';
 import { useState } from 'react';
 
 import FollowModal from '@/features/mypage/components/ProfileModal/FollowModal';
+import SafeProfileImage from '@/shared/components/SafeProfileImage';
 
 export type CardData = {
   name: string;
@@ -34,7 +35,7 @@ export type ProfileCardProps = {
 
 export default function ProfileCar({
   name,
-  avatarSrc,
+  avatarSrc = '',
   bio,
   followers = 0,
   following = 0,
@@ -46,20 +47,9 @@ export default function ProfileCar({
 }: ProfileCardProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState<'followers' | 'following' | null>(null);
-  const safeSrc = avatarSrc?.trim() ? avatarSrc : undefined;
   return (
     <div className={CARD_CONTAINER}>
-      <div className={IMG_WRAPPER}>
-        {safeSrc ? (
-          <img src={safeSrc} alt={`${name || '-'} 프로필 이미지`} className={IMG_STYLE} />
-        ) : (
-          <div className='bg-black-700 grid h-full w-full place-items-center rounded-full'>
-            <span className='text-xl font-semibold text-white'>
-              {(name ?? '?').trim().slice(0, 2).toUpperCase() || '?'}
-            </span>
-          </div>
-        )}
-      </div>
+      <SafeProfileImage src={avatarSrc} alt={name} width={120} height={120} />
 
       <div className={PROFILE_TEXT_WRAPPER}>
         <h3 className='text-xl-semibold text-white'>{name || '-'}</h3>
@@ -123,10 +113,6 @@ export default function ProfileCar({
 
 const CARD_CONTAINER =
   'bg-black-800 border border-black-700 w-full md:w-[509px] mx-auto xl:w-[340px] rounded-[12px] px-[30px] py-[20px] md:py-[30px] xl:py-[20px] xl:pt-[40px] xl:pb-[30px]';
-
-const IMG_WRAPPER =
-  'mx-auto h-[120px] w-[120px] xl:w-[180px] xl:h-[180px] overflow-hidden rounded-full';
-const IMG_STYLE = 'h-full w-full object-cover';
 
 const PROFILE_TEXT_WRAPPER = 'mt-[30px] flex flex-col items-center gap-[10px] text-center';
 
