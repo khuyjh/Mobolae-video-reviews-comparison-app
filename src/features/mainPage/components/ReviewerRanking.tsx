@@ -51,6 +51,7 @@ const ReviewerRankingList = ({ reviewers, direction = 'row' }: ReviewerRankingLi
             key={reviewer.userId}
             href={getHref(reviewer.userId)}
             className='min-w-[147px] flex-none shrink-0 snap-start'
+            draggable={false}
           >
             <ProfileBadge
               variant='ranking'
@@ -70,7 +71,12 @@ const ReviewerRankingList = ({ reviewers, direction = 'row' }: ReviewerRankingLi
   return (
     <div className='space-y-[30px]'>
       {top.map((reviewer) => (
-        <Link key={reviewer.userId} href={getHref(reviewer.userId)} className='block'>
+        <Link
+          key={reviewer.userId}
+          href={getHref(reviewer.userId)}
+          className='block'
+          draggable={false}
+        >
           <ProfileBadge
             variant='ranking'
             id={reviewer.userId}
