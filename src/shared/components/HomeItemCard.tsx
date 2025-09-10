@@ -46,7 +46,7 @@ const HomeItemCard = ({
 }: HomeItemCardProps) => {
   return (
     // 가장 바깥 컨테이너 - 고정값 제거, w-full로 변경, className props 추가
-    <Link href={`/product/${contentId}`} className={clsx(CARD_BASE_STYLE, className)}>
+    <Link href={`/products/${contentId}`} className={clsx(CARD_BASE_STYLE, className)}>
       {/* 아이템 요소 컨테이너 */}
       <div className='flex w-full flex-col gap-[10px]'>
         {/* 이미지 컨테이너 - api 이미지 비율이 다를 경우 깨질 수 있어 고정 값 대신 해당 사항 적용 + 최소 너비 min-w 추가 이미지에 rounded-lg 적용 */}
