@@ -13,6 +13,7 @@ import { useCompareStore } from '@/shared/stores/useCompareStore';
 import ProductButtons from './productButtons';
 import ProductDescription from './productDescription';
 import ProductHeader from './productHeader';
+import fallbackImg from '../../../../../public/images/FallbackImg.png';
 import EditDeleteModal from '../productModal/editDeleteModal';
 import ReviewModal from '../productModal/reviewModal';
 
@@ -29,7 +30,7 @@ interface ProductCardProps {
 }
 
 const IMAGE_CONTAINER_STYLES =
-  'relative aspect-[335/236] w-full bg-gray-300 md:h-[197px] md:w-[280px] xl:h-[250px] xl:w-[335px] rounded-[8px]';
+  'relative aspect-[335/236] w-full bg-black-900 md:h-[197px] md:w-[280px] xl:h-[250px] xl:w-[335px] rounded-[8px]';
 
 const ProductCard = ({
   imageSrc,
@@ -42,12 +43,13 @@ const ProductCard = ({
   favoriteCount = 0,
   onFavoriteChange,
 }: ProductCardProps) => {
+  /* fallback 이미지 상태 */
+  const [imgSrc, setImgSrc] = useState(imageSrc || fallbackImg.src);
+
   /** 모달 상태들 */
   const [isReviewAddModalOpen, setIsReviewAddModalOpen] = useState(false);
   const [isRedirectModalOpen, setIsRedirectModalOpen] = useState(false);
   const [isEditDeleteModalOpen, setIsEditDeleteModalOpen] = useState(false);
-
-  const [userRating, setUserRating] = useState<number>(4); //TODO: 리뷰 작성 모달 API 연동 후 삭제
 
   // TODO: 실제 로그인 상태 체크 훅으로 교체
   const isAuthenticated = true;
@@ -105,18 +107,19 @@ const ProductCard = ({
     setIsCompareModalOpen(true);
   };
 
-  /** 편집/삭제 버튼 클릭 */
-  const handleEditDeleteClick = () => {
-    setIsEditDeleteModalOpen(true);
-    // TODO: 편집/삭제 API 연결
-  };
-
   return (
     <>
       <div className='flex flex-col md:flex-row md:gap-5'>
         {/* 이미지 섹션 */}
         <div className={IMAGE_CONTAINER_STYLES}>
-          <Image src={imageSrc} alt={title} fill className='object-cover' priority />
+          <Image
+            src={imgSrc}
+            alt={title}
+            fill
+            className='object-cover'
+            priority
+            onError={() => setImgSrc(fallbackImg.src)}
+          />
         </div>
 
         {/* 콘텐츠 섹션 */}
@@ -149,11 +152,11 @@ const ProductCard = ({
       <ReviewModal
         isOpen={isReviewAddModalOpen}
         onClose={() => setIsReviewAddModalOpen(false)}
-        rating={userRating}
         mode='add'
         productId={productId}
         productName={title}
         productCategory={category}
+        rating={0}
       />
 
       {/* 비로그인 사용자 리다이렉트 모달 */}

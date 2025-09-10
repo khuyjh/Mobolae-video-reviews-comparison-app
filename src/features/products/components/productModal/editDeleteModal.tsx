@@ -178,12 +178,27 @@ export default function EditDeleteModal({
           />
 
           {/* 버튼 영역 */}
-          <div className='mt-5 flex flex-row gap-4 md:mt-10'>
-            <Button variant='secondary' onClick={() => setIsDeleteModalOpen(true)}>
-              삭제하기
+
+          <div
+            className='mt-5 flex flex-row gap-4 md:mt-10'
+            aria-busy={updateMutation.isPending || deleteMutation.isPending}
+          >
+            <Button
+              variant='secondary'
+              onClick={() => setIsDeleteModalOpen(true)}
+              disabled={updateMutation.isPending || deleteMutation.isPending}
+              aria-disabled={updateMutation.isPending || deleteMutation.isPending}
+            >
+              {deleteMutation.isPending ? '삭제 중…' : '삭제하기'}
             </Button>
-            <Button variant='primary' disabled={!isFormValid} onClick={handleUpdate}>
-              수정하기
+
+            <Button
+              variant='primary'
+              onClick={handleUpdate}
+              disabled={!isFormValid || updateMutation.isPending || deleteMutation.isPending}
+              aria-disabled={!isFormValid || updateMutation.isPending || deleteMutation.isPending}
+            >
+              {updateMutation.isPending ? '수정 중…' : '수정하기'}
             </Button>
           </div>
         </div>
