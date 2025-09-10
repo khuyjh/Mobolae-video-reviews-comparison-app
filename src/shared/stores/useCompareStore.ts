@@ -23,7 +23,7 @@ type TrySetResult =
  * - canCompare/isDuplicate/invalidReason 여러 컴포넌트에서 동일 규칙 공유
  * - persist 저장 포맷은 a,b만 저장(requested는 UX상 새로고침 시 항상 false로 시작).
  */
-type CompareState = {
+export type CompareState = {
   a: CompareCandidate | null;
   b: CompareCandidate | null;
   requested: boolean;
@@ -31,7 +31,15 @@ type CompareState = {
   trySetA: (a: CompareCandidate | null) => TrySetResult;
   trySetB: (b: CompareCandidate | null) => TrySetResult;
 
+  /** 비교하기 버튼 누를 때마다 증가 → 쿼리 키에 포함해서 최신화 트리거 */
+  requestTick: number;
+  /** 성공 시 requested=true + requestTick++ */
   requestCompare: () => boolean;
+
+  /** 현재 비교 데이터 fetch 진행 중 여부 (A/B 둘 중 하나라도 fetching이면 true) */
+  inFlight: boolean;
+  setInFlight: (isInFlight: boolean) => void;
+
   /** 전체 초기화 */
   clearAll: () => void;
   // 파생 상태(함수형 셀렉터) - 한 곳의 규칙을 모든 UI가 공유
@@ -127,6 +135,12 @@ export const useCompareStore = create<CompareState>()(
       b: null,
       requested: false,
 
+      // 클릭마다 최신화를 위한 Tick
+      requestTick: 0,
+
+      inFlight: false,
+      setInFlight: (isInFlight) => set({ inFlight: isInFlight }),
+
       // 후보 A 설정(동일 선택 방지 + 카테고리 규칙 포함). 후보가 바뀌면 결과 테이블 닫힘
       trySetA: (next) => {
         const { b } = get();
@@ -137,6 +151,11 @@ export const useCompareStore = create<CompareState>()(
           return { ok: true } as const;
         }
 
+        if (!hasCategory(next)) {
+          set({ requested: false });
+          return { ok: false, reason: 'missing-category' } as const;
+        }
+
         // 동일 콘텐츠 방지
         if (isDup(next, b)) {
           set({ requested: false });
@@ -144,7 +163,7 @@ export const useCompareStore = create<CompareState>()(
         }
 
         // 상대 슬롯이 이미 있고, 카테고리 정보가 빠져있다면 거부
-        if (b && (!hasCategory(next) || !hasCategory(b))) {
+        if (b && !hasCategory(b)) {
           set({ requested: false });
           return { ok: false, reason: 'missing-category' } as const;
         }
@@ -169,19 +188,25 @@ export const useCompareStore = create<CompareState>()(
           return { ok: true } as const;
         }
 
+        if (!hasCategory(next)) {
+          set({ requested: false });
+          return { ok: false, reason: 'missing-category' } as const;
+        }
+
         if (isDup(next, a)) {
           set({ requested: false });
           return { ok: false, reason: 'duplicate' } as const;
         }
 
-        if (a && (!hasCategory(next) || !hasCategory(a))) {
-          set({ requested: false });
-          return { ok: false, reason: 'missing-category' } as const;
-        }
-
-        if (a && !isSameCategory(next, a)) {
-          set({ requested: false });
-          return { ok: false, reason: 'category-mismatch' } as const;
+        if (a) {
+          if (!hasCategory(a)) {
+            set({ requested: false });
+            return { ok: false, reason: 'missing-category' } as const;
+          }
+          if (!isSameCategory(next, a)) {
+            set({ requested: false });
+            return { ok: false, reason: 'category-mismatch' } as const;
+          }
         }
 
         set({ b: next, requested: false });
@@ -199,12 +224,13 @@ export const useCompareStore = create<CompareState>()(
           set({ requested: false });
           return false;
         }
-        set({ requested: true });
+        //zustand set 업데이터 콜백이라 이전 상태를 의미하는 prev 사용
+        set((prev) => ({ requested: true, requestTick: prev.requestTick + 1 }));
         return true;
       },
 
       // 전체 초기화
-      clearAll: () => set({ a: null, b: null, requested: false }),
+      clearAll: () => set({ a: null, b: null, requested: false, requestTick: 0, inFlight: false }),
 
       // 파생 셀렉터들 (한 곳에서 규칙 유지)
       canCompare: () => {
@@ -227,7 +253,6 @@ export const useCompareStore = create<CompareState>()(
 
         return null;
       },
-
       /**
        *  유저 전환 시: 로그인 상태면 해당 유저 키에서 복원, 아니면 메모리 초기화
        * - layout 등 공통 클라이언트에서 userId가 바뀔 때 마다 한 번 호출해 주세요.
@@ -237,7 +262,7 @@ export const useCompareStore = create<CompareState>()(
           const userId = getCurrentUserIdFromAuthStorage();
           if (!userId) {
             // 로그아웃 상태: persist 비활성. 메모리만 초기화.
-            set({ a: null, b: null, requested: false });
+            set({ a: null, b: null, requested: false, requestTick: 0, inFlight: false });
             return;
           }
           const key = `${BASE_KEY}:${userId}`;
@@ -250,9 +275,9 @@ export const useCompareStore = create<CompareState>()(
           const safeA: CompareCandidate | null = a && typeof a.categoryId === 'number' ? a : null;
           const safeB: CompareCandidate | null = b && typeof b.categoryId === 'number' ? b : null;
 
-          set({ a: safeA, b: safeB, requested: false });
+          set({ a: safeA, b: safeB, requested: false, requestTick: 0, inFlight: false });
         } catch {
-          set({ a: null, b: null, requested: false });
+          set({ a: null, b: null, requested: false, requestTick: 0, inFlight: false });
         }
       },
     }),
@@ -263,25 +288,26 @@ export const useCompareStore = create<CompareState>()(
        */
       name: BASE_KEY,
       version: PERSIST_VERSION,
-
       // 커스텀 네임스페이스 스토리지 적용
       storage: createJSONStorage(() => namespacedStorage),
 
       /**
        * 부분 영속화: a, b만 저장
-       * - requested/함수형 셀렉터는 직렬화/복원 대상이 아님
+       * requested/함수형 셀렉터는 직렬화/복원 대상이 아님
+       * persist.partialize 콜백이고 현재 메모리 상태를 의미하므로 state 사용
        */
-      partialize: (s): PersistedCompare => ({ a: s.a, b: s.b }),
+      partialize: (state): PersistedCompare => ({ a: state.a, b: state.b }),
 
       /**
        * 마이그레이션: 저장 포맷을 { a, b }로 고정
        * V2 마이그레이션: categoryId 없는 과거 저장본은 안전을 위해 null 처리
+       * migrate 내부의 파싱된 저장값(로컬에 저장되어 있던 값)이므로 stored 사용
        */
       migrate: (persistedState: unknown): PersistedCompare => {
-        const state = persistedState as Partial<PersistedCompare> | null | undefined;
+        const stored = persistedState as Partial<PersistedCompare> | null | undefined;
 
-        const a = state?.a ?? null;
-        const b = state?.b ?? null;
+        const a = stored?.a ?? null;
+        const b = stored?.b ?? null;
 
         const safeA: CompareCandidate | null =
           a && typeof (a as CompareCandidate).categoryId === 'number'
@@ -292,7 +318,6 @@ export const useCompareStore = create<CompareState>()(
           b && typeof (b as CompareCandidate).categoryId === 'number'
             ? (b as CompareCandidate)
             : null;
-
         return {
           a: safeA,
           b: safeB,
