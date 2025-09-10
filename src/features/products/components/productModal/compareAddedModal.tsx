@@ -2,6 +2,7 @@
 
 import BaseModal from '@/shared/components/BaseModal';
 import Button from '@/shared/components/Button';
+import { useCompareStore } from '@/shared/stores/useCompareStore';
 
 interface Props {
   isOpen: boolean;
@@ -9,6 +10,8 @@ interface Props {
 }
 
 const CompareAddedModal = ({ isOpen, onClose }: Props) => {
+  const { a, b } = useCompareStore();
+
   return (
     <BaseModal title='비교 콘텐츠 등록' size='M' isOpen={isOpen} onClose={onClose}>
       <div className='flex flex-col items-center gap-7.5 px-5 pb-5 md:gap-10 md:px-10 md:pb-10'>
