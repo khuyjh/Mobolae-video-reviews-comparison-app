@@ -1,3 +1,4 @@
+//비교 선택 모달
 import { useState } from 'react';
 
 import { CompareCandidate } from '@/features/compare/types/compareTypes';

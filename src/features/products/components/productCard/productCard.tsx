@@ -42,8 +42,10 @@ const ProductCard = ({
   favoriteCount = 0,
   onFavoriteChange,
 }: ProductCardProps) => {
+  /* fallback 이미지 상태 */
   const [imgSrc, setImgSrc] = useState(imageSrc || fallbackImg.src);
 
+  /** 모달 상태들 */
   const [isReviewAddModalOpen, setIsReviewAddModalOpen] = useState(false);
   const [isRedirectModalOpen, setIsRedirectModalOpen] = useState(false);
   const [isEditDeleteModalOpen, setIsEditDeleteModalOpen] = useState(false);
@@ -51,11 +53,14 @@ const ProductCard = ({
   // TODO: 실제 로그인 상태 체크 훅으로 교체
   const isAuthenticated = true;
 
+  /** 비교 모달 상태 */
   const [compareModalType, setCompareModalType] = useState<CompareModalType | null>(null);
   const [isCompareModalOpen, setIsCompareModalOpen] = useState(false);
 
+  /* 현재 비교 대상 product */
   const [compareTarget, setCompareTarget] = useState<CompareCandidate | null>(null);
 
+  /** 리뷰 작성 버튼 클릭 시 */
   const handleReviewButtonClick = () => {
     if (isAuthenticated) {
       setIsReviewAddModalOpen(true);
@@ -67,6 +72,7 @@ const ProductCard = ({
   return (
     <>
       <div className='flex flex-col md:flex-row md:gap-5'>
+        {/* 이미지 섹션 */}
         <div className={IMAGE_CONTAINER_STYLES}>
           <Image
             src={imgSrc}
@@ -77,8 +83,9 @@ const ProductCard = ({
             onError={() => setImgSrc(fallbackImg.src)}
           />
         </div>
-
+        {/* 콘텐츠 섹션 */}
         <div className='mt-5 flex flex-1 flex-col md:mt-0 md:py-0 xl:px-[40px]'>
+          {/* 상단 헤더 (카테고리, 제목, 찜) */}
           <ProductHeader
             category={category}
             title={title}
@@ -87,9 +94,9 @@ const ProductCard = ({
             favoriteCount={favoriteCount}
             onFavoriteChange={onFavoriteChange}
           />
-
+          {/* 설명 */}
           <ProductDescription description={description} className='mt-[20px]' />
-
+          {/* 버튼들 (리뷰 작성, 비교, 편집/삭제 등) */}
           <ProductButtons
             isEditable={isEditable}
             className='mt-[40px] md:mt-[60px]'
@@ -109,7 +116,7 @@ const ProductCard = ({
           />
         </div>
       </div>
-
+      {/* 리뷰 작성 모달 */}
       <ReviewModal
         isOpen={isReviewAddModalOpen}
         onClose={() => setIsReviewAddModalOpen(false)}
@@ -119,9 +126,9 @@ const ProductCard = ({
         productCategory={category}
         rating={0}
       />
-
+      {/* 비로그인 사용자 리다이렉트 모달 */}
       <RedirectModal isOpen={isRedirectModalOpen} onClose={() => setIsRedirectModalOpen(false)} />
-
+      {/* 비교 모달 */}
       {compareModalType && (
         <CompareModal
           type={compareModalType}
@@ -131,7 +138,7 @@ const ProductCard = ({
           product={compareTarget ?? undefined}
         />
       )}
-
+      {/* 편집/삭제 모달 */}
       <EditDeleteModal
         isOpen={isEditDeleteModalOpen}
         onClose={() => setIsEditDeleteModalOpen(false)}
