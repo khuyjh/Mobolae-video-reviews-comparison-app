@@ -34,6 +34,7 @@ export default function GlobalNav() {
 
   const triggerBtnRef = useRef<HTMLButtonElement>(null);
   const mobileSearchRef = useRef<HTMLDivElement>(null);
+  const mobileInputRef = useRef<HTMLInputElement>(null);
 
   /* URL - 입력창 동기화 (뒤로가기/새로고침 대응)*/
   useEffect(() => {
@@ -77,6 +78,13 @@ export default function GlobalNav() {
 
     document.addEventListener('mousedown', onMouseDown);
     return () => document.removeEventListener('mousedown', onMouseDown);
+  }, [searchOpen]);
+
+  /* 모바일 검색창 열림 → 포커스 */
+  useEffect(() => {
+    if (searchOpen) {
+      mobileInputRef.current?.focus();
+    }
   }, [searchOpen]);
 
   return (
@@ -180,6 +188,7 @@ export default function GlobalNav() {
               <img src='/icons/SearchIcon.svg' alt='검색' />
             </button>
             <input
+              ref={mobileInputRef}
               type='text'
               placeholder='상품 이름을 검색해 보세요'
               className='ml-[15px] w-full rounded-md bg-transparent outline-none'
