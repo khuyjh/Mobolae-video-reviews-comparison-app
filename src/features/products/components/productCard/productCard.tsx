@@ -3,13 +3,17 @@
 import Image from 'next/image';
 
 import React, { useState } from 'react';
+import { toast } from 'react-toastify';
 
 import RedirectModal from '@/features/auth/components/RedirectModal';
+import { CompareCandidate } from '@/features/compare/types/compareTypes';
 import CompareModal, { CompareModalType } from '@/features/products/components/productModal';
+import { useCompareStore } from '@/shared/stores/useCompareStore';
 
 import ProductButtons from './productButtons';
 import ProductDescription from './productDescription';
 import ProductHeader from './productHeader';
+import fallbackImg from '../../../../../public/images/FallbackImg.png';
 import EditDeleteModal from '../productModal/editDeleteModal';
 import ReviewModal from '../productModal/reviewModal';
 
@@ -22,10 +26,11 @@ interface ProductCardProps {
   productId: number; // 상품 ID (찜/리뷰 API에 필요)
   isFavorite: boolean; // SSR 초기 찜 여부
   favoriteCount?: number; // SSR 초기 찜 수
+  onFavoriteChange?: (newIsFavorite: boolean) => void;
 }
 
 const IMAGE_CONTAINER_STYLES =
-  'relative aspect-[335/236] w-full bg-gray-300 md:h-[197px] md:w-[280px] xl:h-[250px] xl:w-[335px] rounded-[8px]';
+  'relative aspect-[335/236] w-full bg-black-900 md:h-[197px] md:w-[280px] xl:h-[250px] xl:w-[335px] rounded-[8px]';
 
 const ProductCard = ({
   imageSrc,
@@ -36,14 +41,15 @@ const ProductCard = ({
   productId,
   isFavorite,
   favoriteCount = 0,
+  onFavoriteChange,
 }: ProductCardProps) => {
+  /* fallback 이미지 상태 */
+  const [imgSrc, setImgSrc] = useState(imageSrc || fallbackImg.src);
+
   /** 모달 상태들 */
   const [isReviewAddModalOpen, setIsReviewAddModalOpen] = useState(false);
   const [isRedirectModalOpen, setIsRedirectModalOpen] = useState(false);
   const [isEditDeleteModalOpen, setIsEditDeleteModalOpen] = useState(false);
-
-  // 임시 사용자 평점 상태 (실제 리뷰 작성 시 API 응답 기반으로 교체 예정)
-  const [userRating, setUserRating] = useState<number>(4);
 
   // TODO: 실제 로그인 상태 체크 훅으로 교체
   const isAuthenticated = true;
@@ -52,9 +58,13 @@ const ProductCard = ({
   const [compareModalType, setCompareModalType] = useState<CompareModalType | null>(null);
   const [isCompareModalOpen, setIsCompareModalOpen] = useState(false);
 
-  // TODO: 추후 "비교 담기" 로직이 API로 연결되면 교체
-  const mockCompareItems = [1, 2]; // 현재는 테스트용 mock
-  const compareCount = mockCompareItems.length;
+  const a = useCompareStore((s) => s.a);
+  const b = useCompareStore((s) => s.b);
+  const trySetA = useCompareStore((s) => s.trySetA);
+  const trySetB = useCompareStore((s) => s.trySetB);
+
+  /* 현재 비교 대상 product */
+  const [compareTarget, setCompareTarget] = useState<CompareCandidate | null>(null);
 
   /** 리뷰 작성 버튼 클릭 시 */
   const handleReviewButtonClick = () => {
@@ -67,35 +77,67 @@ const ProductCard = ({
 
   /** 비교 버튼 클릭 시 */
   const handleCompareClick = () => {
-    if (compareCount === 0) setCompareModalType('added');
-    else if (compareCount === 1) setCompareModalType('ready');
-    else setCompareModalType('replaceSelect');
+    const newItem = { id: productId, name: title, image: imageSrc, categoryId: category.id };
+
+    console.log('현재 스토어 상태:', { a, b });
+    console.log('선택된 상품:', newItem);
+
+    setCompareTarget(newItem); // 선택된 product 저장
+
+    if (!a) {
+      const result = trySetA(newItem);
+      console.log('trySetA 결과:', result);
+      if (!result.ok) {
+        toast.error('카테고리가 다른 콘텐츠는 \n삭제 후 다시 비교할 수 있습니다. ');
+        return;
+      }
+      setCompareModalType('added');
+    } else if (!b) {
+      const result = trySetB(newItem);
+      console.log('trySetB 결과:', result);
+      if (!result.ok) {
+        toast.error('카테고리가 다른 콘텐츠는 \n삭제 후 다시 비교할 수 있습니다.');
+        return;
+      }
+      setCompareModalType('ready');
+    } else {
+      setCompareModalType('replaceSelect');
+    }
+
     setIsCompareModalOpen(true);
   };
 
   return (
     <>
       <div className='flex flex-col md:flex-row md:gap-5'>
-        {/* 📷 이미지 섹션 */}
+        {/* 이미지 섹션 */}
         <div className={IMAGE_CONTAINER_STYLES}>
-          <Image src={imageSrc} alt={title} fill className='object-cover' priority />
+          <Image
+            src={imgSrc}
+            alt={title}
+            fill
+            className='object-cover'
+            priority
+            onError={() => setImgSrc(fallbackImg.src)}
+          />
         </div>
 
-        {/* 📄 콘텐츠 섹션 */}
+        {/* 콘텐츠 섹션 */}
         <div className='mt-5 flex flex-1 flex-col md:mt-0 md:py-0 xl:px-[40px]'>
-          {/* 🔼 상단 헤더 (카테고리, 제목, 찜) */}
+          {/* 상단 헤더 (카테고리, 제목, 찜) */}
           <ProductHeader
             category={category}
             title={title}
             productId={productId}
             isFavorite={isFavorite}
             favoriteCount={favoriteCount}
+            onFavoriteChange={onFavoriteChange}
           />
 
-          {/* 📃 설명 */}
+          {/* 설명 */}
           <ProductDescription description={description} className='mt-[20px]' />
 
-          {/* 🔘 버튼들 (리뷰 작성, 비교, 편집/삭제 등) */}
+          {/* 버튼들 (리뷰 작성, 비교, 편집/삭제 등) */}
           <ProductButtons
             isEditable={isEditable}
             className='mt-[40px] md:mt-[60px]'
@@ -106,31 +148,40 @@ const ProductCard = ({
         </div>
       </div>
 
-      {/* 📝 리뷰 작성 모달 */}
+      {/* 리뷰 작성 모달 */}
       <ReviewModal
         isOpen={isReviewAddModalOpen}
         onClose={() => setIsReviewAddModalOpen(false)}
-        rating={userRating}
         mode='add'
+        productId={productId}
+        productName={title}
+        productCategory={category}
+        rating={0}
       />
 
-      {/* 🔐 비로그인 사용자 리다이렉트 모달 */}
+      {/* 비로그인 사용자 리다이렉트 모달 */}
       <RedirectModal isOpen={isRedirectModalOpen} onClose={() => setIsRedirectModalOpen(false)} />
 
-      {/* 📊 비교 모달 */}
+      {/* 비교 모달 */}
       {compareModalType && (
         <CompareModal
           type={compareModalType}
           isOpen={isCompareModalOpen}
           onClose={() => setIsCompareModalOpen(false)}
           onChangeType={(type) => setCompareModalType(type)}
+          product={compareTarget ?? undefined}
         />
       )}
 
-      {/* ✏️ 편집/삭제 모달 */}
+      {/* 편집/삭제 모달 */}
       <EditDeleteModal
         isOpen={isEditDeleteModalOpen}
         onClose={() => setIsEditDeleteModalOpen(false)}
+        productId={productId}
+        name={title}
+        category={category}
+        description={description}
+        imageUrl={imageSrc}
       />
     </>
   );

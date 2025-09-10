@@ -1,28 +1,61 @@
 'use client';
 /* eslint-disable @next/next/no-img-element */
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
-import { useEffect, useRef, useState } from 'react';
+import clsx from 'clsx';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useShallow } from 'zustand/shallow';
 
 import { cn } from '@/shared/lib/cn';
 
 import MobileGnbSheet from './MobileGnbSheet';
+import { useCompareStore } from '../stores/useCompareStore';
 import { useUserStore } from '../stores/userStore';
 
 export default function GlobalNav() {
-  const [searchOpen, setSearchOpen] = useState(false);
-  const isLoggedIn = useUserStore((state) => state.isLoggedIn);
+  const router = useRouter(); //
   const params = useSearchParams();
-  const redirectUrl = params.get('redirect_url');
+
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [keyword, setKeyword] = useState('');
+  const isLoggedIn = useUserStore((state) => state.isLoggedIn);
+  const { a: compareItemA, b: compareItemB } = useCompareStore(
+    useShallow((state) => ({
+      a: state.a,
+      b: state.b,
+    })),
+  );
+  const isCompareReady = compareItemA && compareItemB;
+
+  const currentPath = usePathname();
+  const redirectUrl = params.get('redirect_url') ? params.get('redirect_url') : currentPath;
   const query = `?redirect_url=${redirectUrl}`;
 
   const triggerBtnRef = useRef<HTMLButtonElement>(null);
   const mobileSearchRef = useRef<HTMLDivElement>(null);
+  const mobileInputRef = useRef<HTMLInputElement>(null);
 
-  {
-    /* 모바일 검색창 닫힘*/
-  }
+  /* URL - 입력창 동기화 (뒤로가기/새로고침 대응)*/
+  useEffect(() => {
+    setKeyword(params.get('keyword') ?? '');
+  }, [params]);
+
+  /* 검색 제출: 현재 category는 보존, order/cursor는 초기화 */
+  const submitSearch = useCallback(() => {
+    const normKeyword = (keyword ?? '').trim().toLowerCase(); // 정규화
+    if (!normKeyword) return;
+
+    const next = new URLSearchParams();
+    const category = params.get('category');
+    if (category) next.set('category', category); // 카테고리 동시 적용
+    next.set('keyword', normKeyword);
+
+    router.push(`/?${next.toString()}`, { scroll: true });
+    setSearchOpen(false); // 모바일 닫기
+  }, [keyword, params, router]);
+
+  /* 모바일 검색창 닫힘*/
   useEffect(() => {
     if (!searchOpen) return;
 
@@ -39,6 +72,13 @@ export default function GlobalNav() {
     return () => document.removeEventListener('mousedown', onMouseDown);
   }, [searchOpen]);
 
+  /* 모바일 검색창 열림 → 포커스 */
+  useEffect(() => {
+    if (searchOpen) {
+      mobileInputRef.current?.focus();
+    }
+  }, [searchOpen]);
+
   return (
     <header className='border-black-800 bg-black-900 sticky top-0 z-40 border py-[11px] pb-[11px] md:py-[15px] md:pb-[15px] xl:py-[22px] xl:pb-[22px]'>
       <nav className={NAV_CONTAINER}>
@@ -46,23 +86,43 @@ export default function GlobalNav() {
         <Link href='/' className='flex items-center'>
           <img src='/icons/Logo.svg' alt='로고' className='h-[20px] md:h-[24px] xl:h-[32px]' />
         </Link>
+
         {/*PC 검색창*/}
         <div className='hidden md:flex md:items-center'>
           <div className={SEARCH_BOX}>
-            <button type='button' className='cursor-pointer'>
+            <button
+              type='button'
+              className='cursor-pointer'
+              aria-label='검색 실행'
+              onClick={submitSearch}
+            >
               <img src='/icons/SearchIcon.svg' alt='검색' className='h-[24px] w-[24px]' />
             </button>
             <input
               type='text'
               placeholder='상품 이름을 검색해 보세요'
               className='ml-[12px] w-full bg-transparent outline-none'
+              value={keyword}
+              onChange={(e) => setKeyword(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  submitSearch();
+                }
+              }}
             />
           </div>
 
           {/*PC 오른쪽 메뉴 / 로그인 상태 -> 비교하기, 내 프로필 / 로그아웃 상태 -> 로그인, 회원가입*/}
           {isLoggedIn ? (
             <div className={DESKTOP_MENU}>
-              <Link href='/compare' className='hover:text-gray-600'>
+              <Link
+                href='/compare'
+                className={clsx(
+                  { 'text-main hover:text-main-dark animate-pulse': isCompareReady },
+                  'hover:text-gray-600',
+                )}
+              >
                 비교하기
               </Link>
               <Link href='/mypage' className='hover:text-gray-600'>
@@ -71,16 +131,10 @@ export default function GlobalNav() {
             </div>
           ) : (
             <div className={DESKTOP_AUTH}>
-              <Link
-                href={redirectUrl ? `/signin${query}` : '/signin'}
-                className='hover:text-gray-600'
-              >
+              <Link href={`/signin${query}`} className='hover:text-gray-600'>
                 로그인
               </Link>
-              <Link
-                href={redirectUrl ? `/signup${query}` : '/signup'}
-                className='hover:text-gray-600'
-              >
+              <Link href={`/signup${query}`} className='hover:text-gray-600'>
                 회원가입
               </Link>
             </div>
@@ -117,13 +171,27 @@ export default function GlobalNav() {
                 : 'pointer-events-none w-0 opacity-0 ease-in',
             )}
           >
-            <button className='h-[24px] w-[24px] place-items-center' aria-label='검색'>
+            <button
+              className='h-[24px] w-[24px] place-items-center'
+              aria-label='검색 실행'
+              onClick={submitSearch}
+              type='button'
+            >
               <img src='/icons/SearchIcon.svg' alt='검색' />
             </button>
             <input
+              ref={mobileInputRef}
               type='text'
               placeholder='상품 이름을 검색해 보세요'
               className='ml-[15px] w-full rounded-md bg-transparent outline-none'
+              value={keyword}
+              onChange={(e) => setKeyword(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  submitSearch();
+                }
+              }}
             />
           </div>
           {searchOpen && (

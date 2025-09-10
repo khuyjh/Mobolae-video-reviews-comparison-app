@@ -4,19 +4,11 @@ import clsx from 'clsx';
 import { useState } from 'react';
 
 import FollowModal from '@/features/mypage/components/ProfileModal/FollowModal';
-import SafeProfileImage from '@/shared/components/SafeProfileImage';
-
-export type CardData = {
-  name: string;
-  avatarSrc?: string;
-  bio: string;
-  followers: number;
-  following: number;
-  isMe: boolean;
-  isFollowing: boolean;
-};
 
 export type ProfileCardProps = {
+  userId: number;
+  meId?: number;
+
   name: string;
   avatarSrc?: string;
   bio?: string;
@@ -29,11 +21,12 @@ export type ProfileCardProps = {
 
   onEdit?: () => void;
   onLogout?: () => void;
-
   onFollowToggle?: () => void;
 };
 
-export default function ProfileCar({
+export default function ProfileCard({
+  userId,
+  meId,
   name,
   avatarSrc = '',
   bio,
@@ -41,15 +34,32 @@ export default function ProfileCar({
   following = 0,
   isMe = true,
   isFollowing = false,
+  actionDisabled = false,
   onFollowToggle,
   onEdit,
   onLogout,
 }: ProfileCardProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState<'followers' | 'following' | null>(null);
+  const safeSrc = avatarSrc?.trim() ? avatarSrc : undefined;
+
+  const openModal = (type: 'followers' | 'following') => {
+    if ((type === 'followers' && followers === 0) || (type === 'following' && following === 0))
+      return;
+    setModalType(type);
+    setIsModalOpen(true);
+  };
+
+  const onKeyOpen: React.KeyboardEventHandler<HTMLDivElement> = (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      const t = (e.currentTarget.dataset.type as 'followers' | 'following')!;
+      openModal(t);
+    }
+  };
+
   return (
     <div className={CARD_CONTAINER}>
-      <SafeProfileImage src={avatarSrc} alt={name} width={120} height={120} />
+      {/*<SafeProfileImage src={avatarSrc} alt={name} width={120} height={120} />*/}
 
       <div className={PROFILE_TEXT_WRAPPER}>
         <h3 className='text-xl-semibold text-white'>{name || '-'}</h3>
@@ -59,24 +69,24 @@ export default function ProfileCar({
       <div className={FOLLOW_INFO_WRAPPER}>
         <div
           className={FOLLOW_BOX_LEFT}
-          onClick={() => {
-            setModalType('followers');
-            setIsModalOpen(true);
-          }}
           role='button'
           tabIndex={0}
+          data-type='followers'
+          onClick={() => openModal('followers')}
+          onKeyDown={onKeyOpen}
+          aria-label='팔로워 보기'
         >
           <strong className={FOLLOW_COUNT}>{followers}</strong>
           <span className={FOLLOW_LABEL}>팔로워</span>
         </div>
         <div
           className='w-[50%]'
-          onClick={() => {
-            setModalType('following');
-            setIsModalOpen(true);
-          }}
           role='button'
           tabIndex={0}
+          data-type='following'
+          onClick={() => openModal('following')}
+          onKeyDown={onKeyOpen}
+          aria-label='팔로잉 보기'
         >
           <strong className={FOLLOW_COUNT}>{following}</strong>
           <span className={FOLLOW_LABEL}>팔로잉</span>
@@ -96,8 +106,14 @@ export default function ProfileCar({
         ) : (
           <button
             onClick={onFollowToggle}
+            disabled={actionDisabled}
+            aria-busy={actionDisabled || undefined}
             aria-label={`${name || '-'}을(를) ${isFollowing ? '언팔로우' : '팔로우'}하기`}
-            className={clsx(BUTTON_BASE, isFollowing ? BTN_UNFOLLOW : BTN_FOLLOW)}
+            className={clsx(
+              BUTTON_BASE,
+              isFollowing ? BTN_UNFOLLOW : BTN_FOLLOW,
+              actionDisabled && 'cursor-not-allowed opacity-60',
+            )}
           >
             {isFollowing ? '팔로우 취소' : '팔로우'}
           </button>
@@ -105,7 +121,13 @@ export default function ProfileCar({
       </div>
 
       {isModalOpen && (
-        <FollowModal type={modalType} isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+        <FollowModal
+          userId={userId}
+          meId={meId}
+          type={modalType}
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+        />
       )}
     </div>
   );

@@ -221,7 +221,7 @@ const AddContentModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
       if (!productId) throw new Error('생성 응답에 콘텐츠 ID가 없습니다.');
       toast.success('콘텐츠가 등록되었습니다.');
       onClose();
-      router.push(`/product/${productId}`);
+      router.push(`/products/${productId}`);
     } catch (e) {
       console.error(e);
       toast.error('콘텐츠 등록에 실패했습니다. 잠시 후 다시 시도해 주세요.');

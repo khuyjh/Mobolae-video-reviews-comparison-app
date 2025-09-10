@@ -9,7 +9,7 @@ import { toast } from 'react-toastify';
 
 import VirtualizedContentGrid from '@/features/mainPage/components/VirtualizedContentGrid';
 import ActivityCard from '@/features/mypage/components/activityCard';
-import ProfileCard, { type CardData } from '@/features/mypage/components/ProfileCard';
+import ProfileCard from '@/features/mypage/components/ProfileCard';
 import ProfileTabs from '@/features/mypage/components/ProfileTabs';
 import ProfileUpdateModal from '@/features/mypage/components/ProfileUpdateModal';
 import { fetchDummyPage } from '@/features/mypage/mock/dummyPager';
@@ -23,8 +23,7 @@ import type { ContentItem } from '@/shared/types/content';
 
 type TabKey = 'reviews' | 'items' | 'wishlist';
 
-type MeNN = NonNullable<MeDefaultResponse>;
-const mapMeToCard = (meDetail?: MeDefaultResponse): CardData => ({
+const mapMeToCard = (meDetail?: MeDefaultResponse) => ({
   name: meDetail?.nickname as string,
   avatarSrc: meDetail?.image ?? '',
   bio: meDetail?.description ?? '',
@@ -35,7 +34,14 @@ const mapMeToCard = (meDetail?: MeDefaultResponse): CardData => ({
 });
 
 export default function MyPage() {
+  const { data } = useMe({ path: { teamId: TEAM_ID as string } }, []);
+  const card = mapMeToCard(data);
+  const { userId } = useParams<{ userId: string }>();
+  const uidNum = Number(userId);
   const [tab, setTab] = useState<TabKey>('reviews');
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const clearUser = useUserStore((state) => state.clearUser);
+  const router = useRouter();
 
   const {
     data: pages,
@@ -65,10 +71,13 @@ export default function MyPage() {
     [pages],
   );
 
+  if (!data) return;
+
   return (
     <div className='mt-[30px] px-[20px] md:px-[117px] xl:mx-auto xl:flex xl:max-w-[1340px] xl:px-[0px]'>
       <div className='mb-[60px] xl:mr-[60px]'>
         <ProfileCard
+          userId={uidNum}
           name={card.name}
           avatarSrc={card.avatarSrc}
           bio={card.bio}
@@ -98,9 +107,9 @@ export default function MyPage() {
         <div className='mb-[60px]'>
           <h2 className='text-lg-semibold mb-[30px] text-white'>활동 내역</h2>
           <ActivityCard
-            rating={me.averageRating}
-            reviewCount={me.reviewCount}
-            topCategoryId={topCategoryId}
+            rating={data.averageRating}
+            reviewCount={data.reviewCount}
+            topCategoryId={data.mostFavoriteCategory?.id ?? null}
           />
         </div>
 

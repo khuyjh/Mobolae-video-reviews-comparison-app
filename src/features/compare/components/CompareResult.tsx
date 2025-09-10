@@ -3,8 +3,18 @@
 // api 가져오기
 'use client';
 
+import { keepPreviousData } from '@tanstack/react-query';
+import { useEffect } from 'react';
+
 import { PATH_OPTION } from '@/shared/constants/constants';
 import { useCompareStore } from '@/shared/stores/useCompareStore'; // a,b 전역 상태 관리용
+import {
+  selectA,
+  selectB,
+  selectRequested,
+  selectRequestTick,
+  selectCanCompare,
+} from '@/shared/stores/useCompareStoreSelectors'; // 표준 셀렉터 적용
 
 import CompareResultSummary from './CompareResultSummary';
 import CompareResultTable from './CompareResultTable';
@@ -29,6 +39,7 @@ type ProductRes = NonNullable<RetrieveProductDefaultResponse>;
 
 type Selected = { id: number; name: string } & Record<MetricKey, number>;
 
+//얘비 유틸
 function toSelected(raw: ProductRes): Selected {
   return {
     id: raw.id,
@@ -69,11 +80,12 @@ function ResultPlaceholder({ variant }: { variant: 'idle' | 'ready' | 'error' })
  * ------------------------------------------- */
 const CompareResult = () => {
   // 1) a/b 선택값 + "비교하기" 버튼 눌림 여부
-  const a = useCompareStore((s) => s.a) as CompareCandidate | null;
-  const b = useCompareStore((s) => s.b) as CompareCandidate | null;
-  const requested = useCompareStore((s) => s.requested);
-  const canCompare = useCompareStore((s) => s.canCompare());
-
+  const a = useCompareStore(selectA) as CompareCandidate | null;
+  const b = useCompareStore(selectB) as CompareCandidate | null;
+  const requested = useCompareStore(selectRequested);
+  const canCompare = useCompareStore(selectCanCompare);
+  const requestTick = useCompareStore(selectRequestTick);
+  const setInFlight = useCompareStore((state) => state.setInFlight);
   // id 확정값 (없으면 null)
   const productIdA = a ? a.id : null;
   const productIdB = b ? b.id : null;
@@ -87,10 +99,13 @@ const CompareResult = () => {
     {
       path: { ...PATH_OPTION.path, productId: productIdA ?? 0 },
     },
-    [],
+    [productIdA, requestTick],
     {
       enabled: enabledA,
-      staleTime: 60_000,
+      staleTime: 0,
+      placeholderData: keepPreviousData, //TanStack Query v5 여서 keepPreviousData: true가 아니라 placeholderData 사용. 이전 데이터 유지기능
+      refetchOnWindowFocus: true,
+      refetchOnReconnect: true,
     },
   );
 
@@ -98,12 +113,22 @@ const CompareResult = () => {
     {
       path: { ...PATH_OPTION.path, productId: productIdB ?? 0 },
     },
-    [],
+    [productIdB, requestTick],
     {
       enabled: enabledB,
-      staleTime: 60_000,
+      staleTime: 0,
+      placeholderData: keepPreviousData,
+      refetchOnWindowFocus: true,
+      refetchOnReconnect: true,
     },
   );
+
+  // 네트워크 fetching 중인지 스토어에 반영 → 페이지에서 버튼을 잠가 더블클릭 방지
+  useEffect(() => {
+    const isFetching = Boolean(pA.isFetching || pB.isFetching);
+    setInFlight(isFetching);
+    return () => setInFlight(false);
+  }, [pA.isFetching, pB.isFetching, setInFlight]);
 
   /** ---------- 상태 분기(UI만 담당) ---------- */
   if (!a || !b) return <ResultPlaceholder variant='idle' />; //  입력 전(두 슬롯 중 하나라도 비었을 때)
