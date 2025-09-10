@@ -1,6 +1,6 @@
 'use client';
 
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 
 import { ReactNode, useCallback, useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
@@ -25,10 +25,9 @@ interface Props {
 
 const AuthGuard = ({ children }: Props) => {
   const [isMounted, setIsMounted] = useState(false);
+  const [isAuthProcess, setIsAuthProcess] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
-  const params = useSearchParams();
-  const hasRedirectUrl = !!(params.get('redirect_url') || params.get('state'));
   const isAuthPath = AUTH_ROUTES.includes(pathname);
   const isNeedAuthPath = NEED_AUTH_ROUTES.includes(pathname);
   const accessToken = getCookie('accessToken');
@@ -68,17 +67,22 @@ const AuthGuard = ({ children }: Props) => {
     //토큰은 있는데 유저 정보가 소실된 경우 권한 복구
     restoreAuth();
 
+    /**
+     * 1. 만약 로그인 이후에 비정상적인 접근 시도라면 replace를 통해 페이지를 빠져나감
+     * 2. 정상적인 로그인 프로세스라면 최초 실행 때 해당 조건문을 뛰어넘어 setter함수가 실행
+     * 3. 정상적인 로그인 페이지라는 flag인 isAuthProcess를 true로 전환하여, 다음 useEffect 실행 때 라우팅이 작동하지 않도록 함
+     */
     if (isLoggedIn && isAuthPath) {
-      //정상적인 로그인, 회원가입 프로세스중 리다이렉트 url을 가지고 있을 때에는 홈으로 보내는 동작을 막음
-      if (!hasRedirectUrl) {
+      if (!isAuthProcess) {
         router.replace('/');
       }
     }
+    setIsAuthProcess(true);
 
     if (!isLoggedIn && isNeedAuthPath) {
       router.replace('/');
     }
-  }, [isLoggedIn, isAuthPath, isNeedAuthPath, router, isMounted, hasRedirectUrl, restoreAuth]);
+  }, [isLoggedIn, isAuthPath, isNeedAuthPath, router, isAuthProcess, isMounted, restoreAuth]);
 
   if (!isMounted || (isLoggedIn && isAuthPath) || (!isLoggedIn && isNeedAuthPath)) {
     return (
