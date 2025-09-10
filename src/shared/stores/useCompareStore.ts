@@ -8,12 +8,21 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 
 import type { CompareCandidate } from '../../features/compare/types/compareTypes';
 
+/** 유틸/타입 */
+
 /** 동일 아이템 선택 방지 + 카테고리 규칙 */
-type TrySetResult =
+export type TrySetResult =
   | { ok: true }
   | { ok: false; reason: 'duplicate' } // 동일 id 선택
   | { ok: false; reason: 'category-mismatch' } // a/b categoryId 불일치
   | { ok: false; reason: 'missing-category' }; // a/b 중 하나라도 categoryId 없음
+
+/** 모달에서 비교 교체 의도 사전 평가 결과 타입  */
+export type ReplaceEval =
+  | 'ok' // 같은 카테고리 → 즉시 교체(또는 담기) 가능
+  | 'duplicate' // 이미 담긴 항목
+  | 'missing-category' // next 또는 상대 슬롯에 categoryId가 없음
+  | 'needs-clear'; // 다른 카테고리 → "비우고 시작" 필요
 
 /**
  * 비교 페이지 전역 상태 정의
@@ -40,20 +49,34 @@ export type CompareState = {
   inFlight: boolean;
   setInFlight: (isInFlight: boolean) => void;
 
-  /** 전체 초기화 */
-  clearAll: () => void;
   // 파생 상태(함수형 셀렉터) - 한 곳의 규칙을 모든 UI가 공유
   canCompare: () => boolean;
   isDuplicate: () => boolean;
   invalidReason: () => string | null;
 
   /**
-   * [유저 전환 동기화 액션]
+   * 초기화 계층
+   * - resetCandidates: a,b 선택지 + requested 초기화
+   * - resetAllState:   완전 초기화 (선택/요청/진행상태/쿼리키 카운터 초기화, 기존 clearAll과 동일)
+   * - clearAll:        호환용 alias로 남겨둠, 내부에서 resetAllState 호출
+   */
+  resetCandidates: () => void;
+  resetAllState: () => void;
+  clearAll: () => void; //(호환용 alias)
+
+  /**
+   * 유저 전환 동기화 액션
    * 로그인/로그아웃/계정 전환 등으로 현재 사용자 id가 바뀌었을 때,
    * 해당 유저 네임스페이스의 저장값을 읽어 와서 메모리 상태(a,b)로 반영.
    * 루트에서 userId 변화(useUserStore 구독)를 감지해 이 함수를 호출.
    */
   syncWithCurrentUser: () => void;
+
+  /**
+   * 모달에서 교체 의도 사전 평가
+   * 상태 변경 없이 교체 가능성만 판단하여 UI에서 분기 처리 가능.
+   */
+  evaluateReplace: (side: 'A' | 'B', next: CompareCandidate) => ReplaceEval;
 };
 
 /** 저장 포맷 - persist에는 이 형태만 저장 */
@@ -102,8 +125,8 @@ const BASE_KEY = 'compare-storage';
 /**
  * 커스텀 스토리지 어댑터
  * - zustand의 storage 인터페이스(getItem/setItem/removeItem)를 구현해서
- *   호출 시점마다 현재 userId를 읽어 key를 `compare-storage:<userId|guest>`로 바꿔줍니다.
- * - 이렇게 하면 같은 브라우저에서도 “유저별로 다른 로컬스토리지 키”에 저장됩니다.
+ * - 호출 시점마다 현재 userId를 읽어 key를 `compare-storage:<userId>`로 바꿔줍니다.
+ * - 로그아웃 상태에서는 읽기/쓰기를 수행하지 않습니다(=persist 비활성)
  */
 const namespacedStorage = {
   getItem: (_name: string) => {
@@ -229,8 +252,22 @@ export const useCompareStore = create<CompareState>()(
         return true;
       },
 
-      // 전체 초기화
-      clearAll: () => set({ a: null, b: null, requested: false, requestTick: 0, inFlight: false }),
+      /**
+       * 초기화 계층
+       * - resetCandidates: a/b상태 및 requested 초기화 (쿼리키/플래그 보존)
+       * - resetAllState:   완전 초기화 (기존 clearAll과 동일 모두 초기화)
+       * - clearAll:        호환 alias
+       */
+
+      // 선택지만 초기화 (교체 UX에서 "비우고 시작" 시, 쿼리키 유지하고 싶을 때 권장)
+      resetCandidates: () => set({ a: null, b: null, requested: false }),
+
+      // 완전 초기화 (기존 clearAll과 같은 동작)
+      resetAllState: () =>
+        set({ a: null, b: null, requested: false, requestTick: 0, inFlight: false }),
+
+      // 기존 호출처가 clearAll을 쓰더라도 안전
+      clearAll: () => get().resetAllState(),
 
       // 파생 셀렉터들 (한 곳에서 규칙 유지)
       canCompare: () => {
@@ -255,7 +292,6 @@ export const useCompareStore = create<CompareState>()(
       },
       /**
        *  유저 전환 시: 로그인 상태면 해당 유저 키에서 복원, 아니면 메모리 초기화
-       * - layout 등 공통 클라이언트에서 userId가 바뀔 때 마다 한 번 호출해 주세요.
        */
       syncWithCurrentUser: () => {
         try {
@@ -280,11 +316,29 @@ export const useCompareStore = create<CompareState>()(
           set({ a: null, b: null, requested: false, requestTick: 0, inFlight: false });
         }
       },
+      evaluateReplace: (side, next) => {
+        const { a, b } = get();
+        const other = side === 'A' ? b : a;
+
+        // 카테고리 존재 체크
+        if (!hasCategory(next)) return 'missing-category';
+
+        // 중복 체크 (다른 슬롯 또는 같은 슬롯과의 중복)
+        if (isDup(next, a) || isDup(next, b)) return 'duplicate';
+
+        // 상대 슬롯 없으면 그냥 OK
+        if (!other) return 'ok';
+
+        if (!hasCategory(other)) return 'missing-category';
+
+        return isSameCategory(next, other) ? 'ok' : 'needs-clear';
+      },
     }),
+
     {
       /**
        * name은 의미상으로만 사용됩니다.
-       * 실제 저장 키는 namespacedStorage가 `compare-storage:<userId|guest>`로 바꿔서 씁니다.
+       * 실제 저장 키는 namespacedStorage가 `compare-storage:<userId>`로 바꿔서 씁니다.
        */
       name: BASE_KEY,
       version: PERSIST_VERSION,
