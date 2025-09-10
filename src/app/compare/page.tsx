@@ -4,6 +4,7 @@
 import { toast } from 'react-toastify';
 
 import { useCompareStore } from '@/shared/stores/useCompareStore';
+import { selectA, selectB, selectInFlight } from '@/shared/stores/useCompareStoreSelectors';
 
 import CompareButton from '../../features/compare/components/CompareButton';
 import CompareResult from '../../features/compare/components/CompareResult';
@@ -35,10 +36,11 @@ const toastByReason = (
 };
 
 const ComparePage = () => {
-  const a = useCompareStore((s) => s.a);
-  const b = useCompareStore((s) => s.b);
+  const a = useCompareStore(selectA);
+  const b = useCompareStore(selectB);
   const trySetA = useCompareStore((s) => s.trySetA);
   const trySetB = useCompareStore((s) => s.trySetB);
+  const inFlight = useCompareStore(selectInFlight);
 
   return (
     <main className='mx-auto max-w-4xl p-[24px]'>
@@ -71,6 +73,7 @@ const ComparePage = () => {
         {/* 비교 버튼: 모바일에선 3번째 아이템으로 아래, md 이상에선 3번째 컬럼 오른쪽 정렬 */}
         <CompareButton
           className='justify-self-start md:justify-self-end'
+          disabled={inFlight}
           onResult={(ok, reason) => {
             if (!ok && reason) toast.info(reason);
           }}
