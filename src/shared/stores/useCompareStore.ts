@@ -292,7 +292,6 @@ export const useCompareStore = create<CompareState>()(
       },
       /**
        *  유저 전환 시: 로그인 상태면 해당 유저 키에서 복원, 아니면 메모리 초기화
-       * - layout 등 공통 클라이언트에서 userId가 바뀔 때 마다 한 번 호출해 주세요.
        */
       syncWithCurrentUser: () => {
         try {
