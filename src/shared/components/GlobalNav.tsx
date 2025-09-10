@@ -1,20 +1,31 @@
 'use client';
 /* eslint-disable @next/next/no-img-element */
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 
+import clsx from 'clsx';
 import { useEffect, useRef, useState } from 'react';
+import { useShallow } from 'zustand/shallow';
 
 import { cn } from '@/shared/lib/cn';
 
 import MobileGnbSheet from './MobileGnbSheet';
+import { useCompareStore } from '../stores/useCompareStore';
 import { useUserStore } from '../stores/userStore';
 
 export default function GlobalNav() {
   const [searchOpen, setSearchOpen] = useState(false);
   const isLoggedIn = useUserStore((state) => state.isLoggedIn);
+  const { a: compareItemA, b: compareItemB } = useCompareStore(
+    useShallow((state) => ({
+      a: state.a,
+      b: state.b,
+    })),
+  );
+  const isCompareReady = compareItemA && compareItemB;
   const params = useSearchParams();
-  const redirectUrl = params.get('redirect_url');
+  const currentPath = usePathname();
+  const redirectUrl = params.get('redirect_url') ? params.get('redirect_url') : currentPath;
   const query = `?redirect_url=${redirectUrl}`;
 
   const triggerBtnRef = useRef<HTMLButtonElement>(null);
@@ -62,7 +73,13 @@ export default function GlobalNav() {
           {/*PC 오른쪽 메뉴 / 로그인 상태 -> 비교하기, 내 프로필 / 로그아웃 상태 -> 로그인, 회원가입*/}
           {isLoggedIn ? (
             <div className={DESKTOP_MENU}>
-              <Link href='/compare' className='hover:text-gray-600'>
+              <Link
+                href='/compare'
+                className={clsx(
+                  { 'text-main hover:text-main-dark animate-pulse': isCompareReady },
+                  'hover:text-gray-600',
+                )}
+              >
                 비교하기
               </Link>
               <Link href='/mypage' className='hover:text-gray-600'>
@@ -71,16 +88,10 @@ export default function GlobalNav() {
             </div>
           ) : (
             <div className={DESKTOP_AUTH}>
-              <Link
-                href={redirectUrl ? `/signin${query}` : '/signin'}
-                className='hover:text-gray-600'
-              >
+              <Link href={`/signin${query}`} className='hover:text-gray-600'>
                 로그인
               </Link>
-              <Link
-                href={redirectUrl ? `/signup${query}` : '/signup'}
-                className='hover:text-gray-600'
-              >
+              <Link href={`/signup${query}`} className='hover:text-gray-600'>
                 회원가입
               </Link>
             </div>
