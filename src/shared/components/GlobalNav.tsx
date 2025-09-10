@@ -1,7 +1,7 @@
 'use client';
 /* eslint-disable @next/next/no-img-element */
 import Link from 'next/link';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation'; // ✅ useRouter 추가
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import clsx from 'clsx';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -14,11 +14,11 @@ import { useCompareStore } from '../stores/useCompareStore';
 import { useUserStore } from '../stores/userStore';
 
 export default function GlobalNav() {
-  const router = useRouter(); // ✅ OK
+  const router = useRouter(); //
   const params = useSearchParams();
 
   const [searchOpen, setSearchOpen] = useState(false);
-  const [keyword, setKeyword] = useState(''); // ✅ 입력값 상태
+  const [keyword, setKeyword] = useState('');
   const isLoggedIn = useUserStore((state) => state.isLoggedIn);
   const { a: compareItemA, b: compareItemB } = useCompareStore(
     useShallow((state) => ({
@@ -94,7 +94,7 @@ export default function GlobalNav() {
               type='button'
               className='cursor-pointer'
               aria-label='검색 실행'
-              onClick={submitSearch} // ✅ 아이콘 클릭으로 검색
+              onClick={submitSearch}
             >
               <img src='/icons/SearchIcon.svg' alt='검색' className='h-[24px] w-[24px]' />
             </button>
@@ -102,10 +102,9 @@ export default function GlobalNav() {
               type='text'
               placeholder='상품 이름을 검색해 보세요'
               className='ml-[12px] w-full bg-transparent outline-none'
-              value={keyword} // ✅ 바인딩
+              value={keyword}
               onChange={(e) => setKeyword(e.target.value)}
               onKeyDown={(e) => {
-                // ✅ Enter로 검색
                 if (e.key === 'Enter') {
                   e.preventDefault();
                   submitSearch();
@@ -175,7 +174,7 @@ export default function GlobalNav() {
             <button
               className='h-[24px] w-[24px] place-items-center'
               aria-label='검색 실행'
-              onClick={submitSearch} // ✅ 아이콘 클릭으로 검색
+              onClick={submitSearch}
               type='button'
             >
               <img src='/icons/SearchIcon.svg' alt='검색' />
@@ -184,10 +183,9 @@ export default function GlobalNav() {
               type='text'
               placeholder='상품 이름을 검색해 보세요'
               className='ml-[15px] w-full rounded-md bg-transparent outline-none'
-              value={keyword} // ✅ 바인딩
+              value={keyword}
               onChange={(e) => setKeyword(e.target.value)}
               onKeyDown={(e) => {
-                // ✅ Enter로 검색
                 if (e.key === 'Enter') {
                   e.preventDefault();
                   submitSearch();
