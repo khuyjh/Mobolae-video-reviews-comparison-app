@@ -4,6 +4,8 @@ import clsx from 'clsx';
 import { useState } from 'react';
 
 import FollowModal from '@/features/mypage/components/ProfileModal/FollowModal';
+import Button from '@/shared/components/Button';
+import SafeProfileImage from '@/shared/components/SafeProfileImage';
 
 export type ProfileCardProps = {
   userId: number;
@@ -41,7 +43,6 @@ export default function ProfileCard({
 }: ProfileCardProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState<'followers' | 'following' | null>(null);
-  const safeSrc = avatarSrc?.trim() ? avatarSrc : undefined;
 
   const openModal = (type: 'followers' | 'following') => {
     if ((type === 'followers' && followers === 0) || (type === 'following' && following === 0))
@@ -52,14 +53,14 @@ export default function ProfileCard({
 
   const onKeyOpen: React.KeyboardEventHandler<HTMLDivElement> = (e) => {
     if (e.key === 'Enter' || e.key === ' ') {
-      const t = (e.currentTarget.dataset.type as 'followers' | 'following')!;
-      openModal(t);
+      const target = (e.currentTarget.dataset.type as 'followers' | 'following')!;
+      openModal(target);
     }
   };
 
   return (
     <div className={CARD_CONTAINER}>
-      {/*<SafeProfileImage src={avatarSrc} alt={name} width={120} height={120} />*/}
+      <SafeProfileImage src={avatarSrc} alt={name} width={120} height={120} />
 
       <div className={PROFILE_TEXT_WRAPPER}>
         <h3 className='text-xl-semibold text-white'>{name || '-'}</h3>
@@ -96,27 +97,32 @@ export default function ProfileCard({
       <div className={BUTTON_GROUP}>
         {isMe ? (
           <>
-            <button onClick={onEdit} className={clsx(BUTTON_BASE, BTN_EDIT)}>
+            <Button onClick={onEdit} variant={'primary'} className={clsx(BUTTON_BASE, BTN_EDIT)}>
               편집하기
-            </button>
-            <button onClick={onLogout} className={clsx(BUTTON_BASE, BTN_LOGOUT)}>
+            </Button>
+            <Button
+              onClick={onLogout}
+              variant={'tertiary'}
+              className={clsx(BUTTON_BASE, BTN_LOGOUT)}
+            >
               로그아웃
-            </button>
+            </Button>
           </>
         ) : (
-          <button
+          <Button
             onClick={onFollowToggle}
             disabled={actionDisabled}
             aria-busy={actionDisabled || undefined}
-            aria-label={`${name || '-'}을(를) ${isFollowing ? '언팔로우' : '팔로우'}하기`}
+            aria-label={`${name ?? '-'}을(를) ${isFollowing ? '언팔로우' : '팔로우'}하기`}
+            variant={isFollowing ? 'tertiary' : 'primary'}
             className={clsx(
-              BUTTON_BASE,
-              isFollowing ? BTN_UNFOLLOW : BTN_FOLLOW,
-              actionDisabled && 'cursor-not-allowed opacity-60',
+              'max-w-[160px]',
+              'disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-60',
+              'disabled:hover:!border-gray-700 disabled:hover:!bg-transparent disabled:hover:!text-gray-500 disabled:hover:!brightness-100',
             )}
           >
             {isFollowing ? '팔로우 취소' : '팔로우'}
-          </button>
+          </Button>
         )}
       </div>
 
@@ -125,6 +131,7 @@ export default function ProfileCard({
           userId={userId}
           meId={meId}
           type={modalType}
+          nickname={name}
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
         />
@@ -147,5 +154,3 @@ const BUTTON_GROUP = 'mt-[30px] flex flex-col gap-[10px]';
 const BUTTON_BASE = 'text-base-semibold w-full rounded-[8px] py-[15px] transition cursor-pointer';
 const BTN_EDIT = 'bg-main text-black-800 hover:opacity-90';
 const BTN_LOGOUT = 'border border-black-700 text-gray-400 hover:bg-black-700/40';
-const BTN_FOLLOW = 'bg-main-gradient text-black-800 hover:brightness-120';
-const BTN_UNFOLLOW = 'border border-black-700 text-gray-400 hover:brightness-110';
