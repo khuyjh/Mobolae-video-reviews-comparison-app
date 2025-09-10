@@ -5,4 +5,5 @@ export type Reviewer = {
   followers: number; // 숫자 보장
   review: number; // 숫자 보장
   rating?: number; // 선택
+  createdAt?: string; // 선택
 };
