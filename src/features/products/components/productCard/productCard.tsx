@@ -3,13 +3,17 @@
 import Image from 'next/image';
 
 import React, { useState } from 'react';
+import { toast } from 'react-toastify';
 
 import RedirectModal from '@/features/auth/components/RedirectModal';
+import { CompareCandidate } from '@/features/compare/types/compareTypes';
 import CompareModal, { CompareModalType } from '@/features/products/components/productModal';
+import { useCompareStore } from '@/shared/stores/useCompareStore';
 
 import ProductButtons from './productButtons';
 import ProductDescription from './productDescription';
 import ProductHeader from './productHeader';
+import fallbackImg from '../../../../../public/images/FallbackImg.png';
 import EditDeleteModal from '../productModal/editDeleteModal';
 import ReviewModal from '../productModal/reviewModal';
 
@@ -26,7 +30,7 @@ interface ProductCardProps {
 }
 
 const IMAGE_CONTAINER_STYLES =
-  'relative aspect-[335/236] w-full bg-gray-300 md:h-[197px] md:w-[280px] xl:h-[250px] xl:w-[335px] rounded-[8px]';
+  'relative aspect-[335/236] w-full bg-black-900 md:h-[197px] md:w-[280px] xl:h-[250px] xl:w-[335px] rounded-[8px]';
 
 const ProductCard = ({
   imageSrc,
@@ -39,12 +43,13 @@ const ProductCard = ({
   favoriteCount = 0,
   onFavoriteChange,
 }: ProductCardProps) => {
+  /* fallback 이미지 상태 */
+  const [imgSrc, setImgSrc] = useState(imageSrc || fallbackImg.src);
+
   /** 모달 상태들 */
   const [isReviewAddModalOpen, setIsReviewAddModalOpen] = useState(false);
   const [isRedirectModalOpen, setIsRedirectModalOpen] = useState(false);
   const [isEditDeleteModalOpen, setIsEditDeleteModalOpen] = useState(false);
-
-  const [userRating, setUserRating] = useState<number>(4); //TODO: 리뷰 작성 모달 API 연동 후 삭제
 
   // TODO: 실제 로그인 상태 체크 훅으로 교체
   const isAuthenticated = true;
@@ -53,9 +58,13 @@ const ProductCard = ({
   const [compareModalType, setCompareModalType] = useState<CompareModalType | null>(null);
   const [isCompareModalOpen, setIsCompareModalOpen] = useState(false);
 
-  // TODO: 추후 "비교 담기" 로직이 API로 연결되면 교체
-  const mockCompareItems = [1, 2]; // 현재는 테스트용 mock
-  const compareCount = mockCompareItems.length;
+  const a = useCompareStore((s) => s.a);
+  const b = useCompareStore((s) => s.b);
+  const trySetA = useCompareStore((s) => s.trySetA);
+  const trySetB = useCompareStore((s) => s.trySetB);
+
+  /* 현재 비교 대상 product */
+  const [compareTarget, setCompareTarget] = useState<CompareCandidate | null>(null);
 
   /** 리뷰 작성 버튼 클릭 시 */
   const handleReviewButtonClick = () => {
@@ -68,16 +77,34 @@ const ProductCard = ({
 
   /** 비교 버튼 클릭 시 */
   const handleCompareClick = () => {
-    if (compareCount === 0) setCompareModalType('added');
-    else if (compareCount === 1) setCompareModalType('ready');
-    else setCompareModalType('replaceSelect');
-    setIsCompareModalOpen(true);
-  };
+    const newItem = { id: productId, name: title, image: imageSrc, categoryId: category.id };
 
-  /** 편집/삭제 버튼 클릭 */
-  const handleEditDeleteClick = () => {
-    setIsEditDeleteModalOpen(true);
-    // TODO: 편집/삭제 API 연결
+    console.log('현재 스토어 상태:', { a, b });
+    console.log('선택된 상품:', newItem);
+
+    setCompareTarget(newItem); // 선택된 product 저장
+
+    if (!a) {
+      const result = trySetA(newItem);
+      console.log('trySetA 결과:', result);
+      if (!result.ok) {
+        toast.error('카테고리가 다른 콘텐츠는 \n삭제 후 다시 비교할 수 있습니다. ');
+        return;
+      }
+      setCompareModalType('added');
+    } else if (!b) {
+      const result = trySetB(newItem);
+      console.log('trySetB 결과:', result);
+      if (!result.ok) {
+        toast.error('카테고리가 다른 콘텐츠는 \n삭제 후 다시 비교할 수 있습니다.');
+        return;
+      }
+      setCompareModalType('ready');
+    } else {
+      setCompareModalType('replaceSelect');
+    }
+
+    setIsCompareModalOpen(true);
   };
 
   return (
@@ -85,7 +112,14 @@ const ProductCard = ({
       <div className='flex flex-col md:flex-row md:gap-5'>
         {/* 이미지 섹션 */}
         <div className={IMAGE_CONTAINER_STYLES}>
-          <Image src={imageSrc} alt={title} fill className='object-cover' priority />
+          <Image
+            src={imgSrc}
+            alt={title}
+            fill
+            className='object-cover'
+            priority
+            onError={() => setImgSrc(fallbackImg.src)}
+          />
         </div>
 
         {/* 콘텐츠 섹션 */}
@@ -118,11 +152,11 @@ const ProductCard = ({
       <ReviewModal
         isOpen={isReviewAddModalOpen}
         onClose={() => setIsReviewAddModalOpen(false)}
-        rating={userRating}
         mode='add'
         productId={productId}
         productName={title}
         productCategory={category}
+        rating={0}
       />
 
       {/* 비로그인 사용자 리다이렉트 모달 */}
@@ -135,6 +169,7 @@ const ProductCard = ({
           isOpen={isCompareModalOpen}
           onClose={() => setIsCompareModalOpen(false)}
           onChangeType={(type) => setCompareModalType(type)}
+          product={compareTarget ?? undefined}
         />
       )}
 
@@ -142,6 +177,11 @@ const ProductCard = ({
       <EditDeleteModal
         isOpen={isEditDeleteModalOpen}
         onClose={() => setIsEditDeleteModalOpen(false)}
+        productId={productId}
+        name={title}
+        category={category}
+        description={description}
+        imageUrl={imageSrc}
       />
     </>
   );

@@ -35,6 +35,12 @@ const nextConfig: NextConfig = {
         hostname: 'picsum.photos',
         pathname: '/**', // 목업 이미지 허용
       },
+      // TODO: mockContent에 쓰이는 i.pravatar.cc 추가
+      {
+        protocol: 'https',
+        hostname: 'i.pravatar.cc',
+        pathname: '/**',
+      },
     ],
   },
 };
