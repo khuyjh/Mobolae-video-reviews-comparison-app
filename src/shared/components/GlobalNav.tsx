@@ -15,7 +15,7 @@ import { useCompareStore } from '../stores/useCompareStore';
 import { useUserStore } from '../stores/userStore';
 
 export default function GlobalNav() {
-  const router = useRouter(); //
+  const router = useRouter();
   const params = useSearchParams();
 
   const [searchOpen, setSearchOpen] = useState(false);
