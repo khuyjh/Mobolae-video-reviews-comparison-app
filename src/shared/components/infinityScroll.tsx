@@ -22,7 +22,7 @@ interface InfinityScrollProps<T> {
   scrollKey?: string;
 }
 
-export function InfinityScroll<T>({
+export function InfinityScroll<T extends { id?: string | number }>({
   items,
   renderItem,
   hasNextPage,
@@ -71,6 +71,8 @@ export function InfinityScroll<T>({
     count: hasNextPage ? displayItems.length + 1 : displayItems.length,
     estimateSize: () => itemHeightEstimate,
     overscan: 5,
+    getItemKey: (index) =>
+      displayItems[index]?.id != null ? String(displayItems[index]!.id) : String(index),
   });
 
   const virtualItems = rowVirtualizer.getVirtualItems();
