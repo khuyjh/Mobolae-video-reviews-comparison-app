@@ -174,21 +174,14 @@ const AddContentModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
   };
 
   /* 설명: blur 시 스키마 에러 메시지만 토스트 */
-  useEffect(() => {
-    if (touchedFields.description && errors.description?.message) {
-      toast.error(errors.description.message);
-    }
-  }, [touchedFields.description, errors.description?.message]);
+  // 🔥 기존 useEffect 제거 → 중복 토스트 방지, onBlur에서만 처리
 
   /* 버튼 활성화는 스키마 판정 + 라이브중복만 반영 */
   const isSubmitReady = isValid && !liveNameDuplicate && !isSubmitting;
 
   /* 제출 */
   const onValid = async (_values: ProductFormValues): Promise<void> => {
-    if (liveNameDuplicate) {
-      setError('name', { type: 'duplicate', message: '이미 등록된 콘텐츠입니다.' });
-      return;
-    }
+    // 🔥 liveNameDuplicate 중복 검사 제거 (onBlur에서 이미 처리됨)
 
     const file = imageFiles?.[0];
     if (!file) {
