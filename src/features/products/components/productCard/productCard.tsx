@@ -7,6 +7,7 @@ import React, { useState } from 'react';
 import RedirectModal from '@/features/auth/components/RedirectModal';
 import { CompareCandidate } from '@/features/compare/types/compareTypes';
 import CompareModal, { CompareModalType } from '@/features/products/components/productModal';
+import { useUserStore } from '@/shared/stores/userStore';
 import { handleCompareClick } from '@/shared/utils/compareModalUtils';
 
 import ProductButtons from './productButtons';
@@ -50,8 +51,7 @@ const ProductCard = ({
   const [isRedirectModalOpen, setIsRedirectModalOpen] = useState(false);
   const [isEditDeleteModalOpen, setIsEditDeleteModalOpen] = useState(false);
 
-  // TODO: 실제 로그인 상태 체크 훅으로 교체
-  const isAuthenticated = true;
+  const { isLoggedIn } = useUserStore();
 
   /** 비교 모달 상태 */
   const [compareModalType, setCompareModalType] = useState<CompareModalType | null>(null);
@@ -62,8 +62,24 @@ const ProductCard = ({
 
   /** 리뷰 작성 버튼 클릭 시 */
   const handleReviewButtonClick = () => {
-    if (isAuthenticated) {
+    if (isLoggedIn) {
       setIsReviewAddModalOpen(true);
+    } else {
+      setIsRedirectModalOpen(true);
+    }
+  };
+
+  /** 비교하기 버튼 클릭 시 */
+  const handleCompareButtonClick = () => {
+    if (isLoggedIn) {
+      handleCompareClick({
+        productId,
+        title,
+        categoryId: category.id,
+        setCompareTarget,
+        setCompareModalType,
+        setIsCompareModalOpen,
+      });
     } else {
       setIsRedirectModalOpen(true);
     }
@@ -102,17 +118,7 @@ const ProductCard = ({
             className='mt-[40px] md:mt-[60px]'
             onReviewButtonClick={handleReviewButtonClick}
             onEditButtonClick={() => setIsEditDeleteModalOpen(true)}
-            onCompareButtonClick={() =>
-              handleCompareClick({
-                productId,
-                title,
-                imageSrc,
-                categoryId: category.id,
-                setCompareTarget,
-                setCompareModalType,
-                setIsCompareModalOpen,
-              })
-            }
+            onCompareButtonClick={handleCompareButtonClick}
           />
         </div>
       </div>
