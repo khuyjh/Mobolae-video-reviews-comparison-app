@@ -43,16 +43,19 @@ export default function GlobalNav() {
 
   /* 검색 제출: 현재 category는 보존, order/cursor는 초기화 */
   const submitSearch = useCallback(() => {
-    const normKeyword = (keyword ?? '').trim().toLowerCase(); // 정규화
-    if (!normKeyword) return;
-
+    const normKeyword = (keyword ?? '').trim();
     const next = new URLSearchParams();
-    const category = params.get('category');
-    if (category) next.set('category', category); // 카테고리 동시 적용
-    next.set('keyword', normKeyword);
 
-    router.push(`/?${next.toString()}`, { scroll: true });
-    setSearchOpen(false); // 모바일 닫기
+    // category는 유지
+    const category = params.get('category');
+    if (category) next.set('category', category);
+
+    // keyword는 있으면 설정, 없으면 생략
+    if (normKeyword) next.set('keyword', normKeyword);
+
+    const qs = next.toString();
+    router.push(qs ? `/?${qs}` : '/', { scroll: true }); // 홈으로 이동
+    setSearchOpen(false);
   }, [keyword, params, router]);
 
   /* 모바일 검색창 닫힘*/
