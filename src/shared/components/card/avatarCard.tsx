@@ -107,7 +107,6 @@ export default function ProfileBadge({
           draggable={false}
           className={AVATAR_IMG}
           {...getImageSize()}
-          onError={(e) => ((e.target as HTMLImageElement).src = profileFallbackImg.src)}
         />
       </div>
       {/*메인페이지에 들어 갈 아바타 카드*/}
