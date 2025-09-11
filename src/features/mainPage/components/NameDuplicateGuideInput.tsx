@@ -69,7 +69,7 @@ const NameDuplicateGuideInput = ({
       </span>
 
       {/* 안내 패널: 포커스 중 + 2자 이상 */}
-      {isFocused && trimmed.length >= 2 && (
+      {isFocused && trimmed.length >= 1 && (
         <div className='border-black-700 bg-black-800 absolute top-full right-0 left-0 z-20 mt-1 rounded-lg border p-[10px] shadow-xl'>
           {isLoading ? (
             <div className='px-2 py-1 text-sm text-gray-400'>검색 중…</div>
