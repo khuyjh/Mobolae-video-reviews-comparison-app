@@ -46,7 +46,7 @@ export const metadata: Metadata = {
   title: 'mobolae - 모볼래?',
   description: '영상 매체 추천, 비교 웹 애플리케이션',
   icons: {
-    icon: '/icons/FaviconBg152.png',
+    icon: '/icons/Favicon152.png',
   },
 };
 
