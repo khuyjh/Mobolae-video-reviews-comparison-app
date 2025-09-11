@@ -244,7 +244,13 @@ const AddContentModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
   );
 
   return (
-    <BaseModal title='콘텐츠 추가' isOpen={isOpen} onClose={onClose} size='L'>
+    <BaseModal
+      title='콘텐츠 추가'
+      isOpen={isOpen}
+      onClose={onClose}
+      size='L'
+      closeOnOutsideClick={false}
+    >
       <form onSubmit={handleSubmit(onValid, onInvalid)} className='md:px-5 md:pb-5'>
         <h2 className='text-xl-semibold md:text-2xl-semibold mb-10'>콘텐츠 추가</h2>
 
@@ -262,7 +268,7 @@ const AddContentModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
             }
             previewUrls={previewUrls}
             maxImages={MAX_IMAGE_COUNT}
-            className='min-w-35 md:min-w-[135px] xl:min-w-40'
+            className='w-1/2'
           />
 
           {/* 제목 / 카테고리 */}
@@ -314,7 +320,7 @@ const AddContentModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
                   field.onChange((next || '').slice(0, DESCRIPTION_MAX_LENGTH))
                 }
                 maxLength={DESCRIPTION_MAX_LENGTH}
-                placeholder='콘텐츠 설명을 입력하세요 (최소 10자)'
+                placeholder='감독, 출연진, 줄거리 등을 입력해 주세요.'
                 className='[&>textarea]:text-md-regular md:[&>textarea]:text-base-regular mt-1 [&>textarea]:pl-5'
                 aria-invalid={Boolean(errors.description)}
                 onBlur={async () => {
