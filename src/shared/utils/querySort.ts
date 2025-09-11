@@ -1,8 +1,7 @@
 // 공용 입력 검색시 정렬 함수
 /**
- * 입력 쿼리(query)와 항목 텍스트의 일치도를 기준으로
- * "완전 일치 > 접두 일치 > 포함 일치 > 그 외" 순서로 정렬하는 비교 함수입니다.
- * querySort의 주 책임은 항목 배열을 쿼리 기반으로 정렬하는 것이라고 생각하기에 정규화 담당 함수인 normalize를 적용하진 않았습니다.
+ * 입력 쿼리(query)와 항목 텍스트의 일치도를 기준으로 완전 일치 > 접두 일치 > 포함 일치 > 그 외 순서로 정렬하는 비교 함수입니다.
+ * querySort의 주 책임은 항목 배열을 쿼리 기반으로 정렬하는 것이라고 생각하기에 정규화 담당 함수인 normalize를 적용하진 않았습니다.(둘다 적용 가능)
  */
 
 export type Normalizer = (text: string) => string;
@@ -24,7 +23,9 @@ export interface QuerySortOptions<T> {
   normalizer?: Normalizer;
 }
 
-/** 기본 정규화: 유니코드 NFKC → trim → 소문자화 */
+/** 기본 정규화: 유니코드 NFKC → trim → 소문자화
+ * 더 엄격한 정규화는 normalize 적용
+ */
 function normalizeTextDefault(text: string, locale: string = 'ko-KR'): string {
   return text.normalize('NFKC').trim().toLocaleLowerCase(locale);
 }
@@ -37,7 +38,7 @@ enum MatchPriority {
   None = 3, // 불일치
 }
 
-/** 항목 텍스트와 쿼리의 매칭 우선순위를 계산합니다. */
+/** 항목 텍스트와 쿼리의 매칭 우선순위를 계산 */
 function computeMatchPriority(
   itemText: string,
   query: string,
@@ -58,11 +59,11 @@ function computeMatchPriority(
 }
 
 /**
- * 주어진 쿼리에 대해 Array.sort에 전달할 비교 함수를 생성합니다.
+ * 주어진 쿼리에 대해 Array.sort에 전달할 비교 함수를 생성
  *
  * 정렬 규칙:
  *  1) disabled(선택 불가) 항목은 항상 아래
- *  2) 매칭 우선순위: 완전 > 접두 > 포함 > 불일치
+ *  2) 매칭 우선순위: 완전 일치 > 접두 일치 > 포함 일치 > 불일치
  *  3) 사용자 제공 tieBreaker가 있으면 적용
  *  4) 텍스트 길이(짧을수록 위)
  *  5) localeCompare

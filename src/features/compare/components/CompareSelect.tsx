@@ -41,6 +41,8 @@ export type CompareSelectProps = {
 
 // 사용자가 입력한 값(query)을 DEBOUNCE_MS(ms기준) 기다린 후 debounced에 반영
 const DEBOUNCE_MS = 150;
+// 드롭다운에 뜰 콘텐츠 수 제한
+const MAX_DROPDOWN_CONTENTS = 5;
 
 // 문자열 비교 유틸: 공백/대소문자/유니코드 정규화 등을 정리해서 완전 일치 판정 신뢰도 높임
 const normalizeForExactMatch = (input: string, locale: string = 'ko-KR'): string =>
@@ -125,10 +127,9 @@ const CompareSelect = forwardRef<HTMLInputElement, CompareSelectProps>(function 
     const comparator = createQueryComparator<CompareCandidate>(debounced, {
       getText: (item) => item.name, // 비교 기준 텍스트
       isDisabled: (item) => Boolean(item.disabled), // 선택 불가 항목은 아래로
-      // normalizer: normalizeForCompare,     // ← 정규화 로직도 필요할 시 추가
     });
 
-    return [...serverOptions].sort(comparator);
+    return [...serverOptions].sort(comparator).slice(0, MAX_DROPDOWN_CONTENTS);
   }, [debounced, serverOptions]);
 
   // Chip이 있을 때 입력/검색 비활성
