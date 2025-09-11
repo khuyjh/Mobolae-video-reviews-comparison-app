@@ -49,7 +49,14 @@ export default function ProfileCar({
   const [modalType, setModalType] = useState<'followers' | 'following' | null>(null);
   return (
     <div className={CARD_CONTAINER}>
-      <SafeProfileImage src={avatarSrc} alt={name} width={120} height={120} />
+      <SafeProfileImage
+        wrapperClassName={IMG_WRAPPER}
+        imgClassName={IMG_STYLE}
+        src={avatarSrc}
+        alt={name}
+        width={120}
+        height={120}
+      />
 
       <div className={PROFILE_TEXT_WRAPPER}>
         <h3 className='text-xl-semibold text-white'>{name || '-'}</h3>
@@ -110,6 +117,10 @@ export default function ProfileCar({
     </div>
   );
 }
+
+const IMG_WRAPPER =
+  'mx-auto h-[120px] w-[120px] xl:w-[180px] xl:h-[180px] overflow-hidden rounded-full';
+const IMG_STYLE = 'h-full w-full object-cover';
 
 const CARD_CONTAINER =
   'bg-black-800 border border-black-700 w-full md:w-[509px] mx-auto xl:w-[340px] rounded-[12px] px-[30px] py-[20px] md:py-[30px] xl:py-[20px] xl:pt-[40px] xl:pb-[30px]';

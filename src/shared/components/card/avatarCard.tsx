@@ -1,5 +1,3 @@
-import Image from 'next/image';
-
 import clsx from 'clsx';
 import { Star } from 'lucide-react';
 import React from 'react';
@@ -7,7 +5,7 @@ import React from 'react';
 import { Chip } from '@/shared/components/chip';
 import { toRankingChip } from '@/shared/utils/rankingUtil';
 
-import profileFallbackImg from '../../../../public/images/ProfileFallbackImg.png';
+import SafeProfileImage from '../SafeProfileImage';
 
 /***************** 메인페이지 랭킹 / 팔로워 목록 / 리뷰   **************/
 type Variant = 'ranking' | 'follower' | 'reviewProfile';
@@ -101,13 +99,12 @@ export default function ProfileBadge({
           variant === 'follower' && AVATAR_SIZE_FOLLOWER,
         )}
       >
-        <Image
-          src={avatarSrc || profileFallbackImg}
+        <SafeProfileImage
+          src={avatarSrc}
           alt='프로필 이미지'
           draggable={false}
-          className={AVATAR_IMG}
+          imgClassName={AVATAR_IMG}
           {...getImageSize()}
-          onError={(e) => ((e.target as HTMLImageElement).src = profileFallbackImg.src)}
         />
       </div>
       {/*메인페이지에 들어 갈 아바타 카드*/}
