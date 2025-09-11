@@ -154,12 +154,11 @@ export default function ProductDetailsPageClient({
             renderItem={(review, index) => (
               <div
                 key={String(review.id)}
+                data-index={index}
                 style={{ marginBottom: index === reviews.length - 1 ? 0 : itemSpacing }}
               >
                 <ReviewCard
                   review={review}
-                  showActions={true}
-                  data-index={index}
                   onLikeClick={onLikeClick}
                   productName={product.name}
                   productCategory={product.category}
