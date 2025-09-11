@@ -34,8 +34,8 @@ const mapMeToCard = (meDetail?: MeDefaultResponse) => ({
 });
 
 export default function MyPage() {
-  const { data } = useMe({ path: { teamId: TEAM_ID as string } }, []);
-  const card = mapMeToCard(data);
+  const { data: meData } = useMe({ path: { teamId: TEAM_ID as string } }, []);
+  const card = mapMeToCard(meData);
   const { userId } = useParams<{ userId: string }>();
   const uidNum = Number(userId);
   const [tab, setTab] = useState<TabKey>('reviews');
@@ -71,7 +71,7 @@ export default function MyPage() {
     [pages],
   );
 
-  if (!data) return;
+  if (!meData) return;
 
   return (
     <div className='mt-[30px] px-[20px] md:px-[117px] xl:mx-auto xl:flex xl:max-w-[1340px] xl:px-[0px]'>
@@ -97,7 +97,7 @@ export default function MyPage() {
       </div>
       <ProfileUpdateModal
         isOpen={isProfileModalOpen}
-        userDetail={data}
+        userDetail={meData}
         onClose={() => {
           setIsProfileModalOpen(false);
         }}
@@ -107,9 +107,9 @@ export default function MyPage() {
         <div className='mb-[60px]'>
           <h2 className='text-lg-semibold mb-[30px] text-white'>활동 내역</h2>
           <ActivityCard
-            rating={data.averageRating}
-            reviewCount={data.reviewCount}
-            topCategoryId={data.mostFavoriteCategory?.id ?? null}
+            rating={meData.averageRating}
+            reviewCount={meData.reviewCount}
+            topCategoryId={meData.mostFavoriteCategory?.id ?? null}
           />
         </div>
 

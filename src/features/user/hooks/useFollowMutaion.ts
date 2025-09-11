@@ -2,7 +2,7 @@
 
 import { useQueryClient } from '@tanstack/react-query';
 
-import { TEAM_ID } from '@/shared/constants/constants';
+import { TEAM_ID, PATH_OPTION } from '@/shared/constants/constants';
 
 import { useFollow, useUnfollow } from '../../../..//openapi/queries/queries';
 import * as Common from '../../../../openapi/queries/common';
@@ -23,22 +23,27 @@ export function useFollowMutations(targetUserId: number, meUserId?: number) {
 
   const isAuthed = !!meUserId; // 내가 로그인이 되었는지
 
+  const withUserId = (userId: number) => ({
+    ...PATH_OPTION,
+    path: { ...PATH_OPTION.path, userId },
+  });
+
   // react-query 키
   const userDetailKey = Common.UseUserDetailKeyFn(
-    // 특정 유저 상세정ㅈ보 쿼리 키
-    { path: { teamId: TEAM_ID as string, userId: targetUserId } },
+    // 특정 유저 상세정보 쿼리 키
+    withUserId(targetUserId),
     undefined,
   );
   const followersKey = Common.UseListUserFollowersKeyFn(
     // 특정 유저의 팔로워 목록 쿼리 키
 
-    { path: { teamId: TEAM_ID as string, userId: targetUserId } },
+    withUserId(targetUserId),
     undefined,
   );
   const myFolloweesKey = meUserId
     ? Common.UseListUserFolloweesKeyFn(
         // 로그인한 유저가 팔로우하는 목록(내 팔로잉)
-        { path: { teamId: TEAM_ID as string, userId: meUserId } },
+        withUserId(meUserId),
         undefined,
       )
     : undefined;
@@ -57,53 +62,54 @@ export function useFollowMutations(targetUserId: number, meUserId?: number) {
   // 타입 안전한 낙관적 업데이트
   const patchFollowersList = (next: boolean) => {
     // 팔로워 목록
-    queriesClient.setQueryData<ListUserFollowersDefaultResponse>(followersKey, (prev) =>
-      prev
-        ? {
-            ...prev,
-            list: prev.list.map((row) =>
-              row.follower.id === targetUserId // 대상 유저 항목만
-                ? { ...row, follower: { ...row.follower, isFollowing: next } }
-                : row,
-            ),
-          }
-        : prev,
-    );
+    queriesClient.setQueryData<ListUserFollowersDefaultResponse>(followersKey, (prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        list: prev.list.map((row) =>
+          row.follower.id === targetUserId // 대상 유저 항목만
+            ? { ...row, follower: { ...row.follower, isFollowing: next } }
+            : row,
+        ),
+      };
+    });
 
     // 내 팔로잉 목록
     if (myFolloweesKey) {
-      queriesClient.setQueryData<ListUserFolloweesDefaultResponse>(myFolloweesKey, (prev) =>
-        prev
-          ? {
-              ...prev,
-              list: prev.list.map((row) =>
-                row.followee.id === targetUserId
-                  ? { ...row, followee: { ...row.followee, isFollowing: next } }
-                  : row,
-              ),
-            }
-          : prev,
-      );
+      queriesClient.setQueryData<ListUserFolloweesDefaultResponse>(myFolloweesKey, (prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          list: prev.list.map((row) =>
+            row.followee.id === targetUserId
+              ? { ...row, followee: { ...row.followee, isFollowing: next } }
+              : row,
+          ),
+        };
+      });
     }
   };
 
   /** 팔로우 실행 */
   const follow = () => {
     // 상세 즉시 반영(+1)
-    queriesClient.setQueryData<UserDetailDefaultResponse>(userDetailKey, (prev) =>
-      prev
-        ? {
-            ...prev,
-            isFollowing: true,
-            followersCount: Math.max(0, (prev.followersCount ?? 0) + 1),
-          }
-        : prev,
-    );
+    queriesClient.setQueryData<UserDetailDefaultResponse>(userDetailKey, (prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        isFollowing: true,
+        followersCount: Math.max(0, (prev.followersCount ?? 0) + 1),
+      };
+    });
     patchFollowersList(true);
 
     // 실제 서버 호출 (body.userId 필수)
     followMut.mutate(
-      { path: { teamId: TEAM_ID as string, userId: targetUserId }, body: { userId: targetUserId } },
+      {
+        ...PATH_OPTION,
+        path: { ...PATH_OPTION.path, userId: targetUserId },
+        body: { userId: targetUserId },
+      },
       {
         // 서버 카운트 동기화는 invalidate로 처리 (any 회피)
         onSettled: () => void refetchAll(),
@@ -114,20 +120,23 @@ export function useFollowMutations(targetUserId: number, meUserId?: number) {
   /** 언팔로우 실행 */
   const unfollow = () => {
     // 상세 즉시 반영(-1)
-    queriesClient.setQueryData<UserDetailDefaultResponse>(userDetailKey, (prev) =>
-      prev
-        ? {
-            ...prev,
-            isFollowing: false,
-            followersCount: Math.max(0, (prev.followersCount ?? 0) - 1),
-          }
-        : prev,
-    );
+    queriesClient.setQueryData<UserDetailDefaultResponse>(userDetailKey, (prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        isFollowing: false,
+        followersCount: Math.max(0, (prev.followersCount ?? 0) - 1),
+      };
+    });
     patchFollowersList(false);
 
     // 실제 서버 호출 (스펙상 body 필요 시 동일 전달)
     unfollowMut.mutate(
-      { path: { teamId: TEAM_ID as string, userId: targetUserId }, body: { userId: targetUserId } },
+      {
+        ...PATH_OPTION,
+        path: { ...PATH_OPTION.path, userId: targetUserId },
+        body: { userId: targetUserId },
+      },
       {
         onSettled: () => void refetchAll(),
       },

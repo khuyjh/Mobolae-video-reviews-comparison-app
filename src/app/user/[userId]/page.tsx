@@ -11,9 +11,10 @@ import ProfileCard from '@/features/mypage/components/ProfileCard';
 import ProfileTabs from '@/features/mypage/components/ProfileTabs';
 import { fetchDummyPage } from '@/features/mypage/mock/dummyPager';
 import { useFollowMutations } from '@/features/user/hooks/useFollowMutaion';
-import { TEAM_ID } from '@/shared/constants/constants';
+import { TEAM_ID, PATH_OPTION } from '@/shared/constants/constants';
+import { useUserStore } from '@/shared/stores/userStore';
 
-import { useMe, useUserDetail } from '../../../../openapi/queries/queries';
+import { useUserDetail } from '../../../../openapi/queries/queries';
 
 import type { UserDetailDefaultResponse } from '../../../../openapi/queries/common';
 import type { ContentItem } from '@/shared/types/content';
@@ -35,15 +36,11 @@ export default function UserPage() {
   const uidNum = Number(userId);
   const enabled = Number.isFinite(uidNum) && !!TEAM_ID;
 
-  const meQ = useMe({ path: { teamId: TEAM_ID as string } }, undefined, {
-    enabled: !!TEAM_ID,
-    retry: false,
-  });
+  const { isLoggedIn, user } = useUserStore();
+  const meId = user?.id;
 
-  const me = meQ.data;
-
-  const fm = useFollowMutations(uidNum, me?.id);
-  const followBtnDisabled = !me?.id || meQ.isLoading || meQ.isFetching || fm.actionDisabled;
+  const fm = useFollowMutations(uidNum, isLoggedIn ? meId : undefined);
+  const followBtnDisabled = !isLoggedIn || fm.actionDisabled;
 
   const [tab, setTab] = useState<TabKey>('reviews');
   const {
@@ -75,7 +72,7 @@ export default function UserPage() {
   );
 
   const { data: userDetail, isLoading: isUserLoading } = useUserDetail(
-    { path: { teamId: TEAM_ID as string, userId: uidNum } },
+    { ...PATH_OPTION, path: { ...PATH_OPTION.path, userId: uidNum } },
     undefined,
     { enabled, retry: false },
   );
@@ -90,7 +87,7 @@ export default function UserPage() {
       <div className='mb-[60px] xl:mr-[60px]'>
         <ProfileCard
           userId={uidNum}
-          meId={me?.id}
+          meId={meId}
           name={card.name}
           avatarSrc={card.avatarSrc}
           bio={card.bio}
