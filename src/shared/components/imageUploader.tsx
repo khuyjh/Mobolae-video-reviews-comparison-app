@@ -5,6 +5,8 @@ import { useRef, ChangeEvent } from 'react';
 
 import { cn } from '@/shared/lib/cn';
 
+import { renameFile } from '../utils/renameFile';
+
 /**
  * value: 현재 선택된 이미지 배열
  * onChange: 새로운 파일이 선택 되었을 때 호출되는 함수
@@ -32,7 +34,7 @@ export default function ImageUploader({
   value,
   onChange,
   onRemove,
-  maxImages = 1, // 기본값 1
+  maxImages = 1,
   className,
   previewUrls,
 }: ImageUploaderProps) {
@@ -44,8 +46,9 @@ export default function ImageUploader({
       if (e.target) e.target.value = '';
       return;
     }
-    const newFilesArray = Array.from(files);
+    const newFilesArray = Array.from(files).map(renameFile);
     onChange(newFilesArray);
+
     if (e.target) e.target.value = '';
   };
 
@@ -117,7 +120,7 @@ export default function ImageUploader({
         ref={fileInputRef}
         onChange={handleFileChange}
         {...(maxImages > 1 ? { multiple: true } : {})}
-        accept='image/*'
+        accept='image/png,image/jpeg,image/jpg,image/webp'
         className='hidden'
       />
     </div>
