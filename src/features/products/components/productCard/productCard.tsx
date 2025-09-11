@@ -109,6 +109,7 @@ const ProductCard = ({
             isFavorite={isFavorite}
             favoriteCount={favoriteCount}
             onFavoriteChange={onFavoriteChange}
+            onRequireLogin={() => setIsRedirectModalOpen(true)}
           />
           {/* 설명 */}
           <ProductDescription description={description} className='mt-[20px]' />

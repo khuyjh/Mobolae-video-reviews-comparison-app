@@ -3,8 +3,10 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 
+import RedirectModal from '@/features/auth/components/RedirectModal';
 import DeleteConfirmModal from '@/shared/components/deleteConfirmModal';
 import { TEAM_ID } from '@/shared/constants/constants';
+import { useUserStore } from '@/shared/stores/userStore';
 
 import ReviewDescription from './reviewDescription';
 import ReviewMeta from './reviewMeta';
@@ -16,21 +18,21 @@ import type { Review } from '../../../../../openapi/requests';
 
 interface ReviewCardProps {
   review: Review;
-  showActions: boolean;
   onLikeClick: (reviewId: number, isLiked: boolean) => Promise<void> | void;
   productName: string;
   productCategory: { id: number; name: string };
 }
 
-const ReviewCard = ({
-  review,
-  showActions,
-  onLikeClick,
-  productName,
-  productCategory,
-}: ReviewCardProps) => {
+const ReviewCard = ({ review, onLikeClick, productName, productCategory }: ReviewCardProps) => {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+
+  const [isRedirectModalOpen, setIsRedirectModalOpen] = useState(false);
+
+  const { user, isLoggedIn } = useUserStore();
+  const isMyReview = Boolean(
+    isLoggedIn && user && Number(user.id) === Number(review.user?.id ?? review.userId),
+  );
 
   /* Optimistic UI */
   const [localIsLiked, setLocalIsLiked] = useState(review.isLiked);
@@ -38,6 +40,11 @@ const ReviewCard = ({
 
   /*좋아요 클릭 핸들러 추가*/
   const handleLikeClick = async () => {
+    if (!isLoggedIn) {
+      setIsRedirectModalOpen(true);
+      return;
+    }
+
     const prevIsLiked = localIsLiked;
     const prevCount = localLikeCount;
 
@@ -99,7 +106,7 @@ const ReviewCard = ({
             <ReviewMeta
               likeCount={localLikeCount}
               isLiked={localIsLiked}
-              showActions={showActions}
+              showActions={isMyReview}
               createdAt={review.createdAt}
               onLikeClick={handleLikeClick}
               onEditClick={() => setIsEditOpen(true)}
@@ -136,6 +143,8 @@ const ReviewCard = ({
         onClose={() => setIsDeleteOpen(false)}
         onConfirm={handleDeleteConfirm}
       />
+      {/* 리다이렉트 모달 */}
+      <RedirectModal isOpen={isRedirectModalOpen} onClose={() => setIsRedirectModalOpen(false)} />
     </div>
   );
 };
