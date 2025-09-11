@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import clsx from 'clsx';
+import { MenuIcon } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 
@@ -26,7 +27,7 @@ export default function GlobalNav() {
       b: state.b,
     })),
   );
-  const isCompareReady = compareItemA && compareItemB;
+  const isCompareReady = !!(compareItemA && compareItemB);
 
   const currentPath = usePathname();
   const redirectUrl = params.get('redirect_url') ? params.get('redirect_url') : currentPath;
@@ -153,7 +154,7 @@ export default function GlobalNav() {
               >
                 <img src='/icons/SearchIcon.svg' alt='검색' />
               </button>
-              <MobileGnbSheet isLoggedIn={isLoggedIn} />
+              <MobileGnbSheet isLoggedIn={isLoggedIn} isCompareReady={isCompareReady} />
             </>
           )}
         </div>
@@ -195,12 +196,16 @@ export default function GlobalNav() {
             />
           </div>
           {searchOpen && (
-            <button
-              className='ml-[20px] grid h-[24px] w-[24px] place-items-center'
-              aria-label='메뉴 열기'
-            >
-              <img src='/icons/MenuIcon.svg' alt='메뉴' />
-            </button>
+            <div className='relative ml-[20px] grid h-6 w-6 place-items-center'>
+              <button className='h-6 w-6' aria-label='메뉴 열기'>
+                <MenuIcon className='transition-color size-6 text-gray-400 duration-200 hover:text-white' />
+              </button>
+              {isCompareReady && (
+                <div className='absolute top-1 right-[3px] h-[10px] w-[10px] translate-x-[50%] translate-y-[-50%] overflow-hidden rounded-full'>
+                  <div className='bg-main h-full w-full object-cover' />
+                </div>
+              )}
+            </div>
           )}
         </div>
       </nav>
