@@ -11,6 +11,7 @@ import Statistics from '@/features/products/components/statisticsCard';
 import { InfinityScroll } from '@/shared/components/infinityScroll';
 import { TEAM_ID } from '@/shared/constants/constants';
 import useMediaQuery from '@/shared/hooks/useMediaQuery';
+import { useUserStore } from '@/shared/stores/userStore';
 
 import { useInfiniteApi } from '../../../../openapi/queries/infiniteQueries';
 import { useLikeReview, useUnlikeReview } from '../../../../openapi/queries/queries';
@@ -61,6 +62,10 @@ export default function ProductDetailsPageClient({
   const [localFavoriteCount, setLocalFavoriteCount] = useState(product.favoriteCount);
   const [localIsFavorite, setLocalIsFavorite] = useState(product.isFavorite);
 
+  const { user } = useUserStore();
+
+  const isEditable = user?.id === product.writerId;
+
   /*  CSR 무한스크롤 훅 (SSR 첫 페이지 주입) */
   const {
     data: reviewData,
@@ -107,7 +112,7 @@ export default function ProductDetailsPageClient({
           category={{ id: product.category.id, name: product.category.name }}
           title={product.name}
           description={product.description}
-          isEditable={true}
+          isEditable={isEditable}
           productId={product.id}
           isFavorite={localIsFavorite}
           onFavoriteChange={handleFavoriteChange}
