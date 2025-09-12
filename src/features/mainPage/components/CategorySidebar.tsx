@@ -15,7 +15,7 @@ import { buildCategoryHref } from '../services/buildCategoryHref';
  * - 선택된 상태를 URL에서 파생해 강조 처리
  * - buildCategoryHref를 사용해 링크 계산 (cursor 초기화 포함)
  */
-export default function CategorySidebar() {
+const CategorySidebar = () => {
   const { selectedId, searchParamsForLinks } = useCategoryParams();
 
   return (
@@ -43,4 +43,6 @@ export default function CategorySidebar() {
       </nav>
     </aside>
   );
-}
+};
+
+export default CategorySidebar;

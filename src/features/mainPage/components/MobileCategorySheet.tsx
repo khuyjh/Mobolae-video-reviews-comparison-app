@@ -18,7 +18,7 @@ import { buildCategoryHref } from '../services/buildCategoryHref';
  * - 트리거 버튼: 현재 카테고리명 (없으면 "카테고리")
  * - 항목 클릭 시 buildCategoryHref로 링크 계산
  */
-export default function MobileCategorySheet() {
+const MobileCategorySheet = () => {
   const { selectedId, searchParamsForLinks } = useCategoryParams();
 
   const label =
@@ -51,4 +51,6 @@ export default function MobileCategorySheet() {
       </ArrowList>
     </MobileBottomSheet>
   );
-}
+};
+
+export default MobileCategorySheet;
