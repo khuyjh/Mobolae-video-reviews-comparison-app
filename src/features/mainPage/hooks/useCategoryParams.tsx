@@ -14,11 +14,11 @@ export function useCategoryParams() {
   const params = useSearchParams();
 
   /** 현재 선택된 카테고리 ID (없으면 null) */
-  const selectedId = useMemo(() => {
+  const selectedId = (() => {
     const raw = params.get('category');
     const id = raw ? parseInt(raw, 10) : NaN;
     return Number.isFinite(id) ? id : null;
-  }, [params]);
+  })();
 
   /** 현재 검색 키워드 */
   const keyword = useMemo(() => params.get('keyword') ?? '', [params]);
