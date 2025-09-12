@@ -8,6 +8,7 @@ import { toast } from 'react-toastify';
 import { PATH_OPTION } from '@/shared/constants/constants';
 import { cn } from '@/shared/lib/cn';
 import { shareToKakao } from '@/shared/lib/kakaoShare';
+import { useUserStore } from '@/shared/stores/userStore';
 import { toCategoryChip } from '@/shared/utils/categoryUtil';
 
 import { useFavorite, useUnfavorite } from '../../../../../openapi/queries/queries';
@@ -27,6 +28,7 @@ interface ProductHeaderProps {
   isFavorite: boolean;
   favoriteCount?: number;
   onFavoriteChange?: (newIsFavorite: boolean) => void;
+  onRequireLogin?: () => void;
 }
 
 const ProductHeader = ({
@@ -36,6 +38,7 @@ const ProductHeader = ({
   isFavorite,
   favoriteCount = 0,
   onFavoriteChange,
+  onRequireLogin,
 }: ProductHeaderProps) => {
   const [isLiked, setIsLiked] = useState<boolean>(isFavorite);
   const [localFavoriteCount, setLocalFavoriteCount] = useState<number>(favoriteCount);
@@ -44,7 +47,14 @@ const ProductHeader = ({
   const unfavoriteMut = useUnfavorite();
   const queryClient = useQueryClient();
 
+  const { isLoggedIn } = useUserStore();
+
   const handleLikeClick = () => {
+    if (!isLoggedIn) {
+      onRequireLogin?.();
+      return;
+    }
+
     const prevIsLiked = isLiked;
     const prevCount = localFavoriteCount;
 

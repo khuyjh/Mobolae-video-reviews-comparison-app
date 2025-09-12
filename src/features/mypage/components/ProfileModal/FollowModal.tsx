@@ -1,84 +1,117 @@
+'use client';
+
 import Link from 'next/link';
 
 import React from 'react';
-import { useState } from 'react';
 
+import { useFollowMutations } from '@/features/user/hooks/useFollowMutaion';
 import BaseModal from '@/shared/components/BaseModal';
 import ProfileBadge from '@/shared/components/card/avatarCard';
+import { TEAM_ID } from '@/shared/constants/constants';
 
-const AVATAR = '/images/profileImg.jpg';
+import { useListUserFollowers, useListUserFollowees } from '../../../../../openapi/queries/queries';
 
-const items = [
-  { id: 101, name: '리뷰왕', avatarSrc: AVATAR, followers: 682, reviewCount: 398, rating: 5 },
-  { id: 102, name: '리뷰왕', avatarSrc: AVATAR, followers: 682, reviewCount: 398, rating: 4 },
-  {
-    id: 103,
-    name: '리뷰왕리뷰왕리뷰왕리뷰왕',
-    avatarSrc: AVATAR,
-    followers: 800,
-    reviewCount: 38,
-    rating: 3,
-  },
-  {
-    id: 105,
-    name: '리뷰왕리뷰왕리뷰왕리뷰왕',
-    avatarSrc: AVATAR,
-    followers: 800,
-    reviewCount: 38,
-    rating: 3,
-  },
-  {
-    id: 106,
-    name: '리뷰왕리뷰왕리뷰왕리뷰왕',
-    avatarSrc: AVATAR,
-    followers: 800,
-    reviewCount: 38,
-    rating: 3,
-  },
-  {
-    id: 107,
-    name: '리뷰왕리뷰왕리뷰왕리뷰왕',
-    avatarSrc: AVATAR,
-    followers: 800,
-    reviewCount: 38,
-    rating: 3,
-  },
-];
+import type {
+  ListUserFollowersDefaultResponse,
+  ListUserFolloweesDefaultResponse,
+} from '../../../../../openapi/queries/common';
+
+type FollowersResp = NonNullable<ListUserFollowersDefaultResponse>;
+type FolloweesResp = NonNullable<ListUserFolloweesDefaultResponse>;
+
+type FollowerRow = FollowersResp['list'][number]; // { follower: User; id: Id }
+type FolloweeRow = FolloweesResp['list'][number]; // { followee: User; id: Id }
+
+type UserLite = (FollowerRow['follower'] | FolloweeRow['followee']) & {
+  isFollowing?: boolean;
+};
 
 type FollowModalProps = {
+  userId: number;
+  meId?: number;
+  nickname?: string;
   type: 'followers' | 'following' | null;
   isOpen: boolean;
   onClose: () => void;
 };
 
-const FollowModal: React.FC<FollowModalProps> = ({ type, isOpen, onClose }) => {
-  if (!type) return null;
+export default function FollowModal({
+  userId,
+  meId,
+  nickname,
+  type,
+  isOpen,
+  onClose,
+}: FollowModalProps) {
+  const isFollowers = type === 'followers';
+  const isFollowees = type === 'following';
+  const open = Boolean(isOpen && type);
 
-  const followTitle = type === 'followers' ? '님을 팔로우하는' : '님이 팔로잉하는';
-  const title = type === 'followers' ? '팔로우 목록' : '팔로잉 목록';
+  const followersQ = useListUserFollowers(
+    { path: { teamId: TEAM_ID as string, userId } },
+    undefined,
+    { enabled: open && isFollowers },
+  );
+  const followeesQ = useListUserFollowees(
+    { path: { teamId: TEAM_ID as string, userId } },
+    undefined,
+    { enabled: open && isFollowees },
+  );
+
+  if (!open) return null;
+
+  const username = `${nickname}`;
+  const title = isFollowers ? '팔로워 목록' : '팔로잉 목록';
+  const subtitle = isFollowers ? '님을 팔로우하는 유저' : '님이 팔로잉하는 유저';
+
+  const followerUsers: UserLite[] = isFollowers
+    ? (followersQ.data?.list ?? []).map((row) => ({
+        ...row.follower,
+        isFollowing: false,
+      }))
+    : [];
+
+  const followeeUsers: UserLite[] = isFollowees
+    ? (followeesQ.data?.list ?? []).map((row) => ({
+        ...row.followee,
+        isFollowing: false,
+      }))
+    : [];
+  const users: UserLite[] = isFollowers ? followerUsers : followeeUsers;
+  const loading = isFollowers ? followersQ.isLoading : followeesQ.isLoading;
 
   return (
     <BaseModal title={title} size='M' isOpen={isOpen} onClose={onClose}>
       <div className='px-[10px] md:px-[30px]'>
         <h3 className='xl:text-2xl-semibold text-xl-semibold mb-[20px] xl:mb-[40px]'>
-          surisuri마수리{followTitle}유저
+          {username}
+          {subtitle}
         </h3>
-        <div className='h-[514px] overflow-y-scroll'>
-          {items.map((items) => (
-            <Link key={items.id} href={`/users/${items.id}`}>
-              <ProfileBadge
-                key={items.id}
-                variant='follower'
-                id={items.id}
-                name={items.name}
-                avatarSrc={items.avatarSrc}
-              />
-            </Link>
+
+        <div className='h-[514px] overflow-y-auto pr-1'>
+          {loading && <p className='text-gray-400'>불러오는 중…</p>}
+          {!loading && users.length === 0 && <p className='text-gray-500'>목록이 비어 있어요.</p>}
+
+          {users.map((u) => (
+            <UserRow key={u.id} user={u} />
           ))}
         </div>
       </div>
     </BaseModal>
   );
-};
+}
 
-export default FollowModal;
+function UserRow({ user }: { user: UserLite }) {
+  return (
+    <div className='flex items-center justify-between py-2'>
+      <Link href={`/user/${user.id}`} className='min-w-0'>
+        <ProfileBadge
+          variant='follower'
+          id={user.id}
+          name={user.nickname}
+          avatarSrc={user.image ?? ''}
+        />
+      </Link>
+    </div>
+  );
+}
