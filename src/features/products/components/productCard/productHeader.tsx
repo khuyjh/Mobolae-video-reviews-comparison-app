@@ -121,7 +121,7 @@ const ProductHeader = ({
 
   /* 클립보드 복사 */
   const handleCopyLink = async () => {
-    const url = `${window.location.origin}/product/${productId}`;
+    const url = `${window.location.origin}/products/${productId}`;
     try {
       await navigator.clipboard.writeText(url);
       toast.success('클립보드에 복사되었습니다.');

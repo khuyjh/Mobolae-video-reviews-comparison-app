@@ -195,6 +195,7 @@ const ReviewModal = ({
   const categoryChipProps = toCategoryChip(productCategory);
 
   const isReviewValid = reviewText.trim().length >= 10;
+  const isAddModeValid = mode === 'add' ? currentRating > 0 : true;
 
   /* 수정모드 변경사항 감지 */
   const hasChanges = useMemo(() => {
@@ -279,7 +280,7 @@ const ReviewModal = ({
           }}
           previewUrls={[...existingImages.map((img) => img.url), ...previews.map((p) => p.url)]}
           maxImages={maxImages}
-          className='mt-2.5'
+          className='mt-2.5 w-[120px] max-w-none'
         />
 
         <p className='text-xs-medium mt-1.5 text-gray-400'>
@@ -289,7 +290,7 @@ const ReviewModal = ({
         <Button
           variant='primary'
           className='mt-8 w-full max-w-full md:max-w-full xl:max-w-full'
-          disabled={!isReviewValid || (mode === 'edit' && !hasChanges)}
+          disabled={!isReviewValid || !isAddModeValid || (mode === 'edit' && !hasChanges)}
           onClick={handleSubmit}
         >
           {mode === 'add' ? '작성하기' : '수정하기'}

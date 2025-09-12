@@ -25,7 +25,8 @@ interface ImageUploaderProps {
 
 const IMAGE_ITEM_BASE_CLASSES = 'bg-black-800 group relative rounded-[8px] border border-black-700';
 
-const IMAGE_ITEM_SIZES = 'w-full aspect-square md:h-[135px] md:w-[135px] xl:h-[160px] xl:w-[160px]';
+const IMAGE_ITEM_SIZES =
+  'w-[123px] h-[123px] aspect-square md:h-[135px] md:w-[135px] xl:h-[160px] xl:w-[160px]';
 
 const IMAGE_REMOVE_BUTTON_CLASSES =
   'bg-black-900/60 absolute top-1 right-1 rounded-full p-1 opacity-0 transition-opacity group-hover:opacity-100';
@@ -65,7 +66,7 @@ export default function ImageUploader({
         className={cn(
           maxImages === 1
             ? 'flex' // 1장일 때
-            : 'grid grid-cols-3 justify-items-center gap-2 md:gap-1', // 여러 장일 때
+            : `flex gap-[10px]`, // 여러 장일 때
         )}
       >
         {previewUrls.map((previewUrl, index) => (
