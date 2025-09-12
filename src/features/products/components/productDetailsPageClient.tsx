@@ -8,11 +8,11 @@ import ProductCard from '@/features/products/components/productCard/productCard'
 import ReviewCard from '@/features/products/components/reviewCard/reviewCard';
 import ReviewSortDropdown from '@/features/products/components/reviewSortDropdown';
 import Statistics from '@/features/products/components/statisticsCard';
-import { InfinityScroll } from '@/shared/components/infinityScroll';
 import { TEAM_ID } from '@/shared/constants/constants';
 import useMediaQuery from '@/shared/hooks/useMediaQuery';
 import { useUserStore } from '@/shared/stores/userStore';
 
+import { VirtualizedInfinityScroll } from './virtualizedInfinityScroll';
 import { useInfiniteApi } from '../../../../openapi/queries/infiniteQueries';
 import { useLikeReview, useUnlikeReview } from '../../../../openapi/queries/queries';
 
@@ -148,14 +148,14 @@ export default function ProductDetailsPageClient({
             <ReviewSortDropdown value={sortValue} onChange={setSortValue} />
           </section>
 
-          {/* 무한 스크롤 리뷰 리스트 */}
-          <InfinityScroll<Review>
+          {/* VirtualizedInfinityScroll 사용 */}
+          <VirtualizedInfinityScroll<Review>
             items={reviews}
             renderItem={(review, index) => (
               <div
-                key={String(review.id)}
-                data-index={index}
-                style={{ marginBottom: index === reviews.length - 1 ? 0 : itemSpacing }}
+                style={{
+                  marginBottom: index === reviews.length - 1 ? 0 : itemSpacing,
+                }}
               >
                 <ReviewCard
                   review={review}
@@ -169,8 +169,10 @@ export default function ProductDetailsPageClient({
             fetchNextPage={fetchNextPage}
             isLoading={isFetchingNextPage}
             itemHeightEstimate={itemHeightEstimate}
-            scrollKey={`product-reviews-${sortValue}`}
             maxItems={500}
+            overscan={5}
+            loadingText='로딩 중...'
+            loadMoreText='더 불러오기'
           />
         </div>
       </div>
