@@ -11,6 +11,7 @@ export function useScrollDirection() {
   const [direction, setDirection] = useState<'up' | 'down' | null>(null);
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
     let prevY = window.scrollY;
 
     const handleScroll = () => {
