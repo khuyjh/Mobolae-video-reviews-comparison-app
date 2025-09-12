@@ -77,6 +77,12 @@ export type CompareState = {
    * 상태 변경 없이 교체 가능성만 판단하여 UI에서 분기 처리 가능.
    */
   evaluateReplace: (side: 'A' | 'B', next: CompareCandidate) => ReplaceEval;
+
+  /**
+   *  명시적으로 현재 로그인한 유저의 compare-storage를 지우고 싶을 때만 호출
+   * (persist 내부 removeItem은 no-op으로 막았으므로, 삭제는 이 액션으로만 수행)
+   */
+  wipeCurrentUserStorage: () => void;
 };
 
 /** 저장 포맷 - persist에는 이 형태만 저장 */
@@ -110,11 +116,14 @@ const PERSIST_VERSION = 2;
  */
 function getCurrentUserIdFromAuthStorage(): string | null {
   try {
+    console.log('getCurrentUserIdFrom...');
     const raw = localStorage.getItem('auth-storage');
+    console.log('raw', raw);
     if (!raw) return null;
     const parsed = JSON.parse(raw);
     return parsed?.state?.user?.id ?? null;
-  } catch {
+  } catch (e) {
+    console.log(e);
     return null;
   }
 }
@@ -122,6 +131,33 @@ function getCurrentUserIdFromAuthStorage(): string | null {
 /** compare persist 기본 키(로그인 상태에서만 저장, 비로그인 시 저장 안 함) */
 const BASE_KEY = 'compare-storage';
 
+/** 추가: userId 변경 감지 & 동기화 유틸 (모듈 스코프), 마지막으로 확인한 userId를 기억하기 위함 */
+let __lastUserId: string | null | undefined = undefined;
+
+// 현재 auth-storage 기준 userId를 읽어와, 바뀌었으면 sync 실행
+function __trySyncCompareOnUserChange() {
+  try {
+    const current = getCurrentUserIdFromAuthStorage();
+    if (__lastUserId === current) return; // 변화 없음
+
+    __lastUserId = current;
+
+    // zustand 스토어 액션 호출: B 유저 스냅샷 있으면 복원, 없으면 초기화
+    // (아래 useCompareStore 정의 이후에 바인딩되므로, 안전하게 microtask로 미룸)
+    queueMicrotask(() => {
+      try {
+        useCompareStore.getState().syncWithCurrentUser();
+      } catch (e) {
+        // 아직 스토어가 초기화 안 된 아주 이른 타이밍 대비
+        setTimeout(() => {
+          try {
+            useCompareStore.getState().syncWithCurrentUser();
+          } catch {}
+        }, 0);
+      }
+    });
+  } catch {}
+}
 /**
  * 커스텀 스토리지 어댑터
  * - zustand의 storage 인터페이스(getItem/setItem/removeItem)를 구현해서
@@ -131,23 +167,64 @@ const BASE_KEY = 'compare-storage';
 const namespacedStorage = {
   getItem: (_name: string) => {
     const userId = getCurrentUserIdFromAuthStorage();
+    console.log(userId, 'getitem');
+    console.log(localStorage.getItem(`${BASE_KEY}:${userId}`), 'getitem');
     if (!userId) return null;
-    const key = `${BASE_KEY}:${userId}`;
-    return localStorage.getItem(key);
+    return localStorage.getItem(`${BASE_KEY}:${userId}`);
   },
   setItem: (_name: string, value: string) => {
     const userId = getCurrentUserIdFromAuthStorage();
-    if (!userId) return;
-    const key = `${BASE_KEY}:${userId}`;
-    localStorage.setItem(key, value);
+    const key = userId ? `${BASE_KEY}:${userId}` : '(no user)';
+    try {
+      const parsed = JSON.parse(value);
+      console.log('setItem', key, parsed);
+      // ★ a/b가 null로 저장될 때만 로그
+      if (parsed?.state?.a === null && parsed?.state?.b === null) {
+        // console.warn('[compare:setItem NULL SAVE]', { key, value: parsed });
+        // console.trace('[compare: NULL save stack]');
+      } else {
+      }
+    } catch {}
+    if (!userId) return; // 비로그인 상태에선 저장 안 함
+    localStorage.setItem(`${BASE_KEY}:${userId}`, value);
   },
   removeItem: (_name: string) => {
-    const userId = getCurrentUserIdFromAuthStorage();
-    if (!userId) return;
-    const key = `${BASE_KEY}:${userId}`;
-    localStorage.removeItem(key);
+    //의도치 않은 시점에 유저 키가 삭제되는 문제 예방하기 위해 no-op 처리
   },
 };
+
+/** 추가: 같은 탭에서 auth-storage가 갱신될 때를 감지하기 위한 후킹
+   - localStorage.setItem('auth-storage', ...) 이후 즉시 동기화
+   - 다른 키에는 영향 없음
+ */
+(() => {
+  if (typeof window === 'undefined') return;
+
+  const _origSetItem = localStorage.setItem.bind(localStorage);
+
+  localStorage.setItem = function (key: string, value: string) {
+    _origSetItem(key, value);
+    if (key === 'auth-storage') {
+      // 로그인/로그아웃/유저전환 직후, 같은 탭에서도 확실히 감지
+      __trySyncCompareOnUserChange();
+    }
+  };
+
+  // 다른 탭에서 auth-storage가 바뀐 경우(브라우저 표준 storage 이벤트)
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'auth-storage') {
+      __trySyncCompareOnUserChange();
+    }
+  });
+
+  // 탭 포커스나 가시성 전환 시에도 한 번 동기화 (백그라운드에서 바뀐 경우 대비)
+  const onWake = () => __trySyncCompareOnUserChange();
+  window.addEventListener('focus', onWake);
+  document.addEventListener('visibilitychange', onWake);
+
+  // 초기 1회 동기화 (앱 로드 시 현재 유저 스냅샷 반영)
+  queueMicrotask(__trySyncCompareOnUserChange);
+})();
 
 /* zustand store 부분 */
 
@@ -291,7 +368,9 @@ export const useCompareStore = create<CompareState>()(
         return null;
       },
       /**
-       *  유저 전환 시: 로그인 상태면 해당 유저 키에서 복원, 아니면 메모리 초기화
+       * - 유저 전환 시 현재 유저의 스냅샷으로 동기화
+       * - 로그인 상태면 해당 유저 키에서 복원
+       * - 비로그인 또는 스냅샷 없으면 초기화
        */
       syncWithCurrentUser: () => {
         try {
@@ -301,18 +380,26 @@ export const useCompareStore = create<CompareState>()(
             set({ a: null, b: null, requested: false, requestTick: 0, inFlight: false });
             return;
           }
+
           const key = `${BASE_KEY}:${userId}`;
           const raw = localStorage.getItem(key);
-          const parsed = raw ? JSON.parse(raw) : null;
+
+          if (!raw) {
+            // 로컬 스토리지가 비어있을 때는 "메모리만 초기화" (persist에는 쓰지 않음)
+            set({ a: null, b: null, requested: false, requestTick: 0, inFlight: false });
+            return;
+          }
+
+          const parsed = JSON.parse(raw);
           const a = parsed?.state?.a ?? null;
           const b = parsed?.state?.b ?? null;
 
-          // 복원 시에도 categoryId가 없다면 무효화
           const safeA: CompareCandidate | null = a && typeof a.categoryId === 'number' ? a : null;
           const safeB: CompareCandidate | null = b && typeof b.categoryId === 'number' ? b : null;
 
           set({ a: safeA, b: safeB, requested: false, requestTick: 0, inFlight: false });
         } catch {
+          // 로컬스토리지 파싱 에러 등 예외 대비
           set({ a: null, b: null, requested: false, requestTick: 0, inFlight: false });
         }
       },
@@ -332,6 +419,14 @@ export const useCompareStore = create<CompareState>()(
         if (!hasCategory(other)) return 'missing-category';
 
         return isSameCategory(next, other) ? 'ok' : 'needs-clear';
+      },
+
+      // 명시적 삭제 액션: 정말로 현재 유저의 compare-storage를 지워야 할 때만 사용
+      wipeCurrentUserStorage: () => {
+        const userId = getCurrentUserIdFromAuthStorage();
+        if (!userId) return;
+        const key = `${BASE_KEY}:${userId}`;
+        localStorage.removeItem(key);
       },
     }),
 
