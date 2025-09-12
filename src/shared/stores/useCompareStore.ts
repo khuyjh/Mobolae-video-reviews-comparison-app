@@ -368,15 +368,15 @@ export const useCompareStore = create<CompareState>()(
         return null;
       },
       /**
-       * - 유저 전환 시 현재 유저의 스냅샷으로 동기화
-       * - 로그인 상태면 해당 유저 키에서 복원
-       * - 비로그인 또는 스냅샷 없으면 초기화
+       * - 유저 전환 시: 로그인 상태면 해당 유저 키에서 복원, 아니면 메모리 초기화
+       * - 이제 직접 JSON 파싱하여 set()하지 않고,zustand persist의 rehydrate 경로를 최우선으로 사용
+       * - (migrate/partialize/version을 그대로 따르기 때문에 안전)
        */
       syncWithCurrentUser: () => {
         try {
           const userId = getCurrentUserIdFromAuthStorage();
+          // 1) 로그아웃 상태: 메모리만 초기화.
           if (!userId) {
-            // 로그아웃 상태: persist 비활성. 메모리만 초기화.
             set({ a: null, b: null, requested: false, requestTick: 0, inFlight: false });
             return;
           }
@@ -384,22 +384,26 @@ export const useCompareStore = create<CompareState>()(
           const key = `${BASE_KEY}:${userId}`;
           const raw = localStorage.getItem(key);
 
-          if (!raw) {
-            // 로컬 스토리지가 비어있을 때는 "메모리만 초기화" (persist에는 쓰지 않음)
-            set({ a: null, b: null, requested: false, requestTick: 0, inFlight: false });
-            return;
-          }
+          // 다음 틱에서 처리 → namespacedStorage가 '변경된 userId'로 읽도록 보장
+          queueMicrotask(() => {
+            if (raw) {
+              // 스냅샷이 있으면 → rehydrate로 복원(migrate/partialize/version 로직 그대로 탑승)
+              try {
+                useCompareStore.persist.rehydrate();
 
-          const parsed = JSON.parse(raw);
-          const a = parsed?.state?.a ?? null;
-          const b = parsed?.state?.b ?? null;
-
-          const safeA: CompareCandidate | null = a && typeof a.categoryId === 'number' ? a : null;
-          const safeB: CompareCandidate | null = b && typeof b.categoryId === 'number' ? b : null;
-
-          set({ a: safeA, b: safeB, requested: false, requestTick: 0, inFlight: false });
+                // (선택) 휘발성 플래그 정리: requested/inFlight 등
+                set({ requested: false, inFlight: false });
+              } catch {
+                // rehydrate 실패 시 안전 초기화
+                set({ a: null, b: null, requested: false, requestTick: 0, inFlight: false });
+              }
+            } else {
+              // 스냅샷이 없으면 → 초기화
+              set({ a: null, b: null, requested: false, requestTick: 0, inFlight: false });
+            }
+          });
         } catch {
-          // 로컬스토리지 파싱 에러 등 예외 대비
+          // 예외 대비: 안전 초기화
           set({ a: null, b: null, requested: false, requestTick: 0, inFlight: false });
         }
       },
