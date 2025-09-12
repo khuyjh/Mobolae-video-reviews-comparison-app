@@ -116,14 +116,11 @@ const PERSIST_VERSION = 2;
  */
 function getCurrentUserIdFromAuthStorage(): string | null {
   try {
-    console.log('getCurrentUserIdFrom...');
     const raw = localStorage.getItem('auth-storage');
-    console.log('raw', raw);
     if (!raw) return null;
     const parsed = JSON.parse(raw);
     return parsed?.state?.user?.id ?? null;
-  } catch (e) {
-    console.log(e);
+  } catch {
     return null;
   }
 }
@@ -167,8 +164,6 @@ function __trySyncCompareOnUserChange() {
 const namespacedStorage = {
   getItem: (_name: string) => {
     const userId = getCurrentUserIdFromAuthStorage();
-    console.log(userId, 'getitem');
-    console.log(localStorage.getItem(`${BASE_KEY}:${userId}`), 'getitem');
     if (!userId) return null;
     return localStorage.getItem(`${BASE_KEY}:${userId}`);
   },
@@ -177,7 +172,6 @@ const namespacedStorage = {
     const key = userId ? `${BASE_KEY}:${userId}` : '(no user)';
     try {
       const parsed = JSON.parse(value);
-      console.log('setItem', key, parsed);
       // ★ a/b가 null로 저장될 때만 로그
       if (parsed?.state?.a === null && parsed?.state?.b === null) {
         // console.warn('[compare:setItem NULL SAVE]', { key, value: parsed });
