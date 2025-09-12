@@ -1,3 +1,5 @@
+'use client';
+
 import clsx from 'clsx';
 import { Star } from 'lucide-react';
 import React from 'react';
@@ -7,7 +9,6 @@ import { toRankingChip } from '@/shared/utils/rankingUtil';
 
 import SafeProfileImage from '../SafeProfileImage';
 
-/***************** 메인페이지 랭킹 / 팔로워 목록 / 리뷰   **************/
 type Variant = 'ranking' | 'follower' | 'reviewProfile';
 
 type ProfileBadgeProps = {
@@ -23,18 +24,17 @@ type ProfileBadgeProps = {
   className?: string;
 };
 
-/***************** css 스타일  **************/
 const AVATAR_WRAPPER =
   'mr-[10px] h-[36px] w-[36px] overflow-hidden rounded-full xl:h-[42px] xl:w-[42px]';
 const AVATAR_IMG = 'h-full w-full object-cover';
 const AVATAR_SIZE_FOLLOWER =
   'mr-[20px] h-[48px] w-[48px] overflow-hidden rounded-full xl:h-[52px] xl:w-[52px]';
 
-const HEADER_ROW = 'flex items-center gap-[5px]';
+const HEADER_ROW = 'flex min-w-0 items-center gap-[5px]';
 const BADGE_BASE =
   'rounded-[50px] px-[6px] py-[2px] text-xxs-regular xl:px-[8px] xl:text-xs-regular';
 
-const NAME_TEXT = ' text-white text-md-regular xl:text-base-medium';
+const NAME_TEXT = 'text-white text-md-regular xl:text-base-medium';
 const FOLLOWER_NAME_TEXT = 'text-white text-base-medium xl:text-lg-medium';
 
 const META_ROW = 'flex gap-[10px] text-xxs-light text-gray-600 xl:text-xs-light';
@@ -43,18 +43,11 @@ const CENTER_ROW = 'flex items-center';
 const STAR_ICON_STYLE = 'h-[12px] w-[12px] text-yellow-400 xl:h-[18px] xl:w-[18px]';
 const STAR_ICON_EMPTY_STYLE = 'text-gray-500 opacity-40';
 
-/***************** 리뷰 별점 **************/
-type StarRowProps = {
-  count: number;
-};
-
-export function StarRow({ count }: StarRowProps) {
-  const stars = count;
-
+export function StarRow({ count }: { count: number }) {
   return (
-    <div className={CENTER_ROW} aria-label={`별점 ${stars}점`}>
+    <div className={CENTER_ROW} aria-label={`별점 ${count}점`}>
       {Array.from({ length: 5 }).map((_, i) => {
-        const filled = i < stars;
+        const filled = i < count;
         return (
           <Star
             key={i}
@@ -69,7 +62,6 @@ export function StarRow({ count }: StarRowProps) {
   );
 }
 
-/***************** 컴포넌트 시작  **************/
 export default function ProfileBadge({
   variant,
   id,
@@ -83,15 +75,14 @@ export default function ProfileBadge({
 }: ProfileBadgeProps) {
   const rankingChip = variant === 'ranking' && rankingMap ? toRankingChip(id, rankingMap) : null;
 
-  /* variant별로 Image 크기 설정 */
   const getImageSize = () => {
     if (variant === 'follower') return { width: 52, height: 52 };
     return { width: 42, height: 42 };
   };
 
   return (
-    <div className={clsx('flex', variant === 'follower' && 'mb-[40px]')}>
-      {/*아바타*/}
+    <div className={clsx('flex min-w-0', variant === 'follower' && 'mb-[40px]')}>
+      {/* 아바타 */}
       <div
         className={clsx(
           variant === 'ranking' && AVATAR_WRAPPER,
@@ -107,37 +98,47 @@ export default function ProfileBadge({
           {...getImageSize()}
         />
       </div>
-      {/*메인페이지에 들어 갈 아바타 카드*/}
+
+      {/* ranking 카드 (사이드바 등) */}
       {variant === 'ranking' && (
-        <div>
+        <div className='min-w-0 flex-1'>
           <div className={HEADER_ROW}>
             {rankingChip ? (
-              <Chip {...rankingChip} className={BADGE_BASE} />
+              <Chip {...rankingChip} className={`${BADGE_BASE} shrink-0`} />
             ) : (
-              <span className={BADGE_BASE + ' bg-gray-200 text-gray-600'}>등수</span>
+              <span className={`${BADGE_BASE} shrink-0 bg-gray-200 text-gray-600`}>등수</span>
             )}
-            <span className={NAME_TEXT}>{name}</span>
+            {/* 닉네임: 최대 94px, 넘치면 … */}
+            <span className={`${NAME_TEXT} max-w-[94px] truncate`}>{name}</span>
           </div>
+
+          {/* 메타줄: 인라인 요소만, gap으로 간격 */}
           <div className={META_ROW}>
-            <span>팔로워 {followers}</span>
-            <span>리뷰 {review}</span>
+            <span className='inline-flex items-center'>
+              <span className='pr-[5px]'>팔로워</span>
+              {followers}
+            </span>
+            <span className='inline-flex items-center'>
+              <span className='pr-[5px]'>리뷰</span>
+              {review}
+            </span>
           </div>
         </div>
       )}
 
-      {/*리뷰페이지 들어 갈 아바타 카드*/}
+      {/* 리뷰 프로필 카드 */}
       {variant === 'reviewProfile' && (
         <div>
-          <div className={CENTER_ROW}>
+          <div className={`${CENTER_ROW} min-w-0`}>
             <span className={NAME_TEXT}>{name}</span>
           </div>
           <StarRow count={rating} />
         </div>
       )}
 
-      {/*팔로우목록에 들어 갈 아바타 카드*/}
+      {/* 팔로워 카드 */}
       {variant === 'follower' && (
-        <div className={clsx(CENTER_ROW, className)}>
+        <div className={clsx(`${CENTER_ROW} min-w-0`, className)}>
           <span className={FOLLOWER_NAME_TEXT}>{name}</span>
         </div>
       )}
