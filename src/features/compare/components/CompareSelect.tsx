@@ -10,12 +10,12 @@ import { forwardRef, useEffect, useId, useMemo, useRef, useState } from 'react';
 
 import { PATH_OPTION } from '@/shared/constants/constants';
 import { cn } from '@/shared/lib/cn';
+import { createQueryComparator } from '@/shared/utils/querySort';
 
 import { useListProduct } from '../../../../openapi/queries';
 import { toCandidates } from '../utils/contentMapper';
 
 import type { CompareCandidate } from '@/features/compare/types/compareTypes';
-
 type TrySetReason = 'duplicate' | 'category-mismatch' | 'missing-category' | 'unknown';
 
 export type CompareSelectProps = {
@@ -41,6 +41,8 @@ export type CompareSelectProps = {
 
 // 사용자가 입력한 값(query)을 DEBOUNCE_MS(ms기준) 기다린 후 debounced에 반영
 const DEBOUNCE_MS = 150;
+// 드롭다운에 뜰 콘텐츠 수 제한
+const MAX_DROPDOWN_CONTENTS = 5;
 
 // 문자열 비교 유틸: 공백/대소문자/유니코드 정규화 등을 정리해서 완전 일치 판정 신뢰도 높임
 const normalizeForExactMatch = (input: string, locale: string = 'ko-KR'): string =>
@@ -117,10 +119,17 @@ const CompareSelect = forwardRef<HTMLInputElement, CompareSelectProps>(function 
   // 서버 결과 → 후보
   const serverOptions = useMemo(() => toCandidates(serverData), [serverData]);
 
-  // 드롭다운에 보일 리스트 (입력이 없으면 baseOptions 그대로)
+  // "완전 일치 > 접두 > 포함 > 불일치", disabled는 항상 하단
   const filtered: CompareCandidate[] = useMemo(() => {
-    if (debounced.length >= 1) return serverOptions;
-    return [];
+    if (debounced.length < 1) return [];
+
+    // 1) 정렬 비교기 생성 — 여기서 ‘어떤 텍스트로 비교할지’와 ‘disabled 판단’을 명시
+    const comparator = createQueryComparator<CompareCandidate>(debounced, {
+      getText: (item) => item.name, // 비교 기준 텍스트
+      isDisabled: (item) => Boolean(item.disabled), // 선택 불가 항목은 아래로
+    });
+
+    return [...serverOptions].sort(comparator).slice(0, MAX_DROPDOWN_CONTENTS);
   }, [debounced, serverOptions]);
 
   // Chip이 있을 때 입력/검색 비활성

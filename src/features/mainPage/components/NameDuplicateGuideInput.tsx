@@ -68,27 +68,30 @@ const NameDuplicateGuideInput = ({
         {value.length}/{maxLength}
       </span>
 
-      {/* 안내 패널: 포커스 중 + 2자 이상 */}
-      {isFocused && trimmed.length >= 2 && (
+      {/* 안내 패널: 포커스 중 + 1자 이상 */}
+      {isFocused && trimmed.length >= 1 && (
         <div className='border-black-700 bg-black-800 absolute top-full right-0 left-0 z-20 mt-1 rounded-lg border p-[10px] shadow-xl'>
-          {isLoading ? (
-            <div className='px-2 py-1 text-sm text-gray-400'>검색 중…</div>
-          ) : filtered.length === 0 ? (
-            <div className='px-2 py-1 text-sm text-gray-600'>일치하는 결과가 없습니다</div>
-          ) : (
-            filtered.map((name, i) => (
-              <div
-                key={`${name}-${i}`}
-                className='pointer-events-none mt-[5px] flex items-center justify-between rounded-md px-3 py-1.5 text-sm text-gray-300 first:mt-0'
-                title='선택은 불가합니다 (중복 안내 전용)'
-              >
-                <span className='truncate'>{name}</span>
-                <span className='rounded bg-red-500/15 px-1.5 py-0.5 text-[10px] text-red-400'>
-                  이미 등록됨
-                </span>
-              </div>
-            ))
-          )}
+          {/* 스크롤 박스: 높이 32px 고정 + overflow-y */}
+          <div className='hide-scrollbar max-h-42 overflow-y-auto'>
+            {isLoading ? (
+              <div className='px-2 py-1 text-sm text-gray-400'>검색 중…</div>
+            ) : filtered.length === 0 ? (
+              <div className='px-2 py-1 text-sm text-gray-600'>일치하는 결과가 없습니다</div>
+            ) : (
+              filtered.map((name, i) => (
+                <div
+                  key={`${name}-${i}`}
+                  className='pointer-events-none mt-[5px] flex items-center justify-between rounded-md px-3 py-1.5 text-sm text-gray-300 first:mt-0'
+                  title='선택은 불가합니다 (중복 안내 전용)'
+                >
+                  <span className='truncate'>{name}</span>
+                  <span className='rounded bg-red-500/15 px-1.5 py-0.5 text-[10px] text-red-400'>
+                    이미 등록됨
+                  </span>
+                </div>
+              ))
+            )}
+          </div>
         </div>
       )}
     </div>
