@@ -2,17 +2,17 @@
 
 import Script from 'next/script';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 
 import ProductCard from '@/features/products/components/productCard/productCard';
 import ReviewCard from '@/features/products/components/reviewCard/reviewCard';
 import ReviewSortDropdown from '@/features/products/components/reviewSortDropdown';
 import Statistics from '@/features/products/components/statisticsCard';
-import { InfinityScroll } from '@/shared/components/infinityScroll';
 import { TEAM_ID } from '@/shared/constants/constants';
 import useMediaQuery from '@/shared/hooks/useMediaQuery';
 import { useUserStore } from '@/shared/stores/userStore';
 
+import { VirtualizedInfinityScroll } from './virtualizedInfinityScroll';
 import { useInfiniteApi } from '../../../../openapi/queries/infiniteQueries';
 import { useLikeReview, useUnlikeReview } from '../../../../openapi/queries/queries';
 
@@ -37,6 +37,16 @@ export default function ProductDetailsPageClient({
   product,
   initialReviews,
 }: ProductDetailsPageClientProps) {
+  useEffect(() => {
+    // 브라우저 스크롤 복원 비활성화
+    if ('scrollRestoration' in window.history) {
+      window.history.scrollRestoration = 'manual';
+    }
+
+    // 페이지 로드 시 최상단으로
+    window.scrollTo(0, 0);
+  }, []);
+
   const isTablet = useMediaQuery('(min-width: 768px) and (max-width: 1279px)');
   const isPC = useMediaQuery('(min-width: 1280px)');
 
@@ -148,14 +158,14 @@ export default function ProductDetailsPageClient({
             <ReviewSortDropdown value={sortValue} onChange={setSortValue} />
           </section>
 
-          {/* 무한 스크롤 리뷰 리스트 */}
-          <InfinityScroll<Review>
+          {/* VirtualizedInfinityScroll 사용 */}
+          <VirtualizedInfinityScroll<Review>
             items={reviews}
             renderItem={(review, index) => (
               <div
-                key={String(review.id)}
-                data-index={index}
-                style={{ marginBottom: index === reviews.length - 1 ? 0 : itemSpacing }}
+                style={{
+                  marginBottom: index === reviews.length - 1 ? 0 : itemSpacing,
+                }}
               >
                 <ReviewCard
                   review={review}
@@ -169,8 +179,10 @@ export default function ProductDetailsPageClient({
             fetchNextPage={fetchNextPage}
             isLoading={isFetchingNextPage}
             itemHeightEstimate={itemHeightEstimate}
-            scrollKey={`product-reviews-${sortValue}`}
             maxItems={500}
+            overscan={5}
+            loadingText='로딩 중...'
+            loadMoreText='더 불러오기'
           />
         </div>
       </div>

@@ -11,7 +11,7 @@ import ThumbsupIcon from '../../../public/icons/thumbsup.svg';
 const BASE_CHIP_CLASS = 'inline-flex items-center justify-center whitespace-nowrap group';
 
 const ICON_SIZE = {
-  thumbs: 'w-[14px] h-[14px] md:w-[18px] md:h-[18px]',
+  thumbs: 'w-[17px] h-[17px] md:w-[18px] md:h-[18px]',
   compare: 'w-[17px] h-[17px] md:w-[19px] md:h-[19px]',
 };
 
