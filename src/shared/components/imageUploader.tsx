@@ -65,7 +65,7 @@ export default function ImageUploader({
         className={cn(
           maxImages === 1
             ? 'flex' // 1장일 때
-            : `grid grid-cols-${maxImages} gap-2`, // 여러 장일 때
+            : 'grid grid-cols-3 justify-items-center gap-2 md:gap-1', // 여러 장일 때
         )}
       >
         {previewUrls.map((previewUrl, index) => (

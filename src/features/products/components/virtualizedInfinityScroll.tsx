@@ -45,6 +45,7 @@ export function VirtualizedInfinityScroll<T extends { id?: string | number }>({
     overscan,
     getItemKey: (index) =>
       displayItems[index]?.id != null ? String(displayItems[index]!.id) : String(index),
+    scrollMargin: 70,
   });
 
   const virtualItems = rowVirtualizer.getVirtualItems();
