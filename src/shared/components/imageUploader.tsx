@@ -57,7 +57,7 @@ export default function ImageUploader({
     onRemove(index);
   };
 
-  const canAddMore = value.length < maxImages;
+  const canAddMore = previewUrls.length < maxImages;
 
   return (
     <div className={cn('flex flex-col gap-3', className)}>
