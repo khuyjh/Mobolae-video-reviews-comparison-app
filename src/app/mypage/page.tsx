@@ -1,93 +1,137 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useParams } from 'next/navigation';
 
-import { useInfiniteQuery } from '@tanstack/react-query';
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { toast } from 'react-toastify';
 
-import VirtualizedContentGrid from '@/features/mainPage/components/VirtualizedContentGrid';
 import ActivityCard from '@/features/mypage/components/activityCard';
 import ProfileCard from '@/features/mypage/components/ProfileCard';
-import ProfileTabs from '@/features/mypage/components/ProfileTabs';
+import ProfileTabsSection from '@/features/mypage/components/ProfileTabsSection';
 import ProfileUpdateModal from '@/features/mypage/components/ProfileUpdateModal';
-import { fetchDummyPage } from '@/features/mypage/mock/dummyPager';
 import { TEAM_ID } from '@/shared/constants/constants';
 import { useUserStore } from '@/shared/stores/userStore';
 
 import { useMe } from '../../../openapi/queries/queries';
 
-import type { MeDefaultResponse } from '../../../openapi/queries/common';
+import type {
+  MeDefaultResponse,
+  ListUserReviewedProductsDefaultResponse as ReviewedResp,
+  ListUserCreatedProductsDefaultResponse as CreatedResp,
+  ListUserFavoriteProductsDefaultResponse as FavoriteResp,
+} from '../../../openapi/queries/common';
 import type { ContentItem } from '@/shared/types/content';
 
-type TabKey = 'reviews' | 'items' | 'wishlist';
+const toSrc = (url?: string | null): string =>
+  url && url.trim() !== '' ? url : '/images/ProfileFallbackImg.png';
 
 const mapMeToCard = (meDetail?: MeDefaultResponse) => ({
-  name: meDetail?.nickname as string,
-  avatarSrc: meDetail?.image ?? '',
+  name: meDetail?.nickname ?? '',
+  avatarSrc: toSrc(meDetail?.image ?? null),
   bio: meDetail?.description ?? '',
-  followers: meDetail?.followersCount as number,
-  following: meDetail?.followeesCount as number,
+  followers: Number(meDetail?.followersCount ?? 0),
+  following: Number(meDetail?.followeesCount ?? 0),
   isMe: true,
   isFollowing: false,
 });
 
+type ReviewedItem = NonNullable<ReviewedResp>['list'][number];
+type CreatedItem = NonNullable<CreatedResp>['list'][number];
+type FavoriteItem = NonNullable<FavoriteResp>['list'][number];
+
+type ProductLike = {
+  id: number;
+  name?: string;
+  title?: string;
+  image?: string | null;
+  favoriteCount?: number;
+  reviewCount?: number;
+  averageRating?: number;
+  rating?: number;
+};
+const asRecord = (x: unknown): Record<string, unknown> | null =>
+  x && typeof x === 'object' ? (x as Record<string, unknown>) : null;
+
+const getProp = <T,>(obj: unknown, key: string): T | undefined => {
+  const r = asRecord(obj);
+  return r && key in r ? (r[key] as T) : undefined;
+};
+
+const getProductLike = (x: unknown): ProductLike | undefined => {
+  const maybeProduct = getProp<unknown>(x, 'product');
+  const base = maybeProduct ?? x;
+  const r = asRecord(base);
+  if (r && 'id' in r && typeof r.id === 'number') {
+    return r as unknown as ProductLike;
+  }
+  return undefined;
+};
+
+const mapReviewed = (it: ReviewedItem): ContentItem => {
+  const p = getProductLike(it);
+  const selfRating = getProp<number>(it, 'rating');
+  return {
+    contentId: p?.id ?? 0,
+    title: p?.name ?? p?.title ?? '이름 없는 상품',
+    contentImage: toSrc(p?.image ?? null),
+    favoriteCount: Number(p?.favoriteCount ?? 0),
+    reviewCount: Number(p?.reviewCount ?? 0),
+    rating: Number(selfRating ?? p?.averageRating ?? p?.rating ?? 0),
+  };
+};
+
+const mapCreated = (it: CreatedItem): ContentItem => {
+  const p = getProductLike(it);
+  return {
+    contentId: p?.id ?? 0,
+    title: p?.name ?? p?.title ?? '이름 없는 상품',
+    contentImage: toSrc(p?.image ?? null),
+    favoriteCount: Number(p?.favoriteCount ?? 0),
+    reviewCount: Number(p?.reviewCount ?? 0),
+    rating: Number(p?.averageRating ?? p?.rating ?? 0),
+  };
+};
+
+const mapFavorite = (it: FavoriteItem): ContentItem => {
+  const p = getProductLike(it);
+  return {
+    contentId: p?.id ?? 0,
+    title: p?.name ?? p?.title ?? '이름 없는 상품',
+    contentImage: toSrc(p?.image ?? null),
+    favoriteCount: Number(p?.favoriteCount ?? 0),
+    reviewCount: Number(p?.reviewCount ?? 0),
+    rating: Number(p?.averageRating ?? p?.rating ?? 0),
+  };
+};
+
 export default function MyPage() {
-  const { data: meData } = useMe({ path: { teamId: TEAM_ID as string } }, []);
-  const card = mapMeToCard(meData);
-  const { userId } = useParams<{ userId: string }>();
-  const uidNum = Number(userId);
-  const [tab, setTab] = useState<TabKey>('reviews');
-  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
-  const clearUser = useUserStore((state) => state.clearUser);
-  const router = useRouter();
-
-  const {
-    data: pages,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    isLoading,
-  } = useInfiniteQuery({
-    queryKey: ['mypage', 'infinite', tab],
-    queryFn: ({ pageParam = 0 }) => fetchDummyPage({ cursor: pageParam, limit: 12 }),
-    initialPageParam: 0,
-    getNextPageParam: (last) => last.nextCursor ?? undefined,
-  });
-
-  const items: ContentItem[] = useMemo(
-    () =>
-      (pages?.pages ?? []).flatMap((p) =>
-        p.items.map((it) => ({
-          contentId: it.id,
-          title: it.title,
-          contentImage: it.image,
-          favoriteCount: it.favoriteCount,
-          reviewCount: it.reviewCount,
-          rating: it.rating,
-        })),
-      ),
-    [pages],
+  // 내 정보
+  const { data: meData, isLoading: isMeLoading } = useMe(
+    { path: { teamId: TEAM_ID as string } },
+    [],
   );
+  const router = useRouter();
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const clearUser = useUserStore((s) => s.clearUser);
 
-  if (!meData) return;
+  if (isMeLoading) return null;
+  if (!meData) return null;
+
+  const card = mapMeToCard(meData);
 
   return (
     <div className='mt-[30px] px-[20px] md:px-[117px] xl:mx-auto xl:flex xl:max-w-[1340px] xl:px-[0px]'>
       <div className='mb-[60px] xl:mr-[60px]'>
         <ProfileCard
-          userId={uidNum}
+          userId={meData.id}
           name={card.name}
           avatarSrc={card.avatarSrc}
           bio={card.bio}
           followers={card.followers}
           following={card.following}
-          isMe={true}
+          isMe
           isFollowing={false}
-          onEdit={() => {
-            setIsProfileModalOpen(true);
-          }}
+          onEdit={() => setIsProfileModalOpen(true)}
           onLogout={() => {
             clearUser();
             router.replace('/');
@@ -95,12 +139,11 @@ export default function MyPage() {
           }}
         />
       </div>
+
       <ProfileUpdateModal
         isOpen={isProfileModalOpen}
         userDetail={meData}
-        onClose={() => {
-          setIsProfileModalOpen(false);
-        }}
+        onClose={() => setIsProfileModalOpen(false)}
       />
 
       <div className='flex-1'>
@@ -113,18 +156,12 @@ export default function MyPage() {
           />
         </div>
 
-        <ProfileTabs value={tab} onChange={setTab} />
-
-        <div className='mt-6 pb-[80px]'>
-          <VirtualizedContentGrid
-            items={items}
-            hasNextPage={!!hasNextPage}
-            fetchNextPage={fetchNextPage}
-            isLoading={isLoading || isFetchingNextPage}
-            itemHeightEstimate={276}
-            rowGap={16}
-          />
-        </div>
+        <ProfileTabsSection
+          userId={meData.id}
+          mapReviewed={mapReviewed}
+          mapCreated={mapCreated}
+          mapFavorite={mapFavorite}
+        />
       </div>
     </div>
   );
