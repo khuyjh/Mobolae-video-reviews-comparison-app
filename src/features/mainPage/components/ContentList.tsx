@@ -86,7 +86,7 @@ const ContentList = () => {
       <div className='mb-[15px] flex w-full flex-col justify-between space-y-[30px] md:mb-[30px] md:flex-row md:space-y-0'>
         {title && <h2 className='text-xl-semibold text-white'>{title}</h2>}
         <div className='flex w-full items-center justify-between md:w-fit'>
-          <div className='xl:hidden'>
+          <div className='md:hidden'>
             <MobileCategorySheet />
           </div>
 

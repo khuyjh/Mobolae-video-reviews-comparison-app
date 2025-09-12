@@ -3,7 +3,6 @@ export const revalidate = 300; // 5분마다 캐시 재생성 (ISR)
 import CategorySidebar from '@/features/mainPage/components/CategorySidebar';
 import FilterSwitch from '@/features/mainPage/components/FilterSwitch';
 import FloatingButton from '@/features/mainPage/components/FloatingButton';
-import MobileCategorySheet from '@/features/mainPage/components/MobileCategorySheet';
 import MostReviewed from '@/features/mainPage/components/MostReviewed';
 import {
   ReviewerRankingHorizontal,
@@ -53,7 +52,7 @@ const Home = async () => {
 
       <div className='flex'>
         {/* 좌측: 카테고리 메뉴 (데스크탑 전용) */}
-        <div className='hidden lg:block'>
+        <div className='hidden md:block'>
           <CategorySidebar />
         </div>
 
@@ -65,11 +64,6 @@ const Home = async () => {
           <h1 id='main-title' className='sr-only'>
             메인 콘텐츠
           </h1>
-
-          {/* 모바일/태블릿: 카테고리 시트 */}
-          <div className='mb-4 px-5 md:hidden'>
-            <MobileCategorySheet />
-          </div>
 
           {/* 모바일/태블릿: 상단 가로형 랭킹 */}
           <div className='mb-[60px] pl-5 md:pl-[30px] lg:hidden'>

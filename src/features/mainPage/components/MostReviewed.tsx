@@ -30,7 +30,7 @@ const MostReviewed = ({ items }: MostReviewedProps) => {
           지금 핫한 콘텐츠 <span className='text-main'>TOP 6</span>
         </h2>
 
-        <div className='lg:hidden'>
+        <div className='md:hidden'>
           <MobileCategorySheet />
         </div>
       </div>
