@@ -45,12 +45,14 @@ const FloatingButton = () => {
   // 스크롤 방향 감지
   useEffect(() => {
     let prevY = window.scrollY;
+
     const onScroll = () => {
       const y = window.scrollY;
       if (y > prevY) setScrollDirection('down');
       else if (y < prevY) setScrollDirection('up');
       prevY = y;
     };
+
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);

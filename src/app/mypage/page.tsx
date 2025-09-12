@@ -9,7 +9,7 @@ import { toast } from 'react-toastify';
 
 import VirtualizedContentGrid from '@/features/mainPage/components/VirtualizedContentGrid';
 import ActivityCard from '@/features/mypage/components/activityCard';
-import ProfileCard, { type CardData } from '@/features/mypage/components/ProfileCard';
+import ProfileCard from '@/features/mypage/components/ProfileCard';
 import ProfileTabs from '@/features/mypage/components/ProfileTabs';
 import ProfileUpdateModal from '@/features/mypage/components/ProfileUpdateModal';
 import { fetchDummyPage } from '@/features/mypage/mock/dummyPager';
@@ -23,7 +23,7 @@ import type { ContentItem } from '@/shared/types/content';
 
 type TabKey = 'reviews' | 'items' | 'wishlist';
 
-const mapMeToCard = (meDetail?: MeDefaultResponse): CardData => ({
+const mapMeToCard = (meDetail?: MeDefaultResponse) => ({
   name: meDetail?.nickname as string,
   avatarSrc: meDetail?.image ?? '',
   bio: meDetail?.description ?? '',
@@ -34,8 +34,10 @@ const mapMeToCard = (meDetail?: MeDefaultResponse): CardData => ({
 });
 
 export default function MyPage() {
-  const { data } = useMe({ path: { teamId: TEAM_ID as string } }, []);
-  const card = mapMeToCard(data);
+  const { data: meData } = useMe({ path: { teamId: TEAM_ID as string } }, []);
+  const card = mapMeToCard(meData);
+  const { userId } = useParams<{ userId: string }>();
+  const uidNum = Number(userId);
   const [tab, setTab] = useState<TabKey>('reviews');
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const clearUser = useUserStore((state) => state.clearUser);
@@ -69,12 +71,13 @@ export default function MyPage() {
     [pages],
   );
 
-  if (!data) return;
+  if (!meData) return;
 
   return (
     <div className='mt-[30px] px-[20px] md:px-[117px] xl:mx-auto xl:flex xl:max-w-[1340px] xl:px-[0px]'>
       <div className='mb-[60px] xl:mr-[60px]'>
         <ProfileCard
+          userId={uidNum}
           name={card.name}
           avatarSrc={card.avatarSrc}
           bio={card.bio}
@@ -94,7 +97,7 @@ export default function MyPage() {
       </div>
       <ProfileUpdateModal
         isOpen={isProfileModalOpen}
-        userDetail={data}
+        userDetail={meData}
         onClose={() => {
           setIsProfileModalOpen(false);
         }}
@@ -103,7 +106,11 @@ export default function MyPage() {
       <div className='flex-1'>
         <div className='mb-[60px]'>
           <h2 className='text-lg-semibold mb-[30px] text-white'>활동 내역</h2>
-          <ActivityCard rating={5} reviewCount={156} topCategoryId={2} />
+          <ActivityCard
+            rating={meData.averageRating}
+            reviewCount={meData.reviewCount}
+            topCategoryId={meData.mostFavoriteCategory?.id ?? null}
+          />
         </div>
 
         <ProfileTabs value={tab} onChange={setTab} />
