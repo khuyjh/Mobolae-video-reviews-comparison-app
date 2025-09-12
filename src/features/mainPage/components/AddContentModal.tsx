@@ -30,7 +30,7 @@ import {
 
 type CategoryOption = { name: string; value: number };
 
-/** Dropdown 값을 number로 수렴 */
+/** Dropdown mixed value → number 로 변환 */
 const toNumber = (value: unknown): number => {
   if (typeof value === 'number') return value;
   if (typeof value === 'string') {
@@ -40,7 +40,7 @@ const toNumber = (value: unknown): number => {
   return 0;
 };
 
-/* Dropdown 어댑터 */
+/* Dropdown 어댑터 (카테고리 선택 전용) */
 function CategoryDropdown({
   value,
   options,
@@ -63,10 +63,11 @@ function CategoryDropdown({
 }
 
 /* ───────── 콘텐츠 추가 모달 ─────────
- * - 검증은 zod 스키마 한 곳에서만, UI는 결과만 반영
- * - 제목 onBlur에서만 토스트(빈값/중복)
- * - 설명 onBlur에서만 토스트(스키마 메시지)
- * - 버튼 활성화는 formState.isValid + 라이브중복만
+ * 검증 전략
+ * - 스키마 검증: zod (resolver)
+ * - 제목(name): onBlur 시 스키마/중복 검증 및 토스트
+ * - 설명(description): onBlur 시 스키마 검증 및 토스트
+ * - 버튼 활성화: formState.isValid && !liveNameDuplicate
  */
 const AddContentModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
   const router = useRouter();
@@ -84,26 +85,26 @@ const AddContentModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
     getFieldState,
   } = useForm<ProductFormValues>({
     resolver: zodResolver(productCreateSchema),
-    mode: 'onChange', // ← isValid 즉시 반영
+    mode: 'onChange', // isValid 즉시 반영
     reValidateMode: 'onChange',
     defaultValues: { name: '', categoryId: 0, description: '', images: [] },
   });
 
-  const { errors, isSubmitting, touchedFields, isValid } = formState;
+  const { errors, isSubmitting, isValid } = formState;
 
-  /* 열릴 때 폼 초기화 */
+  /* 모달 열릴 때 폼 초기화 */
   useEffect(() => {
     if (isOpen) {
       reset({ name: '', categoryId: 0, description: '', images: [] });
     }
   }, [isOpen, reset]);
 
-  /* 미리보기 URL 생성/해제 */
+  /* 이미지 미리보기 URL 생성/해제 */
   const imageFiles = watch('images') ?? [];
   const previewUrls = useMemo(() => imageFiles.map((f) => URL.createObjectURL(f)), [imageFiles]);
   useEffect(() => () => previewUrls.forEach((u) => URL.revokeObjectURL(u)), [previewUrls]);
 
-  /* 이미지 선택 (1장만, 중복 파일 방지) */
+  /* 이미지 선택 핸들러 (1장 제한 + 중복 파일 방지) */
   const handleImageChange = (newFiles: File[]): void => {
     const current = watch('images') ?? [];
 
@@ -113,7 +114,6 @@ const AddContentModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
     }
 
     if (!newFiles?.length) return;
-
     if (newFiles.length > 1) {
       toast.error('대표 이미지는 1장만 가능합니다. \n 첫 번째 파일만 등록합니다.');
     }
@@ -145,19 +145,19 @@ const AddContentModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
     10,
   );
 
-  /* 후보를 정규화 Set으로 보관(중복 판정용) */
+  /* 후보 목록을 정규화 Set으로 보관 (중복 판정용) */
   const normalizedCandidates = useMemo(
     () => new Set(productNameCandidates.map((n) => normalizeForCompare(n))),
     [productNameCandidates],
   );
 
-  /* 현재 입력이 "라이브" 중복인지 (토스트는 onBlur에서만, 버튼 비활성화만 여기서) */
+  /* 현재 입력이 실시간 중복인지 (토스트는 onBlur에서만) */
   const liveNameDuplicate = useMemo(() => {
     const norm = normalizeForCompare(nameValue.trim());
     return norm !== '' && normalizedCandidates.has(norm);
   }, [nameValue, normalizedCandidates]);
 
-  /* 제목 onBlur: zod 에러 메시지 or 라이브 중복만 토스트 */
+  /* 제목 onBlur: 스키마 에러 또는 중복만 토스트 */
   const handleNameBlur = async (): Promise<void> => {
     await trigger('name');
     const msg = getFieldState('name').error?.message;
@@ -173,23 +173,11 @@ const AddContentModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
     if (errors.name) clearErrors('name');
   };
 
-  /* 설명: blur 시 스키마 에러 메시지만 토스트 */
-  useEffect(() => {
-    if (touchedFields.description && errors.description?.message) {
-      toast.error(errors.description.message);
-    }
-  }, [touchedFields.description, errors.description?.message]);
-
-  /* 버튼 활성화는 스키마 판정 + 라이브중복만 반영 */
+  /* 제출 버튼 활성화 조건 */
   const isSubmitReady = isValid && !liveNameDuplicate && !isSubmitting;
 
-  /* 제출 */
+  /* 제출: 이미지 존재 확인 후 업로드 → 생성 */
   const onValid = async (_values: ProductFormValues): Promise<void> => {
-    if (liveNameDuplicate) {
-      setError('name', { type: 'duplicate', message: '이미 등록된 콘텐츠입니다.' });
-      return;
-    }
-
     const file = imageFiles?.[0];
     if (!file) {
       setError('images', { type: 'custom', message: '대표 이미지를 추가해주세요.' });
@@ -205,7 +193,7 @@ const AddContentModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
       });
       const imageUrl = uploadRes.data.url;
 
-      // 2) 생성
+      // 2) 콘텐츠 생성
       const createRes = await createProduct({
         ...PATH_OPTION,
         body: {
@@ -228,23 +216,28 @@ const AddContentModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
     }
   };
 
-  /* 제출 실패: 모든 에러 메시지 합쳐서 토스트 */
+  /* 제출 실패: 모든 에러 메시지를 수집해 토스트 */
   const onInvalid: SubmitErrorHandler<ProductFormValues> = (formErrors) => {
     const messages = Object.values(formErrors)
       .map((e) => e?.message)
       .filter(Boolean) as string[];
-
     Array.from(new Set(messages)).forEach((m) => toast.error(m));
   };
 
-  /* 카테고리 옵션 */
+  /* 카테고리 옵션 구성 */
   const categoryOptions: CategoryOption[] = useMemo(
     () => CATEGORIES.map((c) => ({ name: c.name, value: c.id })),
     [],
   );
 
   return (
-    <BaseModal title='콘텐츠 추가' isOpen={isOpen} onClose={onClose} size='L'>
+    <BaseModal
+      title='콘텐츠 추가'
+      isOpen={isOpen}
+      onClose={onClose}
+      size='L'
+      closeOnOutsideClick={false}
+    >
       <form onSubmit={handleSubmit(onValid, onInvalid)} className='md:px-5 md:pb-5'>
         <h2 className='text-xl-semibold md:text-2xl-semibold mb-10'>콘텐츠 추가</h2>
 
@@ -262,12 +255,12 @@ const AddContentModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
             }
             previewUrls={previewUrls}
             maxImages={MAX_IMAGE_COUNT}
-            className='min-w-35 md:min-w-[135px] xl:min-w-40'
+            className='w-1/2'
           />
 
           {/* 제목 / 카테고리 */}
           <div className='flex w-full flex-col gap-[10px] md:max-w-90 md:gap-[15px]'>
-            {/* 제목: 표시 전용(자식), 판정/토스트는 부모 onBlur */}
+            {/* 제목 입력: 표시 컴포넌트, 검증/토스트는 onBlur에서 실행 */}
             <Controller
               control={control}
               name='name'
@@ -287,7 +280,7 @@ const AddContentModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
               )}
             />
 
-            {/* 카테고리 */}
+            {/* 카테고리 선택 */}
             <CategoryDropdown
               value={categoryId}
               options={categoryOptions}
@@ -314,7 +307,7 @@ const AddContentModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
                   field.onChange((next || '').slice(0, DESCRIPTION_MAX_LENGTH))
                 }
                 maxLength={DESCRIPTION_MAX_LENGTH}
-                placeholder='콘텐츠 설명을 입력하세요 (최소 10자)'
+                placeholder='감독, 출연진, 줄거리 등을 입력해 주세요.'
                 className='[&>textarea]:text-md-regular md:[&>textarea]:text-base-regular mt-1 [&>textarea]:pl-5'
                 aria-invalid={Boolean(errors.description)}
                 onBlur={async () => {

@@ -46,16 +46,17 @@ function isListProductResponse(value: unknown): value is ListProductResponse {
  */
 export function useProductNameSearch(teamId: string | undefined, keyword: string, limit = 10) {
   const debouncedKeyword = useDebouncedValue(keyword, 250);
-  const enabled = Boolean(teamId && debouncedKeyword.trim().length >= 1);
+  const kw = debouncedKeyword.trim();
+  const enabled = Boolean(teamId && kw.length >= 1);
 
   return useQuery<string[]>({
-    queryKey: ['product-names', teamId ?? 'NA', debouncedKeyword, limit],
+    queryKey: ['product-names', teamId ?? 'NA', kw, limit],
     enabled,
     queryFn: async ({ signal }) => {
       // 반환 타입을 unknown으로 두고 타입 좁히기
       const raw: unknown = await listProduct({
         path: { teamId: teamId! },
-        query: { keyword: debouncedKeyword },
+        query: { keyword: kw || undefined, limit },
         signal,
       });
 

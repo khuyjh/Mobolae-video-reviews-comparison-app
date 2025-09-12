@@ -15,7 +15,7 @@ interface GnbSheetProps {
 }
 
 const LINK_STYLE =
-  'border-black-800 text-md-medium xl:text-base-medium hover:bg-black-800 flex items-center rounded-lg border px-4 py-[15px] text-gray-600 hover:text-white';
+  'border-black-800 text-md-medium xl:text-base-medium hover:bg-black-800 flex items-center rounded-lg border px-4 py-[15px] text-gray-600 hover:text-white mb-4';
 
 /**
  * 모바일 전용 GNB 시트

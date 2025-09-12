@@ -19,7 +19,7 @@ type MostReviewedProps = {
  */
 const MostReviewed = ({ items }: MostReviewedProps) => {
   return (
-    <section className='my-[60px]'>
+    <section className='mb-[60px]'>
       <div className='mb-[30px] flex justify-between'>
         <h2 className='text-xl-semibold text-white'>
           지금 핫한 콘텐츠 <span className='text-main'>TOP 6</span>
