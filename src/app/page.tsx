@@ -82,7 +82,7 @@ const Home = async () => {
         </section>
 
         {/* 우측: 랭킹 사이드바 (데스크탑 전용) */}
-        <div className='border-black-800 hidden flex-none border-l lg:block'>
+        <div className='hidden flex-none md:block md:max-w-[250px] md:min-w-[250px]'>
           <ReviewerRankingSidebar />
         </div>
       </div>
