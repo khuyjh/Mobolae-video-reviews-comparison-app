@@ -2,7 +2,7 @@
 
 import Script from 'next/script';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 
 import ProductCard from '@/features/products/components/productCard/productCard';
 import ReviewCard from '@/features/products/components/reviewCard/reviewCard';
@@ -37,6 +37,16 @@ export default function ProductDetailsPageClient({
   product,
   initialReviews,
 }: ProductDetailsPageClientProps) {
+  useEffect(() => {
+    // 브라우저 스크롤 복원 비활성화
+    if ('scrollRestoration' in window.history) {
+      window.history.scrollRestoration = 'manual';
+    }
+
+    // 페이지 로드 시 최상단으로
+    window.scrollTo(0, 0);
+  }, []);
+
   const isTablet = useMediaQuery('(min-width: 768px) and (max-width: 1279px)');
   const isPC = useMediaQuery('(min-width: 1280px)');
 
