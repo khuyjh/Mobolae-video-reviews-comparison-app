@@ -1,73 +1,49 @@
 'use client';
 
-import { useSearchParams } from 'next/navigation';
-
-import React from 'react';
-
-import CategoryItem from '@/features/mainPage/components/CategoryItem';
 import { Chip } from '@/shared/components/chip';
 import MobileBottomSheet from '@/shared/components/MobileBottomSheet';
 import { SheetClose } from '@/shared/components/ui/sheet';
+import { CATEGORIES } from '@/shared/constants/constants';
 import { Category } from '@/shared/types/categoryTypes';
 
 import ArrowList from './ArrowList';
+import CategoryItem from './CategoryItem';
+import { useCategoryParams } from '../hooks/useCategoryParams';
 import { buildCategoryHref } from '../services/buildCategoryHref';
 
-interface MobileCategorySheetProps {
-  /** 카테고리 목록 */
-  categories: Category[];
-  /** 현재 선택된 카테고리 값 */
-  selectedCategoryId: number | null;
-}
-
 /**
- * 모바일 전용 카테고리 선택 시트
+ * MobileCategorySheet
  *
- * - 트리거 버튼: 필터 아이콘 + 선택된 카테고리 이름(없으면 "카테고리")
- * - 시트 안에서 카테고리 목록 표시
- * - 항목 클릭 시 해당 카테고리 선택/해제 후 시트 닫힘
+ * - 모바일 전용 카테고리 선택 시트
+ * - 트리거 버튼: 현재 카테고리명 (없으면 "카테고리")
+ * - 항목 클릭 시 buildCategoryHref로 링크 계산
  */
-const MobileCategorySheet: React.FC<MobileCategorySheetProps> = ({
-  categories,
-  selectedCategoryId,
-}) => {
-  // 현재 URLSearchParams를 가져와 복제 (불변성 유지)
-  const searchParamsFromHook = useSearchParams();
-  const currentSearchParams = new URLSearchParams(searchParamsFromHook.toString());
+const MobileCategorySheet = () => {
+  const { selectedId, searchParamsForLinks } = useCategoryParams();
 
-  // 현재 선택된 카테고리의 label (없으면 "카테고리")
-  const selectedCategoryLabel =
-    categories.find((category) => Number(category.id) === selectedCategoryId)?.name ?? '카테고리';
+  const label =
+    CATEGORIES.find((category: Category) => Number(category.id) === selectedId)?.name ?? '카테고리';
 
   return (
     <MobileBottomSheet
       trigger={
-        <Chip
-          variant='filter'
-          size='filter'
-          clickable
-          role='button'
-          aria-label='카테고리 바텀시트 열기'
-        >
-          {selectedCategoryId ? selectedCategoryLabel : '카테고리'}
+        <Chip variant='filter' size='filter' clickable>
+          {label}
         </Chip>
       }
       title='카테고리'
     >
       <ArrowList>
-        {categories.map((category) => {
-          const isSelected = selectedCategoryId === Number(category.id);
-          const nextCategoryValue = isSelected ? null : Number(category.id);
-          const categoryHref = buildCategoryHref(currentSearchParams, nextCategoryValue);
-
+        {CATEGORIES.map((category: Category) => {
+          const active = selectedId === Number(category.id);
+          const href = buildCategoryHref(searchParamsForLinks, active ? null : Number(category.id));
           return (
             <SheetClose asChild key={category.id}>
               <CategoryItem
                 category={category}
-                isSelected={isSelected}
-                href={categoryHref}
+                isSelected={active}
+                href={href}
                 className='mb-2 last:mb-0'
-                role='option'
               />
             </SheetClose>
           );

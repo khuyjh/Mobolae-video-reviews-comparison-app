@@ -4,6 +4,7 @@ import { Metadata } from 'next';
 
 import ProductDetailsPageClient from '@/features/products/components/productDetailsPageClient';
 import { TEAM_ID } from '@/shared/constants/constants';
+import getMetadata from '@/shared/utils/getMetadata';
 
 import { retrieveProduct, listReviews } from '../../../../openapi/requests/services.gen';
 
@@ -36,22 +37,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
 
   const product = response.data;
 
-  if (!product) {
-    return {
-      title: '콘텐츠 상세',
-      description: '콘텐츠 상세 페이지',
-    };
-  }
-
-  return {
-    title: `${product.name} | 콘텐츠 상세`,
-    description: product.description || '콘텐츠 상세 페이지',
-    openGraph: {
-      title: product.name,
-      description: product.description,
-      images: product.image ? [product.image] : [],
-    },
-  };
+  return getMetadata({ product: product, path: `/products/${productId}` });
 }
 
 export default async function Page({ params }: ProductPageProps) {
