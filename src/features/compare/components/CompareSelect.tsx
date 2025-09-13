@@ -278,7 +278,7 @@ const CompareSelect = forwardRef<HTMLInputElement, CompareSelectProps>(function 
     if (e.key === 'Enter' && !composing) {
       e.preventDefault();
 
-      // ★ 변경: 우선순위 — 1) 완전 일치 2) 활성 항목 3) 첫 항목(옵션)
+      // 우선순위 — 1) 완전 일치 2) 활성 항목 3) 첫 항목(옵션)
       const exactIdx = findExactMatchIndex(filtered, query);
       if (exactIdx !== -1 && !filtered[exactIdx]?.disabled) {
         handleSelect(filtered[exactIdx]);
@@ -373,6 +373,14 @@ const CompareSelect = forwardRef<HTMLInputElement, CompareSelectProps>(function 
             aria-expanded={open}
             aria-controls={listboxId}
             aria-autocomplete='list'
+            // 브라우저 자동완성(저장된 입력/주소록/폼 자동채움) 차단
+            autoComplete='off'
+            // 브라우저 철자 검사/교정 끄기
+            spellCheck={false}
+            autoCorrect='off'
+            autoCapitalize='off'
+            // 텍스트 일반 입력 의도 전달
+            inputMode='text'
             className={cn(
               'h-full w-full rounded-xl bg-transparent text-white outline-none',
               'placeholder:text-gray-600',

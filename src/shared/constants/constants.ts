@@ -21,3 +21,4 @@ export const TEAM_ID = process.env.NEXT_PUBLIC_TEAM_ID;
 export const PATH_OPTION = { path: { teamId: TEAM_ID as string } };
 export const KAKAO_AUTH_URL = 'https://kauth.kakao.com/oauth/authorize';
 export const KAKAO_APP_KEY = process.env.NEXT_PUBLIC_KAKAO_APP_KEY!;
+export const KAKAO_JS_KEY = process.env.NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY!;

@@ -72,7 +72,22 @@ export default function EditDeleteModal({
     };
   }, [previewUrls]);
 
+  /* 초기값 저장 */
+  const initialText = description;
+  const initialImage = imageUrl || null;
+
+  /* 변경 여부 감지 */
+  const hasChanges = useMemo(() => {
+    const textChanged = text.trim() !== initialText.trim();
+    const imageChanged = existingImage !== initialImage || images.length > 0;
+    return textChanged || imageChanged;
+  }, [text, images, existingImage, initialText, initialImage]);
+
+  /* 기존 유효성 검사 (이미지 + 텍스트 최소 10자) */
   const isFormValid = (existingImage || images.length > 0) && text.trim().length >= 10;
+
+  /* 최종 버튼 활성화 조건 */
+  const canSubmit = isFormValid && hasChanges;
 
   const handleTextareaBlur = () => {
     const trimmedText = text.trim();
@@ -142,7 +157,13 @@ export default function EditDeleteModal({
 
   return (
     <div>
-      <BaseModal title='수정/삭제 모달' isOpen={isOpen} onClose={handleModalClose} size='L'>
+      <BaseModal
+        title='수정/삭제 모달'
+        isOpen={isOpen}
+        onClose={handleModalClose}
+        size='L'
+        closeOnOutsideClick={false}
+      >
         <div className='flex flex-col px-5 pb-5 md:px-10 md:pb-10'>
           {/* 카테고리 칩 */}
           <div className='flex justify-start'>
@@ -165,7 +186,7 @@ export default function EditDeleteModal({
             }}
             previewUrls={previewUrls}
             maxImages={1}
-            className='mt-10'
+            className='mt-10 w-[50%]'
           />
 
           {/* 설명 입력 */}
@@ -195,8 +216,8 @@ export default function EditDeleteModal({
             <Button
               variant='primary'
               onClick={handleUpdate}
-              disabled={!isFormValid || updateMutation.isPending || deleteMutation.isPending}
-              aria-disabled={!isFormValid || updateMutation.isPending || deleteMutation.isPending}
+              disabled={!canSubmit || updateMutation.isPending || deleteMutation.isPending}
+              aria-disabled={!canSubmit || updateMutation.isPending || deleteMutation.isPending}
             >
               {updateMutation.isPending ? '수정 중…' : '수정하기'}
             </Button>

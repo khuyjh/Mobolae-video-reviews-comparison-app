@@ -2,7 +2,7 @@
 
 import { useQueryClient } from '@tanstack/react-query';
 import { Heart } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 
 import { PATH_OPTION } from '@/shared/constants/constants';
@@ -42,6 +42,11 @@ const ProductHeader = ({
 }: ProductHeaderProps) => {
   const [isLiked, setIsLiked] = useState<boolean>(isFavorite);
   const [localFavoriteCount, setLocalFavoriteCount] = useState<number>(favoriteCount);
+
+  useEffect(() => {
+    setIsLiked(isFavorite);
+    setLocalFavoriteCount(favoriteCount);
+  }, [isFavorite, favoriteCount]);
 
   const favoriteMut = useFavorite();
   const unfavoriteMut = useUnfavorite();

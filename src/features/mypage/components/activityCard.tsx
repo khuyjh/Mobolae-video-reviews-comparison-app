@@ -45,7 +45,7 @@ const ActivityCard = ({ rating, reviewCount, topCategoryId, className }: Activit
           <div className={cn(ICON_CONTAINER_STYLE, 'text-yellow')}>
             <Star fill='currentColor' />
           </div>
-          <span className={VALUE_STYLE}>{rating !== null ? formatNumber(rating) : '-'}</span>
+          <span className={VALUE_STYLE}>{rating !== null ? rating.toFixed(1) : '-'}</span>
         </div>
       </div>
 

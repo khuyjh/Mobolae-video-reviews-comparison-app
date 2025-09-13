@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 
-import { ComponentProps, useState } from 'react';
+import { ComponentProps, useEffect, useState } from 'react';
 
 import profileFallbackImage from '../../../public/images/ProfileFallbackImg.png';
 import { cn } from '../lib/cn';
@@ -23,6 +23,11 @@ const SafeProfileImage = ({
   ...props
 }: Props) => {
   const [hasError, setHasError] = useState(false);
+
+  useEffect(() => {
+    setHasError(false);
+  }, [src]);
+
   const [loaded, setLoaded] = useState(false);
 
   const isFallback = !src || hasError;

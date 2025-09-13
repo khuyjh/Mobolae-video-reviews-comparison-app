@@ -1,4 +1,4 @@
-import { KAKAO_APP_KEY } from '@/shared/constants/constants';
+import { KAKAO_JS_KEY } from '../constants/constants';
 
 declare global {
   interface Window {
@@ -17,7 +17,7 @@ export function initKakao(): void {
   if (typeof window === 'undefined') return;
   if (!window.Kakao) return;
   if (!window.Kakao.isInitialized()) {
-    window.Kakao.init(KAKAO_APP_KEY);
+    window.Kakao.init(KAKAO_JS_KEY);
   }
 }
 
