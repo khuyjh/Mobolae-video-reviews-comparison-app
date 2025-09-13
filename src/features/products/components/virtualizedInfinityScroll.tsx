@@ -3,6 +3,8 @@
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
 import { useEffect, useState } from 'react';
 
+import LoadingText from '@/shared/components/loadingText';
+
 interface VirtualizedInfinityScrollProps<T extends { id?: string | number }> {
   items: T[];
   renderItem: (item: T, index: number) => React.ReactNode;
@@ -26,6 +28,7 @@ export function VirtualizedInfinityScroll<T extends { id?: string | number }>({
   maxItems = 1000,
   overscan = 5,
   loadMoreText = '',
+  loadingText = 'Loading...',
 }: VirtualizedInfinityScrollProps<T>) {
   const [displayItems, setDisplayItems] = useState<T[]>([]);
 
@@ -83,21 +86,7 @@ export function VirtualizedInfinityScroll<T extends { id?: string | number }>({
                 padding: '2rem 0',
               }}
             >
-              {isLoading ? (
-                <div className='text-xl-regular inline-flex h-21 flex-row items-center justify-between gap-0 text-white'>
-                  {'Loading...'.split('').map((letter, i) => (
-                    <span
-                      className='bounce-delay inline-block'
-                      key={i}
-                      style={{ animationDelay: `${i * 100}ms` }}
-                    >
-                      {letter}
-                    </span>
-                  ))}
-                </div>
-              ) : (
-                loadMoreText
-              )}
+              {isLoading ? <LoadingText text={loadingText} /> : loadMoreText}
             </div>
           ) : null;
         }
