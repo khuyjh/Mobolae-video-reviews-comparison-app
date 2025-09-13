@@ -5,6 +5,7 @@
  * - 같은 카테고리를 다시 누르면 category를 비움 (해제)
  * - 다른 카테고리를 누르면 category를 설정
  * - 목록 페이지 이동을 초기화하기 위해 cursor는 항상 제거
+ * - 카테고리를 바꾸면 정렬(order)도 초기화 (recent로 되돌림 → order 파라미터 삭제)
  */
 export function buildCategoryHref(
   currentSearchParameters: URLSearchParams,
@@ -12,14 +13,18 @@ export function buildCategoryHref(
 ): string {
   const updatedSearchParameters = new URLSearchParams(currentSearchParameters);
 
+  // category 설정/해제
   if (nextCategoryId === null) {
     updatedSearchParameters.delete('category');
   } else {
     updatedSearchParameters.set('category', String(nextCategoryId));
   }
 
-  // 무한 스크롤, 페이지네이션 등을 초기화하기 위한 규칙
+  // 무한 스크롤, 페이지네이션 초기화
   updatedSearchParameters.delete('cursor');
+
+  // 카테고리를 바꾸면 정렬도 초기화
+  updatedSearchParameters.delete('order');
 
   const fullQueryString = updatedSearchParameters.toString();
   return fullQueryString ? `?${fullQueryString}` : '?';
