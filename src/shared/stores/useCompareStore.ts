@@ -129,15 +129,15 @@ function getCurrentUserIdFromAuthStorage(): string | null {
 const BASE_KEY = 'compare-storage';
 
 /** 추가: userId 변경 감지 & 동기화 유틸 (모듈 스코프), 마지막으로 확인한 userId를 기억하기 위함 */
-let __lastUserId: string | null | undefined = undefined;
+let lastUserId: string | null | undefined = undefined;
 
 // 현재 auth-storage 기준 userId를 읽어와, 바뀌었으면 sync 실행
-function __trySyncCompareOnUserChange() {
+function trySyncCompareOnUserChange() {
   try {
     const current = getCurrentUserIdFromAuthStorage();
-    if (__lastUserId === current) return; // 변화 없음
+    if (lastUserId === current) return; // 변화 없음
 
-    __lastUserId = current;
+    lastUserId = current;
 
     // zustand 스토어 액션 호출: B 유저 스냅샷 있으면 복원, 없으면 초기화
     // (아래 useCompareStore 정의 이후에 바인딩되므로, 안전하게 microtask로 미룸)
@@ -162,12 +162,12 @@ function __trySyncCompareOnUserChange() {
  * - 로그아웃 상태에서는 읽기/쓰기를 수행하지 않습니다(=persist 비활성)
  */
 const namespacedStorage = {
-  getItem: (_name: string) => {
+  getItem: (name: string) => {
     const userId = getCurrentUserIdFromAuthStorage();
     if (!userId) return null;
     return localStorage.getItem(`${BASE_KEY}:${userId}`);
   },
-  setItem: (_name: string, value: string) => {
+  setItem: (name: string, value: string) => {
     const userId = getCurrentUserIdFromAuthStorage();
     const key = userId ? `${BASE_KEY}:${userId}` : '(no user)';
     try {
@@ -182,7 +182,7 @@ const namespacedStorage = {
     if (!userId) return; // 비로그인 상태에선 저장 안 함
     localStorage.setItem(`${BASE_KEY}:${userId}`, value);
   },
-  removeItem: (_name: string) => {
+  removeItem: (name: string) => {
     //의도치 않은 시점에 유저 키가 삭제되는 문제 예방하기 위해 no-op 처리
   },
 };
@@ -194,30 +194,30 @@ const namespacedStorage = {
 (() => {
   if (typeof window === 'undefined') return;
 
-  const _origSetItem = localStorage.setItem.bind(localStorage);
+  const origSetItem = localStorage.setItem.bind(localStorage);
 
   localStorage.setItem = function (key: string, value: string) {
-    _origSetItem(key, value);
+    origSetItem(key, value);
     if (key === 'auth-storage') {
       // 로그인/로그아웃/유저전환 직후, 같은 탭에서도 확실히 감지
-      __trySyncCompareOnUserChange();
+      trySyncCompareOnUserChange();
     }
   };
 
   // 다른 탭에서 auth-storage가 바뀐 경우(브라우저 표준 storage 이벤트)
   window.addEventListener('storage', (e) => {
     if (e.key === 'auth-storage') {
-      __trySyncCompareOnUserChange();
+      trySyncCompareOnUserChange();
     }
   });
 
   // 탭 포커스나 가시성 전환 시에도 한 번 동기화 (백그라운드에서 바뀐 경우 대비)
-  const onWake = () => __trySyncCompareOnUserChange();
+  const onWake = () => trySyncCompareOnUserChange();
   window.addEventListener('focus', onWake);
   document.addEventListener('visibilitychange', onWake);
 
   // 초기 1회 동기화 (앱 로드 시 현재 유저 스냅샷 반영)
-  queueMicrotask(__trySyncCompareOnUserChange);
+  queueMicrotask(trySyncCompareOnUserChange);
 })();
 
 /* zustand store 부분 */
