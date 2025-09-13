@@ -1,6 +1,6 @@
 export const revalidate = 300; // 5분마다 캐시 재생성 (ISR)
 
-import CategoryMenu from '@/features/mainPage/components/CategoryMenu';
+import CategorySidebar from '@/features/mainPage/components/CategorySidebar';
 import FilterSwitch from '@/features/mainPage/components/FilterSwitch';
 import FloatingButton from '@/features/mainPage/components/FloatingButton';
 import MostReviewed from '@/features/mainPage/components/MostReviewed';
@@ -9,8 +9,6 @@ import {
   ReviewerRankingSidebar,
 } from '@/features/mainPage/components/ReviewerRanking';
 import TopRated from '@/features/mainPage/components/TopRated';
-// import { BASE_URL, TEAM_ID } from '@/shared/constants/constants';
-//TODO: 환경변수로 변경
 import { ContentItem } from '@/shared/types/content';
 import { toContentItem } from '@/shared/utils/mapApiToItem';
 import { sortByRatingDescending, sortByReviewCountDescending } from '@/shared/utils/productSorters';
@@ -42,7 +40,6 @@ async function fetchTop6ByReviewCount(): Promise<ContentItem[]> {
 }
 
 const Home = async () => {
-  // 두 API를 병렬 호출 → 성능 최적화
   const [top6ByRating, top6ByReview] = await Promise.all([
     fetchTop6ByRating(),
     fetchTop6ByReviewCount(),
@@ -55,11 +52,9 @@ const Home = async () => {
 
       <div className='flex'>
         {/* 좌측: 카테고리 메뉴 (데스크탑 전용) */}
-        <aside
-          id='desktop-category-slot'
-          className='hidden md:block'
-          aria-label='카테고리 내비게이션'
-        />
+        <div className='hidden md:block'>
+          <CategorySidebar />
+        </div>
 
         {/* 가운데: 메인 콘텐츠 */}
         <section
@@ -87,13 +82,10 @@ const Home = async () => {
         </section>
 
         {/* 우측: 랭킹 사이드바 (데스크탑 전용) */}
-        <div className='border-black-800 hidden flex-none border-l lg:block'>
+        <div className='hidden flex-none md:block md:max-w-[250px] md:min-w-[250px]'>
           <ReviewerRankingSidebar />
         </div>
       </div>
-
-      {/* 전역 카테고리 메뉴 (클라이언트 전용 컴포넌트) */}
-      <CategoryMenu />
     </main>
   );
 };

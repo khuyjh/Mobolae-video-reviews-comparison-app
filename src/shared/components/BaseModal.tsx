@@ -29,7 +29,7 @@ const SIZE_STYLE = {
 };
 
 const CLOSE_BUTTON_STYLE =
-  "transition-opacity hover:opacity-70 focus:outline-hidden disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-6 md:[&_svg:not([class*='size-'])]:size-9 xl:[&_svg:not([class*='size-h'])]:size-10";
+  "transition-opacity hover:opacity-70 focus:outline-hidden disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-6 md:[&_svg:not([class*='size-'])]:size-7 xl:[&_svg:not([class*='size-h'])]:size-8";
 
 const BaseModal = ({
   children,

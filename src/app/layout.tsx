@@ -4,6 +4,7 @@ import AuthGuard from '@/features/auth/components/AuthGuard';
 import GlobalNav from '@/shared/components/GlobalNav';
 import ScrollToTop from '@/shared/components/scrollToTop';
 import { ToastProvider } from '@/shared/components/toastProvider';
+import { META } from '@/shared/constants/metadata';
 import QueryProvider from '@/shared/providers/QueryProvider';
 
 import type { Metadata } from 'next';
@@ -43,8 +44,28 @@ const pretendard = localFont({
 });
 
 export const metadata: Metadata = {
-  title: 'mobolae - 뭐볼래?',
-  description: '영상 매체 추천, 비교 웹 애플리케이션',
+  title: META.title,
+  description: META.description,
+  keywords: [...META.keywords],
+  icons: META.icons,
+  openGraph: {
+    title: META.title,
+    description: META.description,
+    siteName: META.siteName,
+    locale: 'ko_KR',
+    type: 'website',
+    url: META.url,
+    images: {
+      url: META.ogImage,
+    },
+  },
+  twitter: {
+    title: META.title,
+    description: META.description,
+    images: {
+      url: META.ogImage,
+    },
+  },
 };
 
 export default function RootLayout({

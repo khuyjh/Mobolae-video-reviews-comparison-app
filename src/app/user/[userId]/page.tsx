@@ -7,10 +7,12 @@ import React, { useMemo, useState } from 'react';
 
 import VirtualizedContentGrid from '@/features/mainPage/components/VirtualizedContentGrid';
 import ActivityCard from '@/features/mypage/components/activityCard';
-import ProfileCard, { type CardData } from '@/features/mypage/components/ProfileCard'; // ← 순수 UI 컴포넌트
+import ProfileCard from '@/features/mypage/components/ProfileCard';
 import ProfileTabs from '@/features/mypage/components/ProfileTabs';
 import { fetchDummyPage } from '@/features/mypage/mock/dummyPager';
-import { TEAM_ID } from '@/shared/constants/constants';
+import { useFollowMutations } from '@/features/user/hooks/useFollowMutaion';
+import { TEAM_ID, PATH_OPTION } from '@/shared/constants/constants';
+import { useUserStore } from '@/shared/stores/userStore';
 
 import { useUserDetail } from '../../../../openapi/queries/queries';
 
@@ -19,12 +21,12 @@ import type { ContentItem } from '@/shared/types/content';
 
 type TabKey = 'reviews' | 'items' | 'wishlist';
 
-const mapUserToCard = (userDetail?: UserDetailDefaultResponse): CardData => ({
+const mapUserToCard = (userDetail?: UserDetailDefaultResponse) => ({
   name: userDetail?.nickname ?? '',
   avatarSrc: userDetail?.image ?? '',
   bio: userDetail?.description ?? '',
-  followers: userDetail?.followersCount as number,
-  following: userDetail?.followeesCount as number,
+  followers: (userDetail?.followersCount ?? 0) as number,
+  following: (userDetail?.followeesCount ?? 0) as number,
   isMe: false,
   isFollowing: Boolean(userDetail?.isFollowing),
 });
@@ -34,15 +36,13 @@ export default function UserPage() {
   const uidNum = Number(userId);
   const enabled = Number.isFinite(uidNum) && !!TEAM_ID;
 
-  const { data } = useUserDetail(
-    { path: { teamId: TEAM_ID as string, userId: uidNum } },
-    undefined,
-    { enabled, retry: false },
-  );
-  const card = mapUserToCard(data);
+  const { isLoggedIn, user } = useUserStore();
+  const meId = user?.id;
+
+  const fm = useFollowMutations(uidNum, isLoggedIn ? meId : undefined);
+  const followBtnDisabled = !isLoggedIn || fm.actionDisabled;
 
   const [tab, setTab] = useState<TabKey>('reviews');
-
   const {
     data: pages,
     fetchNextPage,
@@ -71,24 +71,43 @@ export default function UserPage() {
     [pages],
   );
 
+  const { data: userDetail, isLoading: isUserLoading } = useUserDetail(
+    { ...PATH_OPTION, path: { ...PATH_OPTION.path, userId: uidNum } },
+    undefined,
+    { enabled, retry: false },
+  );
+
+  if (isUserLoading || !userDetail) return null;
+
+  const card = mapUserToCard(userDetail);
+  const isFollowing = card.isFollowing;
+
   return (
     <div className='mt-[30px] px-[20px] md:px-[117px] xl:mx-auto xl:flex xl:max-w-[1340px] xl:px-[0px]'>
       <div className='mb-[60px] xl:mr-[60px]'>
         <ProfileCard
+          userId={uidNum}
+          meId={meId}
           name={card.name}
           avatarSrc={card.avatarSrc}
           bio={card.bio}
           followers={card.followers}
           following={card.following}
           isMe={false}
-          isFollowing={card.isFollowing}
+          isFollowing={isFollowing}
+          actionDisabled={followBtnDisabled}
+          onFollowToggle={() => (isFollowing ? fm.unfollow() : fm.follow())}
         />
       </div>
 
       <div className='flex-1'>
         <div className='mb-[60px]'>
           <h2 className='text-lg-semibold mb-[30px] text-white'>활동 내역</h2>
-          <ActivityCard rating={5} reviewCount={156} topCategoryId={2} />
+          <ActivityCard
+            rating={userDetail.averageRating}
+            reviewCount={userDetail.reviewCount}
+            topCategoryId={userDetail.mostFavoriteCategory?.id ?? null}
+          />
         </div>
 
         <ProfileTabs value={tab} onChange={setTab} />
