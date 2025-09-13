@@ -7,8 +7,8 @@ import { formatNumber } from '@/shared/utils/formatters';
 const CARD_CONTAINER_STYLE = `
   bg-black-800 border-black-700 border flex h-[82px] w-full flex-col rounded-[12px] px-[20px] py-[20px]
   justify-center items-start md:justify-center md:items-center
-  md:h-[169px] md:px-[40px] md:gap-y-[15px] md:py-[30px]
-  xl:h-[190px] xl:px-[70px] xl:py-[30px]
+  md:h-[169px] md:px-[25px] md:gap-y-[15px] md:py-[30px]
+  xl:h-[190px] xl:py-[30px]
 `;
 
 const ICON_VALUE_CONTAINER_STYLE = 'flex items-center space-x-[5px] md:space-x-[7px]';
@@ -109,7 +109,7 @@ const StatisticsCard = ({
   return (
     <div className={cn(CARD_CONTAINER_STYLE, className)}>
       {/* 제목+아이콘+값 */}
-      <div className='mb-[5px] flex items-center justify-between space-x-2.5 md:flex-col md:items-center md:space-x-0 md:gap-y-[15px]'>
+      <div className='mb-[5px] flex items-center justify-between space-x-2.5 md:flex-col md:items-center md:space-x-0 md:gap-y-[10px]'>
         <p className='text-md-medium md:text-base-medium xl:text-lg-medium text-white'>{title}</p>
         <div className={ICON_VALUE_CONTAINER_STYLE}>
           <div className={cn(ICON_STYLE, config.colorClass)}>{config.component}</div>
@@ -117,9 +117,13 @@ const StatisticsCard = ({
         </div>
       </div>
 
+      <div className='hidden w-full border-b border-gray-600 md:block'></div>
+
       {/* 비교 텍스트 */}
       <p className='text-xs-light xl:text-md-light text-gray-400 md:text-center'>
-        <span className='whitespace-nowrap'>같은 카테고리의 콘텐츠들보다</span> {comparisonText}
+        <span className='whitespace-nowrap'>같은 카테고리의 콘텐츠들보다&nbsp;</span>
+        <br className='hidden md:block' />
+        {comparisonText}
       </p>
     </div>
   );
