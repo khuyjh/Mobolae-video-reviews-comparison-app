@@ -91,7 +91,7 @@ export default async function Page({ params }: ProductPageProps) {
 
   /* 콘텐츠 데이터가 없을 시 */
   if (!product) {
-    return <div>Loading...</div>; // 임시
+    throw new Error('콘텐츠를 찾을 수 없습니다.');
   }
 
   return <ProductDetailsPageClient product={product} initialReviews={initialReviews} />;

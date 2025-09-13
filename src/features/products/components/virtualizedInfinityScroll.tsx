@@ -25,8 +25,7 @@ export function VirtualizedInfinityScroll<T extends { id?: string | number }>({
   itemHeightEstimate,
   maxItems = 1000,
   overscan = 5,
-  loadingText = '로딩 중...',
-  loadMoreText = '더 불러오기',
+  loadMoreText = '',
 }: VirtualizedInfinityScrollProps<T>) {
   const [displayItems, setDisplayItems] = useState<T[]>([]);
 
@@ -84,7 +83,21 @@ export function VirtualizedInfinityScroll<T extends { id?: string | number }>({
                 padding: '2rem 0',
               }}
             >
-              {isLoading ? loadingText : loadMoreText}
+              {isLoading ? (
+                <div className='text-xl-regular inline-flex h-21 flex-row items-center justify-between gap-0 text-white'>
+                  {'Loading...'.split('').map((letter, i) => (
+                    <span
+                      className='bounce-delay inline-block'
+                      key={i}
+                      style={{ animationDelay: `${i * 100}ms` }}
+                    >
+                      {letter}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                loadMoreText
+              )}
             </div>
           ) : null;
         }
