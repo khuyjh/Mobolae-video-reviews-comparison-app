@@ -2,7 +2,7 @@
 
 import Skeleton from './Skeleton';
 
-export default function HomeItemCardSkeleton() {
+const HomeItemCardSkeleton = () => {
   return (
     <div className='border-black-700 bg-black-800 relative w-full rounded-lg border p-[10px]'>
       <div className='flex w-full flex-col gap-[10px]'>
@@ -29,4 +29,6 @@ export default function HomeItemCardSkeleton() {
       </div>
     </div>
   );
-}
+};
+
+export default HomeItemCardSkeleton;

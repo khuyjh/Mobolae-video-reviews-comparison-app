@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from 'react';
 
 /** busy=true면 즉시 true, busy=false여도 holdMs 동안 true 유지 */
-export function useMinHold(busy: boolean, holdMs = 400, resetKey?: unknown) {
+export const useMinHold = (busy: boolean, holdMs = 400, resetKey?: unknown) => {
   const [show, setShow] = useState(busy);
   const startRef = useRef<number | null>(busy ? Date.now() : null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -28,12 +28,14 @@ export function useMinHold(busy: boolean, holdMs = 400, resetKey?: unknown) {
     const started = startRef.current ?? Date.now();
     const elapsed = Date.now() - started;
     const remain = Math.max(0, holdMs - elapsed);
+
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => {
       setShow(false);
       timerRef.current = null;
       startRef.current = null;
     }, remain);
+
     return () => {
       if (timerRef.current) {
         clearTimeout(timerRef.current);
@@ -42,4 +44,4 @@ export function useMinHold(busy: boolean, holdMs = 400, resetKey?: unknown) {
   }, [busy, holdMs]);
 
   return show;
-}
+};

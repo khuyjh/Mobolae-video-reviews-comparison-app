@@ -1,5 +1,6 @@
 'use client';
-export default function ReviewerRankingSidebarSkeleton() {
+
+const ReviewerRankingSidebarSkeleton = () => {
   return (
     <aside className='h-fit px-[30px] py-[45px] md:sticky md:top-20 md:max-h-[calc(100vh-80px)] md:max-w-[250px] md:min-w-[250px] md:overflow-auto'>
       <div className='bg-black-700/60 mb-[30px] h-5 w-24 animate-pulse rounded' />
@@ -16,4 +17,6 @@ export default function ReviewerRankingSidebarSkeleton() {
       </div>
     </aside>
   );
-}
+};
+
+export default ReviewerRankingSidebarSkeleton;
