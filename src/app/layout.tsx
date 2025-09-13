@@ -3,6 +3,7 @@ import localFont from 'next/font/local';
 import AuthGuard from '@/features/auth/components/AuthGuard';
 import GlobalNav from '@/shared/components/GlobalNav';
 import ScrollToTop from '@/shared/components/scrollToTop';
+import SplashScreen from '@/shared/components/Splash';
 import { ToastProvider } from '@/shared/components/toastProvider';
 import { META } from '@/shared/constants/metadata';
 import QueryProvider from '@/shared/providers/QueryProvider';
@@ -79,6 +80,7 @@ export default function RootLayout({
         <QueryProvider>
           <ToastProvider>
             <AuthGuard>
+              <SplashScreen />
               <GlobalNav />
               {children}
               <ScrollToTop />
