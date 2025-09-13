@@ -110,7 +110,19 @@ export function InfinityScroll<T>({
                   padding: '2rem 0',
                 }}
               >
-                {isLoading ? '로딩 중...' : '더 불러오기'}
+                {isLoading ? (
+                  <div className='text-xl-regular inline-flex h-21 flex-row items-center justify-between gap-0 text-white'>
+                    {'Loading...'.split('').map((letter, i) => (
+                      <span
+                        className='bounce-delay inline-block'
+                        key={i}
+                        style={{ animationDelay: `${i * 100}ms` }}
+                      >
+                        {letter}
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
               </div>
             ) : null;
           }

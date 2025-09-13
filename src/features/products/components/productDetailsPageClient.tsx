@@ -190,7 +190,7 @@ export default function ProductDetailsPageClient({
             maxItems={500}
             overscan={5}
             loadingText='로딩 중...'
-            loadMoreText='더 불러오기'
+            loadMoreText=''
           />
         </div>
       </div>
