@@ -84,7 +84,7 @@ const AuthGuard = ({ children }: Props) => {
     }
   }, [isLoggedIn, isAuthPath, isNeedAuthPath, router, isAuthProcess, isMounted, restoreAuth]);
 
-  if (!isMounted || (isLoggedIn && isAuthPath) || (!isLoggedIn && isNeedAuthPath)) {
+  if ((isLoggedIn && isAuthPath) || (!isLoggedIn && isNeedAuthPath)) {
     return (
       <div className='flex h-dvh items-center justify-center'>
         <LoadingImage loadingText='Loading...' />
