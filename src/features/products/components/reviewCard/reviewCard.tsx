@@ -102,6 +102,7 @@ const ReviewCard = ({ review, onLikeClick, productName, productCategory }: Revie
       <div className='flex flex-col md:flex-row md:gap-[30px] xl:gap-[80px]'>
         <div className='mb-[30px] flex-shrink-0'>
           <ReviewUser
+            userId={Number(review.user?.id ?? review.userId)}
             name={review.user.nickname}
             avatarSrc={review.user.image ?? ''}
             rating={review.rating}

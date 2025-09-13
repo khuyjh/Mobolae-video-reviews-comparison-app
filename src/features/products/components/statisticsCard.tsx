@@ -66,7 +66,7 @@ const StatisticsCard = ({
   className,
 }: StatisticsCardProps) => {
   const config = iconMap[iconType];
-  const formattedValue = value !== null ? formatNumber(value) : '-';
+  const formattedValue = value !== null ? formatNumber(Math.trunc(value)) : '-';
 
   let comparisonText: React.ReactNode;
   const { unit, moreText, lessText, sameText } = config;
@@ -80,7 +80,7 @@ const StatisticsCard = ({
     );
   } else {
     const absValue = Math.abs(comparisonValue);
-    const formattedComparison = formatNumber(absValue);
+    const formattedComparison = formatNumber(Math.trunc(absValue));
 
     if (comparisonValue === 0) {
       comparisonText = (
@@ -119,10 +119,7 @@ const StatisticsCard = ({
 
       {/* 비교 텍스트 */}
       <p className='text-xs-light xl:text-md-light text-gray-400 md:text-center'>
-        같은 카테고리의 제품들&nbsp;
-        <br className='hidden md:block' />
-        보다&nbsp;
-        {comparisonText}
+        <span className='whitespace-nowrap'>같은 카테고리의 콘텐츠들보다</span> {comparisonText}
       </p>
     </div>
   );
