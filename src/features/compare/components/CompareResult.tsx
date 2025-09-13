@@ -174,7 +174,15 @@ const CompareResult = () => {
         비교 결과
       </h2>
       {/* 요약 문구 */}
-      <CompareResultSummary aName={a.name} bName={b.name} aWins={aWins} bWins={bWins} ties={ties} />
+      <CompareResultSummary
+        aId={a.id}
+        bId={b.id}
+        aName={a.name}
+        bName={b.name}
+        aWins={aWins}
+        bWins={bWins}
+        ties={ties}
+      />
       {/* 상세 테이블 */}
       <CompareResultTable aName={a.name} bName={b.name} rows={rows} />
     </section>

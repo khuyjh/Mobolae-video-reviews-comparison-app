@@ -61,7 +61,15 @@ export const METRIC_CONFIG: Record<
   MetricKey,
   { label: string; higherIsBetter: boolean; formatter?: (n: number) => string }
 > = {
-  rating: { label: '별점', higherIsBetter: true, formatter: (n) => n.toFixed(1) },
-  reviewCount: { label: '리뷰 개수', higherIsBetter: true, formatter: (n) => n.toLocaleString() },
-  favoriteCount: { label: '찜 개수', higherIsBetter: true, formatter: (n) => n.toLocaleString() },
+  rating: { label: '별점', higherIsBetter: true, formatter: (n) => `${n.toFixed(1)}점` },
+  reviewCount: {
+    label: '리뷰 개수',
+    higherIsBetter: true,
+    formatter: (n) => `${n.toLocaleString()}개`,
+  },
+  favoriteCount: {
+    label: '찜 개수',
+    higherIsBetter: true,
+    formatter: (n) => `${n.toLocaleString()}개`,
+  },
 };
