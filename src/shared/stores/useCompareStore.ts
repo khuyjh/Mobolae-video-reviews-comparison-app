@@ -6,8 +6,9 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 
-import type { CompareCandidate } from '../../features/compare/types/compareTypes';
+import { readCurrentUserId, subscribeUserId } from './userIdSource';
 
+import type { CompareCandidate } from '../../features/compare/types/compareTypes';
 /** 유틸/타입 */
 
 /** 동일 아이템 선택 방지 + 카테고리 규칙 */
@@ -77,6 +78,12 @@ export type CompareState = {
    * 상태 변경 없이 교체 가능성만 판단하여 UI에서 분기 처리 가능.
    */
   evaluateReplace: (side: 'A' | 'B', next: CompareCandidate) => ReplaceEval;
+
+  /**
+   *  명시적으로 현재 로그인한 유저의 compare-storage를 지우고 싶을 때만 호출
+   * (persist 내부 removeItem은 no-op으로 막았으므로, 삭제는 이 액션으로만 수행)
+   */
+  wipeCurrentUserStorage: () => void;
 };
 
 /** 저장 포맷 - persist에는 이 형태만 저장 */
@@ -102,23 +109,6 @@ const isSameCategory = (a: CompareCandidate | null, b: CompareCandidate | null) 
 /** 추후 스키마 변경 대비 버전 - V2로 변경 categoryId 없는 과거 저장본 방어 */
 const PERSIST_VERSION = 2;
 
-/**
- * 현재 로그인한 유저 id를 userStore의 persist 값(auth-storage)에서 읽어옵니다.
- * - auth-storage 포맷은 zustand persist 기본 형태: { state: {...}, version: N }
- * - user.id 경로가 바뀌면 이 함수만 수정
- * - 값이 없거나 파싱 실패 시 null 반환.
- */
-function getCurrentUserIdFromAuthStorage(): string | null {
-  try {
-    const raw = localStorage.getItem('auth-storage');
-    if (!raw) return null;
-    const parsed = JSON.parse(raw);
-    return parsed?.state?.user?.id ?? null;
-  } catch {
-    return null;
-  }
-}
-
 /** compare persist 기본 키(로그인 상태에서만 저장, 비로그인 시 저장 안 함) */
 const BASE_KEY = 'compare-storage';
 
@@ -129,23 +119,31 @@ const BASE_KEY = 'compare-storage';
  * - 로그아웃 상태에서는 읽기/쓰기를 수행하지 않습니다(=persist 비활성)
  */
 const namespacedStorage = {
-  getItem: (_name: string) => {
-    const userId = getCurrentUserIdFromAuthStorage();
-    if (!userId) return null;
-    const key = `${BASE_KEY}:${userId}`;
+  getItem: (name: string) => {
+    // SSR 방어용
+    if (typeof window === 'undefined') return null;
+
+    // 1) 스토어에서 userId를 읽고, 실패 시 로컬 폴백 (헬퍼가 수행)
+    const userId = readCurrentUserId();
+    // 2) 비로그인/유저 미확정 상태면 persist를 비활성화(읽지 않음)
+    if (userId == null) return null;
+
+    // 3) 키는 반드시 문자열화해서 네임스페이스 구성
+    const key = `${BASE_KEY}:${String(userId)}`;
     return localStorage.getItem(key);
   },
-  setItem: (_name: string, value: string) => {
-    const userId = getCurrentUserIdFromAuthStorage();
-    if (!userId) return;
-    const key = `${BASE_KEY}:${userId}`;
+  setItem: (name: string, value: string) => {
+    if (typeof window === 'undefined') return;
+    const userId = readCurrentUserId();
+    // 비로그인/유저 미확정 상태면 저장 금지 (정책 유지)
+    if (userId == null) return;
+
+    const key = `${BASE_KEY}:${String(userId)}`;
+
     localStorage.setItem(key, value);
   },
-  removeItem: (_name: string) => {
-    const userId = getCurrentUserIdFromAuthStorage();
-    if (!userId) return;
-    const key = `${BASE_KEY}:${userId}`;
-    localStorage.removeItem(key);
+  removeItem: (name: string) => {
+    //의도치 않은 시점에 유저 키가 삭제되는 문제 예방하기 위해 no-op 처리
   },
 };
 
@@ -290,29 +288,39 @@ export const useCompareStore = create<CompareState>()(
 
         return null;
       },
-      /**
-       *  유저 전환 시: 로그인 상태면 해당 유저 키에서 복원, 아니면 메모리 초기화
-       */
+
       syncWithCurrentUser: () => {
         try {
-          const userId = getCurrentUserIdFromAuthStorage();
+          const userId = readCurrentUserId();
+          // 1) 로그아웃 상태: 메모리만 초기화.
           if (!userId) {
-            // 로그아웃 상태: persist 비활성. 메모리만 초기화.
             set({ a: null, b: null, requested: false, requestTick: 0, inFlight: false });
             return;
           }
-          const key = `${BASE_KEY}:${userId}`;
+
+          const key = `${BASE_KEY}:${String(userId)}`;
           const raw = localStorage.getItem(key);
-          const parsed = raw ? JSON.parse(raw) : null;
-          const a = parsed?.state?.a ?? null;
-          const b = parsed?.state?.b ?? null;
 
-          // 복원 시에도 categoryId가 없다면 무효화
-          const safeA: CompareCandidate | null = a && typeof a.categoryId === 'number' ? a : null;
-          const safeB: CompareCandidate | null = b && typeof b.categoryId === 'number' ? b : null;
+          // 다음 틱에서 처리 → namespacedStorage가 '변경된 userId'로 읽도록 보장
+          queueMicrotask(() => {
+            if (raw) {
+              // 스냅샷이 있으면 → rehydrate로 복원(migrate/partialize/version 로직 그대로 탑승)
+              try {
+                useCompareStore.persist.rehydrate();
 
-          set({ a: safeA, b: safeB, requested: false, requestTick: 0, inFlight: false });
+                // (선택) 휘발성 플래그 정리: requested/inFlight 등
+                set({ requested: false, inFlight: false });
+              } catch {
+                // rehydrate 실패 시 안전 초기화
+                set({ a: null, b: null, requested: false, requestTick: 0, inFlight: false });
+              }
+            } else {
+              // 스냅샷이 없으면 → 초기화
+              set({ a: null, b: null, requested: false, requestTick: 0, inFlight: false });
+            }
+          });
         } catch {
+          // 예외 대비: 안전 초기화
           set({ a: null, b: null, requested: false, requestTick: 0, inFlight: false });
         }
       },
@@ -333,12 +341,19 @@ export const useCompareStore = create<CompareState>()(
 
         return isSameCategory(next, other) ? 'ok' : 'needs-clear';
       },
+
+      // 명시적 삭제 액션: 정말로 현재 유저의 compare-storage를 지워야 할 때만 사용
+      wipeCurrentUserStorage: () => {
+        const userId = readCurrentUserId();
+        if (!userId) return;
+        const key = `${BASE_KEY}:${String(userId)}`;
+        localStorage.removeItem(key);
+      },
     }),
 
     {
       /**
-       * name은 의미상으로만 사용됩니다.
-       * 실제 저장 키는 namespacedStorage가 `compare-storage:<userId>`로 바꿔서 씁니다.
+       * name은 논리적 이름일 뿐, 실제 저장 키는 namespacedStorage가 `${BASE_KEY}:${userId}` 형태로 관리합니다.
        */
       name: BASE_KEY,
       version: PERSIST_VERSION,
@@ -380,3 +395,50 @@ export const useCompareStore = create<CompareState>()(
     },
   ),
 );
+
+declare global {
+  /** 브라우저 전역(window)에 구독 해제 핸들러를 보관 */
+  interface Window {
+    compareUserSyncUnsub?: () => void;
+  }
+  /** Next/Vite 등 개발환경에서만 존재할 수 있는 HMR API 타입 */
+  interface ImportMeta {
+    hot?: { dispose(cb: () => void): void };
+  }
+}
+
+if (typeof window !== 'undefined') {
+  // 1) 기존 구독이 있으면 해제 (HMR/중복 방지)
+  if (window.compareUserSyncUnsub) {
+    window.compareUserSyncUnsub();
+  }
+
+  // 2) 새 구독 등록: userId가 바뀌면 compare 스토어 동기화
+  const unsubscribe = subscribeUserId(() => {
+    queueMicrotask(() => {
+      try {
+        useCompareStore.getState().syncWithCurrentUser();
+      } catch {
+        // 초기 경합 상황 대비해 한 틱 더 미룸
+        setTimeout(() => {
+          try {
+            useCompareStore.getState().syncWithCurrentUser();
+          } catch {
+            /* 초기 마운트 경합 등을 위한 noop */
+          }
+        }, 0);
+      }
+    });
+  });
+
+  // 3) 전역 슬롯에 저장(동일 탭 HMR에도 1개만 유지)
+  window.compareUserSyncUnsub = unsubscribe;
+
+  // 4) HMR 정리: 모듈 교체 시 구독 해제
+  if (import.meta.hot) {
+    import.meta.hot.dispose(() => {
+      window.compareUserSyncUnsub?.();
+      window.compareUserSyncUnsub = undefined;
+    });
+  }
+}
