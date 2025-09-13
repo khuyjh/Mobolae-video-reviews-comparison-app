@@ -17,6 +17,7 @@ import { TEAM_ID } from '@/shared/constants/constants';
 import { useUserStore } from '@/shared/stores/userStore';
 
 import { useMe } from '../../../openapi/queries/queries';
+import ProfilePageSkeleton from '../../shared/components/skeleton/PofilePageSkeleton';
 
 import type { MeDefaultResponse } from '../../../openapi/queries/common';
 import type { ContentItem } from '@/shared/types/content';
@@ -34,7 +35,11 @@ const mapMeToCard = (meDetail?: MeDefaultResponse) => ({
 });
 
 export default function MyPage() {
-  const { data: meData } = useMe({ path: { teamId: TEAM_ID as string } }, []);
+  const { data: meData, isLoading: isMeLoading } = useMe(
+    { path: { teamId: TEAM_ID as string } },
+    [],
+  );
+
   const card = mapMeToCard(meData);
   const { userId } = useParams<{ userId: string }>();
   const uidNum = Number(userId);
@@ -70,6 +75,10 @@ export default function MyPage() {
       ),
     [pages],
   );
+
+  if (isMeLoading || !meData) {
+    return <ProfilePageSkeleton />;
+  }
 
   if (!meData) return;
 
