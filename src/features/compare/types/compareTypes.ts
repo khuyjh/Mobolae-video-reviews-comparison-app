@@ -1,4 +1,4 @@
-// 비교하기 페이지에서 쓰이는 타입들
+// 비교하기 페이지에서 쓰이는 타입들 색상, 비교 문구 등 관리
 
 // 승자 텍스트 색상 상수화
 export const WINNER_TEXT_COLOR = {
@@ -14,7 +14,7 @@ export type WinnerCode = 'A' | 'B' | 'TIE';
 export const WINNER_CONFIG: Record<WinnerCode, { text: string; color: string }> = {
   A: { text: '콘텐츠 1 우세', color: WINNER_TEXT_COLOR.A },
   B: { text: '콘텐츠 2 우세', color: WINNER_TEXT_COLOR.B },
-  TIE: { text: '무승부', color: WINNER_TEXT_COLOR.TIE },
+  TIE: { text: '동일', color: WINNER_TEXT_COLOR.TIE },
 } as const;
 
 // 사용자가 드롭다운에서 고르는 “후보” 타입 (Select 전용)
@@ -61,7 +61,15 @@ export const METRIC_CONFIG: Record<
   MetricKey,
   { label: string; higherIsBetter: boolean; formatter?: (n: number) => string }
 > = {
-  rating: { label: '별점', higherIsBetter: true, formatter: (n) => n.toFixed(1) },
-  reviewCount: { label: '리뷰 개수', higherIsBetter: true, formatter: (n) => n.toLocaleString() },
-  favoriteCount: { label: '찜 개수', higherIsBetter: true, formatter: (n) => n.toLocaleString() },
+  rating: { label: '별점', higherIsBetter: true, formatter: (n) => `${n.toFixed(1)}점` },
+  reviewCount: {
+    label: '리뷰 개수',
+    higherIsBetter: true,
+    formatter: (n) => `${n.toLocaleString()}개`,
+  },
+  favoriteCount: {
+    label: '찜 개수',
+    higherIsBetter: true,
+    formatter: (n) => `${n.toLocaleString()}개`,
+  },
 };
