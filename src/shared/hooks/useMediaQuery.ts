@@ -8,7 +8,7 @@ import { useEffect, useState } from 'react';
  * @param query CSS 미디어쿼리 (예: '(min-width: 768px)')
  * @returns boolean - 조건 일치 여부
  */
-export default function useMediaQuery(query: string) {
+const useMediaQuery = (query: string) => {
   const [matches, setMatches] = useState(false);
 
   useEffect(() => {
@@ -22,4 +22,6 @@ export default function useMediaQuery(query: string) {
   }, [query]);
 
   return matches;
-}
+};
+
+export default useMediaQuery;
