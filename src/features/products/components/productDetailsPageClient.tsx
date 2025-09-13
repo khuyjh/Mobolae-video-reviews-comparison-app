@@ -189,8 +189,8 @@ export default function ProductDetailsPageClient({
             itemHeightEstimate={itemHeightEstimate}
             maxItems={500}
             overscan={5}
-            loadingText='로딩 중...'
-            loadMoreText='더 불러오기'
+            loadingText='loading...'
+            loadMoreText=''
           />
         </div>
       </div>
