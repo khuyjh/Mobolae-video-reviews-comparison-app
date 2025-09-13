@@ -4,6 +4,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import React, { useMemo, useCallback } from 'react';
 
+import MobileCategorySheet from '@/features/mainPage/components/MobileCategorySheet';
 import SortDropdown from '@/shared/components/SortDropdown';
 import { CATEGORIES, TEAM_ID } from '@/shared/constants/constants';
 import { ContentApi } from '@/shared/types/content';
@@ -18,8 +19,10 @@ const PAGE_SIZE = 24;
 
 /**
  * ContentList
+ *
  * - URL 쿼리(category/keyword/order)를 단일 소스로 사용
  * - useInfiniteApi(cursor)로 무한스크롤 CSR 목록 렌더
+ * - 모바일에서는 카테고리 시트를 정렬 드롭다운 옆에 표시
  */
 const ContentList = () => {
   const searchParams = useSearchParams();
@@ -39,12 +42,7 @@ const ContentList = () => {
     return null;
   }, [keyword, category]);
 
-  /**
-   * 무한스크롤 API
-   * - queryKey에 필터 포함 → 변경 시 자동 리패치
-   * - keyword: 공백제거 + 소문자 변환 (API는 내부에서 처리하지만, 캐싱 효율 위해 여기도 적용)
-   * - order: recent는 API 기본값이므로 undefined 처리 (캐싱 효율 위해 여기도 적용)
-   */
+  /** 무한스크롤 API */
   const normKeyword = (keyword ?? '').trim().toLowerCase();
   const normOrder: ProductOrderKey = order ?? 'recent';
 
@@ -68,10 +66,7 @@ const ContentList = () => {
     [data?.items],
   );
 
-  /**
-   * 정렬 변경
-   * - URL만 갱신, cursor 초기화(→ 자동 리패치)
-   */
+  /** 정렬 변경 → URL만 갱신, cursor 초기화 */
   const handleChangeOrder = useCallback(
     (nextOrder: ProductOrderKey) => {
       if (nextOrder === order) return;
@@ -91,7 +86,10 @@ const ContentList = () => {
       <div className='mb-[15px] flex w-full flex-col justify-between space-y-[30px] md:mb-[30px] md:flex-row md:space-y-0'>
         {title && <h2 className='text-xl-semibold text-white'>{title}</h2>}
         <div className='flex w-full items-center justify-between md:w-fit'>
-          <div id='mobile-category-slot' className='md:hidden' />
+          <div className='md:hidden'>
+            <MobileCategorySheet />
+          </div>
+
           <SortDropdown
             options={PRODUCT_ORDER_OPTIONS}
             value={order}

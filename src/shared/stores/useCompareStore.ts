@@ -6,8 +6,9 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 
-import type { CompareCandidate } from '../../features/compare/types/compareTypes';
+import { readCurrentUserId, subscribeUserId } from './userIdSource';
 
+import type { CompareCandidate } from '../../features/compare/types/compareTypes';
 /** 유틸/타입 */
 
 /** 동일 아이템 선택 방지 + 카테고리 규칙 */
@@ -108,53 +109,9 @@ const isSameCategory = (a: CompareCandidate | null, b: CompareCandidate | null) 
 /** 추후 스키마 변경 대비 버전 - V2로 변경 categoryId 없는 과거 저장본 방어 */
 const PERSIST_VERSION = 2;
 
-/**
- * 현재 로그인한 유저 id를 userStore의 persist 값(auth-storage)에서 읽어옵니다.
- * - auth-storage 포맷은 zustand persist 기본 형태: { state: {...}, version: N }
- * - user.id 경로가 바뀌면 이 함수만 수정
- * - 값이 없거나 파싱 실패 시 null 반환.
- */
-function getCurrentUserIdFromAuthStorage(): string | null {
-  try {
-    const raw = localStorage.getItem('auth-storage');
-    if (!raw) return null;
-    const parsed = JSON.parse(raw);
-    return parsed?.state?.user?.id ?? null;
-  } catch {
-    return null;
-  }
-}
-
 /** compare persist 기본 키(로그인 상태에서만 저장, 비로그인 시 저장 안 함) */
 const BASE_KEY = 'compare-storage';
 
-/** 추가: userId 변경 감지 & 동기화 유틸 (모듈 스코프), 마지막으로 확인한 userId를 기억하기 위함 */
-let __lastUserId: string | null | undefined = undefined;
-
-// 현재 auth-storage 기준 userId를 읽어와, 바뀌었으면 sync 실행
-function __trySyncCompareOnUserChange() {
-  try {
-    const current = getCurrentUserIdFromAuthStorage();
-    if (__lastUserId === current) return; // 변화 없음
-
-    __lastUserId = current;
-
-    // zustand 스토어 액션 호출: B 유저 스냅샷 있으면 복원, 없으면 초기화
-    // (아래 useCompareStore 정의 이후에 바인딩되므로, 안전하게 microtask로 미룸)
-    queueMicrotask(() => {
-      try {
-        useCompareStore.getState().syncWithCurrentUser();
-      } catch (e) {
-        // 아직 스토어가 초기화 안 된 아주 이른 타이밍 대비
-        setTimeout(() => {
-          try {
-            useCompareStore.getState().syncWithCurrentUser();
-          } catch {}
-        }, 0);
-      }
-    });
-  } catch {}
-}
 /**
  * 커스텀 스토리지 어댑터
  * - zustand의 storage 인터페이스(getItem/setItem/removeItem)를 구현해서
@@ -162,63 +119,33 @@ function __trySyncCompareOnUserChange() {
  * - 로그아웃 상태에서는 읽기/쓰기를 수행하지 않습니다(=persist 비활성)
  */
 const namespacedStorage = {
-  getItem: (_name: string) => {
-    const userId = getCurrentUserIdFromAuthStorage();
-    if (!userId) return null;
-    return localStorage.getItem(`${BASE_KEY}:${userId}`);
+  getItem: (name: string) => {
+    // SSR 방어용
+    if (typeof window === 'undefined') return null;
+
+    // 1) 스토어에서 userId를 읽고, 실패 시 로컬 폴백 (헬퍼가 수행)
+    const userId = readCurrentUserId();
+    // 2) 비로그인/유저 미확정 상태면 persist를 비활성화(읽지 않음)
+    if (userId == null) return null;
+
+    // 3) 키는 반드시 문자열화해서 네임스페이스 구성
+    const key = `${BASE_KEY}:${String(userId)}`;
+    return localStorage.getItem(key);
   },
-  setItem: (_name: string, value: string) => {
-    const userId = getCurrentUserIdFromAuthStorage();
-    const key = userId ? `${BASE_KEY}:${userId}` : '(no user)';
-    try {
-      const parsed = JSON.parse(value);
-      // ★ a/b가 null로 저장될 때만 로그
-      if (parsed?.state?.a === null && parsed?.state?.b === null) {
-        // console.warn('[compare:setItem NULL SAVE]', { key, value: parsed });
-        // console.trace('[compare: NULL save stack]');
-      } else {
-      }
-    } catch {}
-    if (!userId) return; // 비로그인 상태에선 저장 안 함
-    localStorage.setItem(`${BASE_KEY}:${userId}`, value);
+  setItem: (name: string, value: string) => {
+    if (typeof window === 'undefined') return;
+    const userId = readCurrentUserId();
+    // 비로그인/유저 미확정 상태면 저장 금지 (정책 유지)
+    if (userId == null) return;
+
+    const key = `${BASE_KEY}:${String(userId)}`;
+
+    localStorage.setItem(key, value);
   },
-  removeItem: (_name: string) => {
+  removeItem: (name: string) => {
     //의도치 않은 시점에 유저 키가 삭제되는 문제 예방하기 위해 no-op 처리
   },
 };
-
-/** 추가: 같은 탭에서 auth-storage가 갱신될 때를 감지하기 위한 후킹
-   - localStorage.setItem('auth-storage', ...) 이후 즉시 동기화
-   - 다른 키에는 영향 없음
- */
-(() => {
-  if (typeof window === 'undefined') return;
-
-  const _origSetItem = localStorage.setItem.bind(localStorage);
-
-  localStorage.setItem = function (key: string, value: string) {
-    _origSetItem(key, value);
-    if (key === 'auth-storage') {
-      // 로그인/로그아웃/유저전환 직후, 같은 탭에서도 확실히 감지
-      __trySyncCompareOnUserChange();
-    }
-  };
-
-  // 다른 탭에서 auth-storage가 바뀐 경우(브라우저 표준 storage 이벤트)
-  window.addEventListener('storage', (e) => {
-    if (e.key === 'auth-storage') {
-      __trySyncCompareOnUserChange();
-    }
-  });
-
-  // 탭 포커스나 가시성 전환 시에도 한 번 동기화 (백그라운드에서 바뀐 경우 대비)
-  const onWake = () => __trySyncCompareOnUserChange();
-  window.addEventListener('focus', onWake);
-  document.addEventListener('visibilitychange', onWake);
-
-  // 초기 1회 동기화 (앱 로드 시 현재 유저 스냅샷 반영)
-  queueMicrotask(__trySyncCompareOnUserChange);
-})();
 
 /* zustand store 부분 */
 
@@ -361,21 +288,17 @@ export const useCompareStore = create<CompareState>()(
 
         return null;
       },
-      /**
-       * - 유저 전환 시: 로그인 상태면 해당 유저 키에서 복원, 아니면 메모리 초기화
-       * - 이제 직접 JSON 파싱하여 set()하지 않고,zustand persist의 rehydrate 경로를 최우선으로 사용
-       * - (migrate/partialize/version을 그대로 따르기 때문에 안전)
-       */
+
       syncWithCurrentUser: () => {
         try {
-          const userId = getCurrentUserIdFromAuthStorage();
+          const userId = readCurrentUserId();
           // 1) 로그아웃 상태: 메모리만 초기화.
           if (!userId) {
             set({ a: null, b: null, requested: false, requestTick: 0, inFlight: false });
             return;
           }
 
-          const key = `${BASE_KEY}:${userId}`;
+          const key = `${BASE_KEY}:${String(userId)}`;
           const raw = localStorage.getItem(key);
 
           // 다음 틱에서 처리 → namespacedStorage가 '변경된 userId'로 읽도록 보장
@@ -421,17 +344,16 @@ export const useCompareStore = create<CompareState>()(
 
       // 명시적 삭제 액션: 정말로 현재 유저의 compare-storage를 지워야 할 때만 사용
       wipeCurrentUserStorage: () => {
-        const userId = getCurrentUserIdFromAuthStorage();
+        const userId = readCurrentUserId();
         if (!userId) return;
-        const key = `${BASE_KEY}:${userId}`;
+        const key = `${BASE_KEY}:${String(userId)}`;
         localStorage.removeItem(key);
       },
     }),
 
     {
       /**
-       * name은 의미상으로만 사용됩니다.
-       * 실제 저장 키는 namespacedStorage가 `compare-storage:<userId>`로 바꿔서 씁니다.
+       * name은 논리적 이름일 뿐, 실제 저장 키는 namespacedStorage가 `${BASE_KEY}:${userId}` 형태로 관리합니다.
        */
       name: BASE_KEY,
       version: PERSIST_VERSION,
@@ -473,3 +395,50 @@ export const useCompareStore = create<CompareState>()(
     },
   ),
 );
+
+declare global {
+  /** 브라우저 전역(window)에 구독 해제 핸들러를 보관 */
+  interface Window {
+    compareUserSyncUnsub?: () => void;
+  }
+  /** Next/Vite 등 개발환경에서만 존재할 수 있는 HMR API 타입 */
+  interface ImportMeta {
+    hot?: { dispose(cb: () => void): void };
+  }
+}
+
+if (typeof window !== 'undefined') {
+  // 1) 기존 구독이 있으면 해제 (HMR/중복 방지)
+  if (window.compareUserSyncUnsub) {
+    window.compareUserSyncUnsub();
+  }
+
+  // 2) 새 구독 등록: userId가 바뀌면 compare 스토어 동기화
+  const unsubscribe = subscribeUserId(() => {
+    queueMicrotask(() => {
+      try {
+        useCompareStore.getState().syncWithCurrentUser();
+      } catch {
+        // 초기 경합 상황 대비해 한 틱 더 미룸
+        setTimeout(() => {
+          try {
+            useCompareStore.getState().syncWithCurrentUser();
+          } catch {
+            /* 초기 마운트 경합 등을 위한 noop */
+          }
+        }, 0);
+      }
+    });
+  });
+
+  // 3) 전역 슬롯에 저장(동일 탭 HMR에도 1개만 유지)
+  window.compareUserSyncUnsub = unsubscribe;
+
+  // 4) HMR 정리: 모듈 교체 시 구독 해제
+  if (import.meta.hot) {
+    import.meta.hot.dispose(() => {
+      window.compareUserSyncUnsub?.();
+      window.compareUserSyncUnsub = undefined;
+    });
+  }
+}
