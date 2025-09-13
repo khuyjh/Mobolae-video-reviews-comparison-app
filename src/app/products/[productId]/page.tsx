@@ -1,3 +1,5 @@
+import { cookies } from 'next/headers';
+
 import { Metadata } from 'next';
 
 import ProductDetailsPageClient from '@/features/products/components/productDetailsPageClient';
@@ -18,10 +20,18 @@ interface ProductPageProps {
 export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
   const { productId } = await params;
 
+  const cookieStore = await cookies();
+  const cookieHeader = cookieStore.toString();
+  const accessToken = cookieStore.get('accessToken')?.value;
+
   const response = await retrieveProduct({
     path: {
       teamId: TEAM_ID!,
       productId: Number(productId),
+    },
+    headers: {
+      cookie: cookieHeader,
+      ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}), // accessToken 있으면 붙여줌
     },
   });
 
@@ -33,11 +43,19 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
 export default async function Page({ params }: ProductPageProps) {
   const { productId } = await params;
 
+  const cookieStore = await cookies();
+  const cookieHeader = cookieStore.toString();
+  const accessToken = cookieStore.get('accessToken')?.value;
+
   /* 서버에서 콘텐츠 상세 정보 조회 */
   const response = await retrieveProduct({
     path: {
       teamId: TEAM_ID!,
       productId: Number(productId),
+    },
+    headers: {
+      cookie: cookieHeader,
+      ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
     },
   });
 
@@ -54,6 +72,10 @@ export default async function Page({ params }: ProductPageProps) {
       listReviews({
         path: { teamId: TEAM_ID!, productId: Number(productId) },
         query: { order },
+        headers: {
+          cookie: cookieHeader,
+          ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+        },
       }),
     ),
   );

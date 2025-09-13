@@ -30,7 +30,7 @@ interface ProductCardProps {
 }
 
 const IMAGE_CONTAINER_STYLES =
-  'relative aspect-[335/236] w-full bg-black-900 md:h-[197px] md:w-[280px] xl:h-[250px] xl:w-[335px] rounded-[8px]';
+  'relative aspect-[4/3] w-full bg-black-900 md:w-[280px] xl:w-[335px] rounded-[8px] overflow-hidden';
 
 const ProductCard = ({
   imageSrc,
@@ -87,7 +87,7 @@ const ProductCard = ({
 
   return (
     <>
-      <div className='flex flex-col md:flex-row md:gap-5'>
+      <div className='flex flex-col md:flex-row md:gap-8 xl:gap-1'>
         {/* 이미지 섹션 */}
         <div className={IMAGE_CONTAINER_STYLES}>
           <Image
