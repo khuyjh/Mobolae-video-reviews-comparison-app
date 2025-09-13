@@ -11,7 +11,7 @@ import { useUserStore } from '@/shared/stores/userStore';
 import ReviewDescription from './reviewDescription';
 import ReviewMeta from './reviewMeta';
 import ReviewUser from './reviewUser';
-import { useDeleteReview } from '../../../../../openapi/queries';
+import { useDeleteReview, useLikeReview, useUnlikeReview } from '../../../../../openapi/queries';
 import ReviewModal from '../productModal/reviewModal';
 
 import type { Review } from '../../../../../openapi/requests';
@@ -38,6 +38,9 @@ const ReviewCard = ({ review, onLikeClick, productName, productCategory }: Revie
   const [localIsLiked, setLocalIsLiked] = useState(review.isLiked);
   const [localLikeCount, setLocalLikeCount] = useState(review.likeCount);
 
+  const likeReviewMut = useLikeReview();
+  const unlikeReviewMut = useUnlikeReview();
+
   /*좋아요 클릭 핸들러 추가*/
   const handleLikeClick = async () => {
     if (!isLoggedIn) {
@@ -58,7 +61,16 @@ const ReviewCard = ({ review, onLikeClick, productName, productCategory }: Revie
     }
 
     try {
-      await onLikeClick(review.id, prevIsLiked);
+      if (prevIsLiked) {
+        await unlikeReviewMut.mutateAsync({
+          path: { teamId: TEAM_ID!, reviewId: review.id },
+        });
+      } else {
+        await likeReviewMut.mutateAsync({
+          path: { teamId: TEAM_ID!, reviewId: review.id },
+        });
+      }
+      queryClient.invalidateQueries({ queryKey: ['reviews', review.productId] });
     } catch (err) {
       setLocalIsLiked(prevIsLiked);
       setLocalLikeCount(prevCount);
