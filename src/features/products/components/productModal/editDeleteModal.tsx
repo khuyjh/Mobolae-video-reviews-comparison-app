@@ -157,7 +157,13 @@ export default function EditDeleteModal({
 
   return (
     <div>
-      <BaseModal title='수정/삭제 모달' isOpen={isOpen} onClose={handleModalClose} size='L'>
+      <BaseModal
+        title='수정/삭제 모달'
+        isOpen={isOpen}
+        onClose={handleModalClose}
+        size='L'
+        closeOnOutsideClick={false}
+      >
         <div className='flex flex-col px-5 pb-5 md:px-10 md:pb-10'>
           {/* 카테고리 칩 */}
           <div className='flex justify-start'>

@@ -229,6 +229,7 @@ const ReviewModal = ({
       isOpen={isOpen}
       onClose={handleModalClose}
       size='L'
+      closeOnOutsideClick={false}
     >
       <div className='flex flex-col px-5 pb-4 md:px-10 md:pb-10'>
         <div className='flex flex-col items-start'>
