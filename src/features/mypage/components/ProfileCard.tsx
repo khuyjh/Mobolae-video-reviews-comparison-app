@@ -88,7 +88,7 @@ export default function ProfileCard({
 
       <div className={FOLLOW_INFO_WRAPPER}>
         <div
-          className={FOLLOW_BOX_LEFT}
+          className={clsx(FOLLOW_BOX, FOLLOW_BOX_LEFT)}
           role='button'
           tabIndex={0}
           data-type='followers'
@@ -106,7 +106,7 @@ export default function ProfileCard({
           </span>
         </div>
         <div
-          className={'inline-flex w-[50%] flex-col items-center text-center'}
+          className={FOLLOW_BOX}
           role='button'
           tabIndex={0}
           data-type='following'
@@ -115,11 +115,11 @@ export default function ProfileCard({
           aria-label='팔로잉 보기'
         >
           <strong
-            className={clsx(FOLLOW_COUNT, hasFollowers ? 'cursor-pointer' : 'cursor-default')}
+            className={clsx(FOLLOW_COUNT, hasFollowing ? 'cursor-pointer' : 'cursor-default')}
           >
             {following}
           </strong>
-          <span className={clsx(FOLLOW_LABEL, hasFollowers ? 'cursor-pointer' : 'cursor-default')}>
+          <span className={clsx(FOLLOW_LABEL, hasFollowing ? 'cursor-pointer' : 'cursor-default')}>
             팔로잉
           </span>
         </div>
@@ -179,10 +179,10 @@ const CARD_CONTAINER =
 const PROFILE_TEXT_WRAPPER = 'mt-[30px] flex flex-col items-center gap-[10px] text-center';
 
 const FOLLOW_INFO_WRAPPER = 'mt-[30px] flex justify-between text-center';
-const FOLLOW_BOX_LEFT =
-  'w-[50%] border-r border-r-black-700 inline-flex flex-col items-center text-center ';
-const FOLLOW_COUNT = 'text-base-semibold  text-white hover:text-main';
-const FOLLOW_LABEL = 'text-md-regular  text-gray-400';
+const FOLLOW_BOX_LEFT = ' border-r border-r-black-700';
+const FOLLOW_BOX = 'group w-[50%] inline-flex flex-col items-center text-center ';
+const FOLLOW_COUNT = 'text-base-semibold  text-white group-hover:!text-main transition-colors ';
+const FOLLOW_LABEL = 'text-md-regular  text-gray-400 group-hover:!text-main transition-colors';
 
 const BUTTON_GROUP = 'mt-[30px] flex flex-col gap-[10px]';
 const BUTTON_BASE = 'text-base-semibold w-full rounded-[8px] py-[15px] transition cursor-pointer';
