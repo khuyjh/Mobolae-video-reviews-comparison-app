@@ -1,6 +1,8 @@
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
 import { useEffect, useState } from 'react';
 
+import LoadingText from './loadingText';
+
 /**
  * items: 표시할 아이템 배열
  * renderItem: 각 아이템을 렌더링하는 함수
@@ -20,6 +22,7 @@ interface InfinityScrollProps<T> {
   itemHeightEstimate: number;
   maxItems?: number;
   scrollKey?: string;
+  loadingText?: string;
 }
 
 export function InfinityScroll<T>({
@@ -31,6 +34,7 @@ export function InfinityScroll<T>({
   itemHeightEstimate,
   maxItems = 1000,
   scrollKey,
+  loadingText = 'Loading...',
 }: InfinityScrollProps<T>) {
   /* 실제 화면에 표시할 아이템 */
   const [displayItems, setDisplayItems] = useState<T[]>([]);
@@ -110,7 +114,7 @@ export function InfinityScroll<T>({
                   padding: '2rem 0',
                 }}
               >
-                {isLoading ? '로딩 중...' : '더 불러오기'}
+                {isLoading ? <LoadingText text={loadingText} /> : null}
               </div>
             ) : null;
           }

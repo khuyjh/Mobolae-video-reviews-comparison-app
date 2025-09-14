@@ -3,6 +3,8 @@
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
 import { useEffect, useState } from 'react';
 
+import LoadingText from '@/shared/components/loadingText';
+
 interface VirtualizedInfinityScrollProps<T extends { id?: string | number }> {
   items: T[];
   renderItem: (item: T, index: number) => React.ReactNode;
@@ -25,8 +27,8 @@ export function VirtualizedInfinityScroll<T extends { id?: string | number }>({
   itemHeightEstimate,
   maxItems = 1000,
   overscan = 5,
-  loadingText = '로딩 중...',
-  loadMoreText = '더 불러오기',
+  loadMoreText = '',
+  loadingText = 'Loading...',
 }: VirtualizedInfinityScrollProps<T>) {
   const [displayItems, setDisplayItems] = useState<T[]>([]);
 
@@ -45,7 +47,6 @@ export function VirtualizedInfinityScroll<T extends { id?: string | number }>({
     overscan,
     getItemKey: (index) =>
       displayItems[index]?.id != null ? String(displayItems[index]!.id) : String(index),
-    scrollMargin: 70,
   });
 
   const virtualItems = rowVirtualizer.getVirtualItems();
@@ -85,7 +86,7 @@ export function VirtualizedInfinityScroll<T extends { id?: string | number }>({
                 padding: '2rem 0',
               }}
             >
-              {isLoading ? loadingText : loadMoreText}
+              {isLoading ? <LoadingText text={loadingText} /> : loadMoreText}
             </div>
           ) : null;
         }

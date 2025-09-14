@@ -2,7 +2,7 @@
 
 import { useQueryClient } from '@tanstack/react-query';
 import { Heart } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 
 import { PATH_OPTION } from '@/shared/constants/constants';
@@ -42,6 +42,11 @@ const ProductHeader = ({
 }: ProductHeaderProps) => {
   const [isLiked, setIsLiked] = useState<boolean>(isFavorite);
   const [localFavoriteCount, setLocalFavoriteCount] = useState<number>(favoriteCount);
+
+  useEffect(() => {
+    setIsLiked(isFavorite);
+    setLocalFavoriteCount(favoriteCount);
+  }, [isFavorite, favoriteCount]);
 
   const favoriteMut = useFavorite();
   const unfavoriteMut = useUnfavorite();
@@ -110,24 +115,26 @@ const ProductHeader = ({
         title,
         description: '콘텐츠를 확인해보세요',
         imageUrl: `${window.location.origin}/default-thumbnail.png`,
-        url: `${window.location.origin}/product/${productId}`,
+        url: `${window.location.origin}/products/${productId}`,
       });
     } catch (err) {
       console.error('카카오톡 공유 실패:', err);
-      toast.warning('카카오톡 공유가 원활하지 않아 페이지로 돌아왔습니다.');
-      window.location.href = `${window.location.origin}/product/${productId}`;
+      toast.warning('카카오톡 공유가 원활하지 않아 페이지로 돌아왔습니다.', {
+        toastId: 'kakao_share_error',
+      });
+      window.location.href = `${window.location.origin}/products/${productId}`;
     }
   };
 
   /* 클립보드 복사 */
   const handleCopyLink = async () => {
-    const url = `${window.location.origin}/product/${productId}`;
+    const url = `${window.location.origin}/products/${productId}`;
     try {
       await navigator.clipboard.writeText(url);
-      toast.success('클립보드에 복사되었습니다.');
+      toast.success('클립보드에 복사되었습니다.', { toastId: 'copy_link_success' });
     } catch (err) {
       console.error('링크 복사 실패:', err);
-      toast.error('클립보드 복사에 실패했습니다.');
+      toast.error('클립보드 복사에 실패했습니다.', { toastId: 'copy_link_error' });
     }
   };
 

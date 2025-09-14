@@ -15,6 +15,8 @@ import { useCompareStore } from '../stores/useCompareStore';
 import { useUserStore } from '../stores/userStore';
 
 export default function GlobalNav() {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
   const router = useRouter();
   const params = useSearchParams();
 
@@ -104,7 +106,7 @@ export default function GlobalNav() {
             </button>
             <input
               type='text'
-              placeholder='상품 이름을 검색해 보세요'
+              placeholder='콘텐츠 이름을 검색해 보세요'
               className='ml-[12px] w-full bg-transparent outline-none'
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}
@@ -118,7 +120,12 @@ export default function GlobalNav() {
           </div>
 
           {/*PC 오른쪽 메뉴 / 로그인 상태 -> 비교하기, 내 프로필 / 로그아웃 상태 -> 로그인, 회원가입*/}
-          {isLoggedIn ? (
+          {!mounted ? (
+            <div className={DESKTOP_MENU}>
+              <div className='bg-black-700/60 h-[18px] w-[64px] animate-pulse rounded' />
+              <div className='bg-black-700/60 h-[18px] w-[72px] animate-pulse rounded' />
+            </div>
+          ) : isLoggedIn ? (
             <div className={DESKTOP_MENU}>
               <Link
                 href='/compare'
@@ -144,7 +151,6 @@ export default function GlobalNav() {
             </div>
           )}
         </div>
-
         {/*모바일 메뉴,검색 버튼*/}
         <div className='flex items-center gap-5 md:hidden'>
           {!searchOpen && (
@@ -186,7 +192,7 @@ export default function GlobalNav() {
             <input
               ref={mobileInputRef}
               type='text'
-              placeholder='상품 이름을 검색해 보세요'
+              placeholder='콘텐츠 이름을 검색해 보세요'
               className='ml-[15px] w-full rounded-md bg-transparent outline-none'
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}

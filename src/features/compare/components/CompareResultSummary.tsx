@@ -1,8 +1,13 @@
 // 비교 결과 문구 출력 컴포넌트
 // 역할: 누가 승리/무승부인지, “3개 중 2개 우세” 같은 요약 문구만 표시
-import { WINNER_CONFIG, WinnerCode } from '../types/compareTypes';
+import Link from 'next/link';
 
+import clsx from 'clsx';
+
+import { WINNER_CONFIG, WinnerCode } from '../types/compareTypes';
 type ResultSummaryProps = {
+  aId: number;
+  bId: number;
   aName: string;
   bName: string;
   aWins: number;
@@ -10,12 +15,54 @@ type ResultSummaryProps = {
   ties: number;
 };
 
-// 공통 스타일 토큰
+// 공통 스타일 상수화
 const SUMMARY_TEXT = 'text-xl-semibold md:text-xl-semibold lg:text-2xl-semibold font-semibold';
 const CAPTION_STYLE = 'text-xs-medium md:text-xs-medium lg:text-base-medium mt-2 text-gray-400';
 const DESCRIPTION_STYLE = 'text-white align-middle';
+const LINK_TEXT_BASE =
+  'text-xs-medium md:text-xs-medium lg:text-base-medium decoration-transparent hover:decoration-current focus-visible:decoration-current ' +
+  'rounded-md outline-none focus-visible:ring-2 focus-visible:ring-color-main ' +
+  'max-w-[240px] truncate text-center';
+const PILL_CONTAINER_BASE =
+  'inline-flex items-center justify-center gap-[10px] rounded-lg px-[10px] py-[8px] ' +
+  'transition hover:opacity-90';
+const PILL_COLOR = {
+  A: 'bg-green-50 text-green-500',
+  B: 'bg-pink-50 text-pink-500',
+} as const;
 
-const CompareResultSummary = ({ aName, bName, aWins, bWins, ties }: ResultSummaryProps) => {
+function DetailLink({
+  href,
+  text,
+  ariaLabel,
+  side,
+}: {
+  href: string;
+  text: string;
+  ariaLabel: string;
+  side: Extract<WinnerCode, 'A' | 'B'>;
+}) {
+  return (
+    <Link
+      href={href}
+      aria-label={ariaLabel}
+      title={text}
+      className={clsx(PILL_CONTAINER_BASE, PILL_COLOR[side])}
+    >
+      <span className={LINK_TEXT_BASE}>{text} 리뷰 보기</span>
+    </Link>
+  );
+}
+
+const CompareResultSummary = ({
+  aId,
+  bId,
+  aName,
+  bName,
+  aWins,
+  bWins,
+  ties,
+}: ResultSummaryProps) => {
   const total = aWins + bWins + ties;
 
   // 1) 승패 쪽 계산 (A/B/TIE)
@@ -58,6 +105,20 @@ const CompareResultSummary = ({ aName, bName, aWins, bWins, ties }: ResultSummar
     <div className='mb-[40px] text-center md:mb-[80px]'>
       <h3 className={SUMMARY_TEXT}>{resultHeading}</h3>
       <p className={CAPTION_STYLE}>{captionText}</p>
+      <div className='mt-3 flex flex-col items-center gap-2'>
+        <DetailLink
+          href={`/products/${aId}`}
+          text={aName}
+          side='A' // ← 색 자동 적용
+          ariaLabel={`콘텐츠 1 “${aName}” 상세 페이지로 이동`}
+        />
+        <DetailLink
+          href={`/products/${bId}`}
+          text={bName}
+          side='B'
+          ariaLabel={`콘텐츠 2 “${bName}” 상세 페이지로 이동`}
+        />
+      </div>
     </div>
   );
 };

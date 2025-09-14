@@ -2,6 +2,7 @@
 
 import Script from 'next/script';
 
+import { ChartColumn, MessageSquareText } from 'lucide-react';
 import { useMemo, useState, useEffect } from 'react';
 
 import ProductCard from '@/features/products/components/productCard/productCard';
@@ -10,6 +11,7 @@ import ReviewSortDropdown from '@/features/products/components/reviewSortDropdow
 import Statistics from '@/features/products/components/statisticsCard';
 import { TEAM_ID } from '@/shared/constants/constants';
 import useMediaQuery from '@/shared/hooks/useMediaQuery';
+import { cn } from '@/shared/lib/cn';
 import { useUserStore } from '@/shared/stores/userStore';
 
 import { VirtualizedInfinityScroll } from './virtualizedInfinityScroll';
@@ -130,7 +132,10 @@ export default function ProductDetailsPageClient({
 
         {/* 통계 섹션 */}
         <section className={SUBSECTION_GAP}>
-          <h2 className={SECTION_TITLE}>콘텐츠 통계</h2>
+          <h2 className={cn(SECTION_TITLE, 'flex items-center gap-x-2')}>
+            <ChartColumn className='size-4 md:size-5 xl:size-6' />
+            <span>콘텐츠 통계</span>
+          </h2>
           <Statistics
             favoriteCount={localFavoriteCount}
             rating={product.rating}
@@ -154,36 +159,45 @@ export default function ProductDetailsPageClient({
         {/* 리뷰 섹션 */}
         <div className={SUBSECTION_GAP}>
           <section className='flex items-center justify-between'>
-            <h2 className={SECTION_TITLE}>콘텐츠 리뷰</h2>
+            <h2 className={cn(SECTION_TITLE, 'flex items-center gap-x-2')}>
+              <MessageSquareText className='size-4 md:size-5 xl:size-6' />
+              <span>콘텐츠 리뷰</span>
+            </h2>
             <ReviewSortDropdown value={sortValue} onChange={setSortValue} />
           </section>
 
-          {/* VirtualizedInfinityScroll 사용 */}
-          <VirtualizedInfinityScroll<Review>
-            items={reviews}
-            renderItem={(review, index) => (
-              <div
-                style={{
-                  marginBottom: index === reviews.length - 1 ? 0 : itemSpacing,
-                }}
-              >
-                <ReviewCard
-                  review={review}
-                  onLikeClick={onLikeClick}
-                  productName={product.name}
-                  productCategory={product.category}
-                />
-              </div>
-            )}
-            hasNextPage={!!hasNextPage}
-            fetchNextPage={fetchNextPage}
-            isLoading={isFetchingNextPage}
-            itemHeightEstimate={itemHeightEstimate}
-            maxItems={500}
-            overscan={5}
-            loadingText='로딩 중...'
-            loadMoreText='더 불러오기'
-          />
+          {/* 리뷰가 없을 때 안내 문구 */}
+          {reviews.length === 0 ? (
+            <p className='text-xl-regular py-20 text-center text-gray-400'>
+              첫 리뷰를 작성해보세요!
+            </p>
+          ) : (
+            <VirtualizedInfinityScroll<Review>
+              items={reviews}
+              renderItem={(review, index) => (
+                <div
+                  style={{
+                    marginBottom: index === reviews.length - 1 ? 0 : itemSpacing,
+                  }}
+                >
+                  <ReviewCard
+                    review={review}
+                    onLikeClick={onLikeClick}
+                    productName={product.name}
+                    productCategory={product.category}
+                  />
+                </div>
+              )}
+              hasNextPage={!!hasNextPage}
+              fetchNextPage={fetchNextPage}
+              isLoading={isFetchingNextPage}
+              itemHeightEstimate={itemHeightEstimate}
+              maxItems={500}
+              overscan={5}
+              loadingText='loading...'
+              loadMoreText=''
+            />
+          )}
         </div>
       </div>
     </main>

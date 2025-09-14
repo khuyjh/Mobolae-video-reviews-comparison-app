@@ -30,7 +30,7 @@ interface ProductCardProps {
 }
 
 const IMAGE_CONTAINER_STYLES =
-  'relative aspect-[335/236] w-full bg-black-900 md:h-[197px] md:w-[280px] xl:h-[250px] xl:w-[335px] rounded-[8px]';
+  'relative w-full h-[700px] md:w-[250px] md:h-[350px] bg-black-900 rounded-[8px] overflow-hidden flex items-center justify-center';
 
 const ProductCard = ({
   imageSrc,
@@ -50,7 +50,6 @@ const ProductCard = ({
   const [isReviewAddModalOpen, setIsReviewAddModalOpen] = useState(false);
   const [isRedirectModalOpen, setIsRedirectModalOpen] = useState(false);
   const [isEditDeleteModalOpen, setIsEditDeleteModalOpen] = useState(false);
-
   const { isLoggedIn } = useUserStore();
 
   /** 비교 모달 상태 */
@@ -87,7 +86,7 @@ const ProductCard = ({
 
   return (
     <>
-      <div className='flex flex-col md:flex-row md:gap-5'>
+      <div className='flex flex-col md:flex-row md:gap-6 xl:gap-6'>
         {/* 이미지 섹션 */}
         <div className={IMAGE_CONTAINER_STYLES}>
           <Image
@@ -99,21 +98,23 @@ const ProductCard = ({
             onError={() => setImgSrc(fallbackImg.src)}
           />
         </div>
+
         {/* 콘텐츠 섹션 */}
-        <div className='mt-5 flex flex-1 flex-col md:mt-0 md:py-0 xl:px-[40px]'>
-          {/* 상단 헤더 (카테고리, 제목, 찜) */}
-          <ProductHeader
-            category={category}
-            title={title}
-            productId={productId}
-            isFavorite={isFavorite}
-            favoriteCount={favoriteCount}
-            onFavoriteChange={onFavoriteChange}
-            onRequireLogin={() => setIsRedirectModalOpen(true)}
-          />
-          {/* 설명 */}
-          <ProductDescription description={description} className='mt-[20px]' />
-          {/* 버튼들 (리뷰 작성, 비교, 편집/삭제 등) */}
+        <div className='mt-5 flex flex-1 flex-col justify-between md:mt-0 md:py-0'>
+          <div>
+            <ProductHeader
+              category={category}
+              title={title}
+              productId={productId}
+              isFavorite={isFavorite}
+              favoriteCount={favoriteCount}
+              onFavoriteChange={onFavoriteChange}
+              onRequireLogin={() => setIsRedirectModalOpen(true)}
+            />
+            {/* 설명 */}
+            <ProductDescription description={description} className='mt-[20px]' />
+          </div>
+          {/* 버튼들 (리뷰 작성, 비교, 편집/삭제) */}
           <ProductButtons
             isEditable={isEditable}
             className='mt-[40px] md:mt-[60px]'
@@ -123,6 +124,7 @@ const ProductCard = ({
           />
         </div>
       </div>
+
       {/* 리뷰 작성 모달 */}
       <ReviewModal
         isOpen={isReviewAddModalOpen}
@@ -133,8 +135,10 @@ const ProductCard = ({
         productCategory={category}
         rating={0}
       />
+
       {/* 비로그인 사용자 리다이렉트 모달 */}
       <RedirectModal isOpen={isRedirectModalOpen} onClose={() => setIsRedirectModalOpen(false)} />
+
       {/* 비교 모달 */}
       {compareModalType && (
         <CompareModal
@@ -145,6 +149,7 @@ const ProductCard = ({
           product={compareTarget ?? undefined}
         />
       )}
+
       {/* 편집/삭제 모달 */}
       <EditDeleteModal
         isOpen={isEditDeleteModalOpen}

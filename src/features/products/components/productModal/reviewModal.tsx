@@ -96,7 +96,8 @@ const ReviewModal = ({
       return !isDuplicate;
     });
 
-    if (duplicatesFound) toast.error('이미 존재하는 파일은 추가할 수 없습니다.');
+    if (duplicatesFound)
+      toast.error('이미 존재하는 파일은 추가할 수 없습니다.', { toastId: 'duplicate_file_error' });
     if (uniqueNewFiles.length === 0) return;
 
     /* 최대 업로드 개수 제한 */
@@ -128,8 +129,10 @@ const ReviewModal = ({
 
   /* 리뷰 blur 시 유효성 검사  */
   const handleReviewBlur = () => {
-    if (reviewText.trim().length === 0) toast.error('리뷰 내용을 입력해주세요.');
-    else if (reviewText.trim().length < 10) toast.error('최소 10자 이상 적어주세요.');
+    if (reviewText.trim().length === 0)
+      toast.error('리뷰 내용을 입력해주세요.', { toastId: 'review_empty_error' });
+    else if (reviewText.trim().length < 10)
+      toast.error('최소 10자 이상 적어주세요.', { toastId: 'review_short_error' });
   };
 
   /* API hooks */
@@ -161,7 +164,7 @@ const ReviewModal = ({
           },
         };
         await createReviewMutation.mutateAsync(payload);
-        toast.success('리뷰가 작성되었습니다.');
+        toast.success('리뷰가 작성되었습니다.', { toastId: 'review_add_success' });
       } else if (mode === 'edit' && review) {
         /* 기존 리뷰 수정 */
         const payload: UpdateReviewData = {
@@ -180,7 +183,7 @@ const ReviewModal = ({
           },
         };
         await updateReviewMutation.mutateAsync(payload);
-        toast.success('리뷰가 수정되었습니다.');
+        toast.success('리뷰가 수정되었습니다.', { toastId: 'review_edit_success' });
       }
 
       /* 리스트 실시간 갱신 */
@@ -188,13 +191,14 @@ const ReviewModal = ({
 
       handleModalClose();
     } catch {
-      toast.error('요청 중 오류가 발생했습니다.');
+      toast.error('요청 중 오류가 발생했습니다.', { toastId: 'review_request_error' });
     }
   };
 
   const categoryChipProps = toCategoryChip(productCategory);
 
   const isReviewValid = reviewText.trim().length >= 10;
+  const isAddModeValid = mode === 'add' ? currentRating > 0 : true;
 
   /* 수정모드 변경사항 감지 */
   const hasChanges = useMemo(() => {
@@ -228,6 +232,7 @@ const ReviewModal = ({
       isOpen={isOpen}
       onClose={handleModalClose}
       size='L'
+      closeOnOutsideClick={false}
     >
       <div className='flex flex-col px-5 pb-4 md:px-10 md:pb-10'>
         <div className='flex flex-col items-start'>
@@ -279,7 +284,7 @@ const ReviewModal = ({
           }}
           previewUrls={[...existingImages.map((img) => img.url), ...previews.map((p) => p.url)]}
           maxImages={maxImages}
-          className='mt-2.5'
+          className='mt-2.5 w-[120px] max-w-none'
         />
 
         <p className='text-xs-medium mt-1.5 text-gray-400'>
@@ -289,7 +294,7 @@ const ReviewModal = ({
         <Button
           variant='primary'
           className='mt-8 w-full max-w-full md:max-w-full xl:max-w-full'
-          disabled={!isReviewValid || (mode === 'edit' && !hasChanges)}
+          disabled={!isReviewValid || !isAddModeValid || (mode === 'edit' && !hasChanges)}
           onClick={handleSubmit}
         >
           {mode === 'add' ? '작성하기' : '수정하기'}

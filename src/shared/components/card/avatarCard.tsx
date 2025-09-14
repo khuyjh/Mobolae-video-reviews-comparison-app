@@ -130,7 +130,9 @@ export default function ProfileBadge({
       {variant === 'reviewProfile' && (
         <div>
           <div className={`${CENTER_ROW} min-w-0`}>
-            <span className={NAME_TEXT}>{name}</span>
+            <span className={`${NAME_TEXT} md:max-w-[7ch] md:truncate xl:max-w-[9ch]`} title={name}>
+              {name}
+            </span>
           </div>
           <StarRow count={rating} />
         </div>
