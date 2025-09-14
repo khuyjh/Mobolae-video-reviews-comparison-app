@@ -14,6 +14,7 @@ import { useUserStore } from '@/shared/stores/userStore';
 import { mapToContentItem } from '@/shared/utils/mapToContentItem';
 
 import { useMe } from '../../../openapi/queries/queries';
+import ProfilePageSkeleton from '../../shared/components/skeleton/PofilePageSkeleton';
 
 import type {
   MeDefaultResponse,
@@ -70,10 +71,9 @@ const getProductLike = (x: unknown): ProductLike | undefined => {
 
 const mapReviewed = (it: ReviewedItem): ContentItem =>
   mapToContentItem(it, { preferSelfRating: true });
-
 const mapCreated = (it: CreatedItem): ContentItem => mapToContentItem(it);
-
 const mapFavorite = (it: FavoriteItem): ContentItem => mapToContentItem(it);
+
 export default function MyPage() {
   // 내 정보
   const { data: meData, isLoading: isMeLoading } = useMe(
@@ -84,8 +84,14 @@ export default function MyPage() {
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const clearUser = useUserStore((s) => s.clearUser);
 
-  if (isMeLoading) return null;
-  if (!meData) return null;
+  // 로딩/데이터 없음: 스켈레톤 렌더 (레이아웃 고정)
+  if (isMeLoading || !meData) {
+    return (
+      <div className='mt-[30px] px-[20px] md:px-[117px] xl:mx-auto xl:flex xl:max-w-[1340px] xl:px-[0px]'>
+        <ProfilePageSkeleton />
+      </div>
+    );
+  }
 
   const card = mapMeToCard(meData);
 
