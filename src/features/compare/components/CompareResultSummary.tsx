@@ -49,7 +49,7 @@ function DetailLink({
       title={text}
       className={clsx(PILL_CONTAINER_BASE, PILL_COLOR[side])}
     >
-      <span className={LINK_TEXT_BASE}>{text} 리뷰 보기</span>
+      <span className={LINK_TEXT_BASE}>&quot;{text}&quot; 리뷰 보기</span>
     </Link>
   );
 }
