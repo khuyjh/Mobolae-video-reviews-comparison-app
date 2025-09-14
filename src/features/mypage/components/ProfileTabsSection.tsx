@@ -4,7 +4,7 @@ import React, { useMemo, useState } from 'react';
 
 import VirtualizedContentGrid from '@/features/mainPage/components/VirtualizedContentGrid';
 import ProfileTabs from '@/features/mypage/components/ProfileTabs';
-import { TEAM_ID } from '@/shared/constants/constants';
+import { PATH_OPTION } from '@/shared/constants/constants';
 
 import { useInfiniteApi } from '../../../../openapi/queries/infiniteQueries';
 
@@ -14,6 +14,16 @@ import type {
   ListUserFavoriteProductsDefaultResponse as FavoriteResp,
 } from '../../../../openapi/queries/common';
 import type { ContentItem } from '@/shared/types/content';
+
+const USER_ENDPOINT = {
+  reviews: '/{teamId}/users/{userId}/reviewed-products',
+  items: '/{teamId}/users/{userId}/created-products',
+  wishlist: '/{teamId}/users/{userId}/favorite-products',
+} as const;
+
+const withUserPath = (userId: number | string) => ({
+  path: { ...PATH_OPTION.path, userId },
+});
 
 type TabKey = 'reviews' | 'items' | 'wishlist';
 type ReviewedItem = NonNullable<ReviewedResp>['list'][number];
@@ -69,20 +79,20 @@ export default function ProfileTabsSection({
 
   const reviewedQ = useInfiniteApi<ReviewedItem>(
     ['user', userId, 'reviews'],
-    '/{teamId}/users/{userId}/reviewed-products',
-    { path: { teamId: TEAM_ID as string, userId } },
+    USER_ENDPOINT.reviews,
+    withUserPath(userId),
   );
 
   const createdQ = useInfiniteApi<CreatedItem>(
     ['user', userId, 'items'],
-    '/{teamId}/users/{userId}/created-products',
-    { path: { teamId: TEAM_ID as string, userId } },
+    USER_ENDPOINT.items,
+    withUserPath(userId),
   );
 
   const favoriteQ = useInfiniteApi<FavoriteItem>(
     ['user', userId, 'wishlist'],
-    '/{teamId}/users/{userId}/favorite-products',
-    { path: { teamId: TEAM_ID as string, userId } },
+    USER_ENDPOINT.wishlist,
+    withUserPath(userId),
   );
 
   const tabMap = useMemo(
@@ -101,7 +111,7 @@ export default function ProfileTabsSection({
           list: createdQ.data?.items ?? [],
           isLoading: createdQ.isLoading || createdQ.isFetchingNextPage,
           isError: !!createdQ.isError,
-          emptyText: '등록한 상품이 없어요',
+          emptyText: '등록한 콘텐츠가 없어요',
           mapFn: mapCreated,
           hasNextPage: !!createdQ.hasNextPage,
           fetchNextPage: () => createdQ.fetchNextPage(),
@@ -110,32 +120,13 @@ export default function ProfileTabsSection({
           list: favoriteQ.data?.items ?? [],
           isLoading: favoriteQ.isLoading || favoriteQ.isFetchingNextPage,
           isError: !!favoriteQ.isError,
-          emptyText: '찜한 상품이 없어요',
+          emptyText: '찜한 콘텐츠가 없어요',
           mapFn: mapFavorite,
           hasNextPage: !!favoriteQ.hasNextPage,
           fetchNextPage: () => favoriteQ.fetchNextPage(),
         },
       }) as const,
-    [
-      reviewedQ.data,
-      reviewedQ.isLoading,
-      reviewedQ.isFetchingNextPage,
-      reviewedQ.isError,
-      reviewedQ.hasNextPage,
-      createdQ.data,
-      createdQ.isLoading,
-      createdQ.isFetchingNextPage,
-      createdQ.isError,
-      createdQ.hasNextPage,
-      favoriteQ.data,
-      favoriteQ.isLoading,
-      favoriteQ.isFetchingNextPage,
-      favoriteQ.isError,
-      favoriteQ.hasNextPage,
-      mapReviewed,
-      mapCreated,
-      mapFavorite,
-    ],
+    [reviewedQ, createdQ, favoriteQ, mapReviewed, mapCreated, mapFavorite],
   );
 
   const active = tabMap[tab];

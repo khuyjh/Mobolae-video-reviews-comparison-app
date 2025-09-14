@@ -72,7 +72,7 @@ const mapReviewed = (it: ReviewedItem): ContentItem => {
   const selfRating = getProp<number>(it, 'rating');
   return {
     contentId: p?.id ?? 0,
-    title: p?.name ?? p?.title ?? '이름 없는 상품',
+    title: p?.name ?? p?.title ?? '이름 없는 콘텐츠',
     contentImage: toSrc(p?.image ?? null),
     favoriteCount: Number(p?.favoriteCount ?? 0),
     reviewCount: Number(p?.reviewCount ?? 0),
@@ -84,7 +84,7 @@ const mapCreated = (it: CreatedItem): ContentItem => {
   const p = getProductLike(it);
   return {
     contentId: p?.id ?? 0,
-    title: p?.name ?? p?.title ?? '이름 없는 상품',
+    title: p?.name ?? p?.title ?? '이름 없는 콘텐츠',
     contentImage: toSrc(p?.image ?? null),
     favoriteCount: Number(p?.favoriteCount ?? 0),
     reviewCount: Number(p?.reviewCount ?? 0),
@@ -96,7 +96,7 @@ const mapFavorite = (it: FavoriteItem): ContentItem => {
   const p = getProductLike(it);
   return {
     contentId: p?.id ?? 0,
-    title: p?.name ?? p?.title ?? '이름 없는 상품',
+    title: p?.name ?? p?.title ?? '이름 없는 콘텐츠',
     contentImage: toSrc(p?.image ?? null),
     favoriteCount: Number(p?.favoriteCount ?? 0),
     reviewCount: Number(p?.reviewCount ?? 0),
