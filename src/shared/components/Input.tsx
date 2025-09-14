@@ -54,7 +54,6 @@ const Input = ({
             },
             className,
           )}
-          id={inputId}
           type={getType()}
           {...props}
         />
