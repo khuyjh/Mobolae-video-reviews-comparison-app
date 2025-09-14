@@ -47,7 +47,7 @@ const iconMap = {
  * title: 제목
  * value: 표시할 통계 값 (null인 경우 '-'로 표시)
  * iconType: 아이콘 타입
- * comparisonValue: 차이값 (요청에 따라 null 없음)
+ * comparisonValue: 차이값
  */
 export interface StatisticsCardProps {
   title: string;
