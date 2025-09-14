@@ -10,6 +10,7 @@ import ProfileTabsSection from '@/features/mypage/components/ProfileTabsSection'
 import { useFollowMutations } from '@/features/user/hooks/useFollowMutaion';
 import { TEAM_ID, PATH_OPTION } from '@/shared/constants/constants';
 import { useUserStore } from '@/shared/stores/userStore';
+import { mapToContentItem } from '@/shared/utils/mapToContentItem';
 
 import { useUserDetail } from '../../../../openapi/queries/queries';
 
@@ -58,7 +59,6 @@ const getProp = <T,>(obj: unknown, key: string): T | undefined => {
 };
 
 const getProductLike = (x: unknown): ProductLike | undefined => {
-  // 응답이 { product: {...} } 이면 product, 아니면 자기 자신
   const maybeProduct = getProp<unknown>(x, 'product');
   const base = maybeProduct ?? x;
   const r = asRecord(base);
@@ -68,42 +68,12 @@ const getProductLike = (x: unknown): ProductLike | undefined => {
   return undefined;
 };
 
-const mapReviewed = (it: ReviewedItem): ContentItem => {
-  const p = getProductLike(it);
-  const selfRating = getProp<number>(it, 'rating');
-  return {
-    contentId: p?.id ?? 0,
-    title: p?.name ?? p?.title ?? '이름 없는 상품',
-    contentImage: toSrc(p?.image ?? null), // ✅ 항상 string
-    favoriteCount: Number(p?.favoriteCount ?? 0),
-    reviewCount: Number(p?.reviewCount ?? 0),
-    rating: Number(selfRating ?? p?.averageRating ?? p?.rating ?? 0),
-  };
-};
+const mapReviewed = (it: ReviewedItem): ContentItem =>
+  mapToContentItem(it, { preferSelfRating: true });
 
-const mapCreated = (it: CreatedItem): ContentItem => {
-  const p = getProductLike(it);
-  return {
-    contentId: p?.id ?? 0,
-    title: p?.name ?? p?.title ?? '이름 없는 상품',
-    contentImage: toSrc(p?.image ?? null),
-    favoriteCount: Number(p?.favoriteCount ?? 0),
-    reviewCount: Number(p?.reviewCount ?? 0),
-    rating: Number(p?.averageRating ?? p?.rating ?? 0),
-  };
-};
+const mapCreated = (it: CreatedItem): ContentItem => mapToContentItem(it);
 
-const mapFavorite = (it: FavoriteItem): ContentItem => {
-  const p = getProductLike(it);
-  return {
-    contentId: p?.id ?? 0,
-    title: p?.name ?? p?.title ?? '이름 없는 상품',
-    contentImage: toSrc(p?.image ?? null),
-    favoriteCount: Number(p?.favoriteCount ?? 0),
-    reviewCount: Number(p?.reviewCount ?? 0),
-    rating: Number(p?.averageRating ?? p?.rating ?? 0),
-  };
-};
+const mapFavorite = (it: FavoriteItem): ContentItem => mapToContentItem(it);
 
 export default function UserPage() {
   const { userId } = useParams<{ userId: string }>();

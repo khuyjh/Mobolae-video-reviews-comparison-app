@@ -11,6 +11,7 @@ import ProfileTabsSection from '@/features/mypage/components/ProfileTabsSection'
 import ProfileUpdateModal from '@/features/mypage/components/ProfileUpdateModal';
 import { TEAM_ID } from '@/shared/constants/constants';
 import { useUserStore } from '@/shared/stores/userStore';
+import { mapToContentItem } from '@/shared/utils/mapToContentItem';
 
 import { useMe } from '../../../openapi/queries/queries';
 
@@ -67,43 +68,12 @@ const getProductLike = (x: unknown): ProductLike | undefined => {
   return undefined;
 };
 
-const mapReviewed = (it: ReviewedItem): ContentItem => {
-  const p = getProductLike(it);
-  const selfRating = getProp<number>(it, 'rating');
-  return {
-    contentId: p?.id ?? 0,
-    title: p?.name ?? p?.title ?? '이름 없는 콘텐츠',
-    contentImage: toSrc(p?.image ?? null),
-    favoriteCount: Number(p?.favoriteCount ?? 0),
-    reviewCount: Number(p?.reviewCount ?? 0),
-    rating: Number(selfRating ?? p?.averageRating ?? p?.rating ?? 0),
-  };
-};
+const mapReviewed = (it: ReviewedItem): ContentItem =>
+  mapToContentItem(it, { preferSelfRating: true });
 
-const mapCreated = (it: CreatedItem): ContentItem => {
-  const p = getProductLike(it);
-  return {
-    contentId: p?.id ?? 0,
-    title: p?.name ?? p?.title ?? '이름 없는 콘텐츠',
-    contentImage: toSrc(p?.image ?? null),
-    favoriteCount: Number(p?.favoriteCount ?? 0),
-    reviewCount: Number(p?.reviewCount ?? 0),
-    rating: Number(p?.averageRating ?? p?.rating ?? 0),
-  };
-};
+const mapCreated = (it: CreatedItem): ContentItem => mapToContentItem(it);
 
-const mapFavorite = (it: FavoriteItem): ContentItem => {
-  const p = getProductLike(it);
-  return {
-    contentId: p?.id ?? 0,
-    title: p?.name ?? p?.title ?? '이름 없는 콘텐츠',
-    contentImage: toSrc(p?.image ?? null),
-    favoriteCount: Number(p?.favoriteCount ?? 0),
-    reviewCount: Number(p?.reviewCount ?? 0),
-    rating: Number(p?.averageRating ?? p?.rating ?? 0),
-  };
-};
-
+const mapFavorite = (it: FavoriteItem): ContentItem => mapToContentItem(it);
 export default function MyPage() {
   // 내 정보
   const { data: meData, isLoading: isMeLoading } = useMe(
