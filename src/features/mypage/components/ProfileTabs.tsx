@@ -9,9 +9,9 @@ type TabKey = 'reviews' | 'items' | 'wishlist';
 
 /*드롭다운 옵션 */
 const profileTabOptions: OrderOption<TabKey>[] = [
-  { label: '리뷰 남긴 상품', value: 'reviews' },
-  { label: '등록한 상품', value: 'items' },
-  { label: '찜한 상품', value: 'wishlist' },
+  { label: '리뷰 남긴 콘텐츠', value: 'reviews' },
+  { label: '등록한 콘텐츠', value: 'items' },
+  { label: '찜한 콘텐츠', value: 'wishlist' },
 ];
 
 type Props = {
