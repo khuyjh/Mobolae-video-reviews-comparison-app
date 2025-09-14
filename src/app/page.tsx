@@ -41,6 +41,7 @@ async function fetchTop6ByReviewCount(): Promise<ContentItem[]> {
     .map(toContentItem);
 }
 
+//TODO: error, 빈 데이터 처리
 const Home = async ({
   searchParams,
 }: {
