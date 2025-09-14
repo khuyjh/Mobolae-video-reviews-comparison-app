@@ -45,13 +45,15 @@ async function fetchTop6ByReviewCount(): Promise<ContentItem[]> {
 const Home = async ({
   searchParams,
 }: {
-  /** Next.js가 서버에서 제공하는 쿼리 레코드 타입 */
-  searchParams?: Record<string, string | string[] | undefined>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) => {
-  // 1. 서버 단계 정규화: 표준 쿼리와 다르면 즉시 redirect
-  normalizeOrRedirectOnServer(searchParams ?? {}, '/');
+  // 1. Promise 풀어내기
+  const params = (await searchParams) ?? {};
 
-  // 2. 정규화가 끝났으므로 안전하게 데이터 병렬 조회
+  // 2. 서버 단계 정규화
+  normalizeOrRedirectOnServer(params, '/');
+
+  // 3. 병렬 조회
   const [top6ByRating, top6ByReview] = await Promise.all([
     fetchTop6ByRating(),
     fetchTop6ByReviewCount(),
