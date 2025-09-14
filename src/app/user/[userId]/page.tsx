@@ -2,35 +2,79 @@
 
 import { useParams } from 'next/navigation';
 
-import { useInfiniteQuery } from '@tanstack/react-query';
-import React, { useMemo, useState } from 'react';
+import React from 'react';
 
-import VirtualizedContentGrid from '@/features/mainPage/components/VirtualizedContentGrid';
 import ActivityCard from '@/features/mypage/components/activityCard';
 import ProfileCard from '@/features/mypage/components/ProfileCard';
-import ProfileTabs from '@/features/mypage/components/ProfileTabs';
-import { fetchDummyPage } from '@/features/mypage/mock/dummyPager';
+import ProfileTabsSection from '@/features/mypage/components/ProfileTabsSection';
 import { useFollowMutations } from '@/features/user/hooks/useFollowMutaion';
 import ProfilePageSkeleton from '@/shared/components/skeleton/PofilePageSkeleton';
 import { TEAM_ID, PATH_OPTION } from '@/shared/constants/constants';
 import { useUserStore } from '@/shared/stores/userStore';
+import { mapToContentItem } from '@/shared/utils/mapToContentItem';
 
 import { useUserDetail } from '../../../../openapi/queries/queries';
 
-import type { UserDetailDefaultResponse } from '../../../../openapi/queries/common';
+import type {
+  UserDetailDefaultResponse,
+  ListUserReviewedProductsDefaultResponse as ReviewedResp,
+  ListUserCreatedProductsDefaultResponse as CreatedResp,
+  ListUserFavoriteProductsDefaultResponse as FavoriteResp,
+} from '../../../../openapi/queries/common';
 import type { ContentItem } from '@/shared/types/content';
 
-type TabKey = 'reviews' | 'items' | 'wishlist';
+const toSrc = (url?: string | null): string =>
+  url && url.trim() !== '' ? url : '/images/ProfileFallbackImg.png';
 
 const mapUserToCard = (userDetail?: UserDetailDefaultResponse) => ({
   name: userDetail?.nickname ?? '',
-  avatarSrc: userDetail?.image ?? '',
+  avatarSrc: toSrc(userDetail?.image ?? null),
   bio: userDetail?.description ?? '',
-  followers: (userDetail?.followersCount ?? 0) as number,
-  following: (userDetail?.followeesCount ?? 0) as number,
+  followers: Number(userDetail?.followersCount ?? 0),
+  following: Number(userDetail?.followeesCount ?? 0),
   isMe: false,
   isFollowing: Boolean(userDetail?.isFollowing),
 });
+
+type ReviewedItem = NonNullable<ReviewedResp>['list'][number];
+type CreatedItem = NonNullable<CreatedResp>['list'][number];
+type FavoriteItem = NonNullable<FavoriteResp>['list'][number];
+
+type ProductLike = {
+  id: number;
+  name?: string;
+  title?: string;
+  image?: string | null;
+  favoriteCount?: number;
+  reviewCount?: number;
+  averageRating?: number;
+  rating?: number;
+};
+
+const asRecord = (x: unknown): Record<string, unknown> | null =>
+  x && typeof x === 'object' ? (x as Record<string, unknown>) : null;
+
+const getProp = <T,>(obj: unknown, key: string): T | undefined => {
+  const r = asRecord(obj);
+  return r && key in r ? (r[key] as T) : undefined;
+};
+
+const getProductLike = (x: unknown): ProductLike | undefined => {
+  const maybeProduct = getProp<unknown>(x, 'product');
+  const base = maybeProduct ?? x;
+  const r = asRecord(base);
+  if (r && 'id' in r && typeof r.id === 'number') {
+    return r as unknown as ProductLike;
+  }
+  return undefined;
+};
+
+const mapReviewed = (it: ReviewedItem): ContentItem =>
+  mapToContentItem(it, { preferSelfRating: true });
+
+const mapCreated = (it: CreatedItem): ContentItem => mapToContentItem(it);
+
+const mapFavorite = (it: FavoriteItem): ContentItem => mapToContentItem(it);
 
 export default function UserPage() {
   const { userId } = useParams<{ userId: string }>();
@@ -42,35 +86,6 @@ export default function UserPage() {
 
   const fm = useFollowMutations(uidNum, isLoggedIn ? meId : undefined);
   const followBtnDisabled = !isLoggedIn || fm.actionDisabled;
-
-  const [tab, setTab] = useState<TabKey>('reviews');
-  const {
-    data: pages,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    isLoading,
-  } = useInfiniteQuery({
-    queryKey: ['mypage', 'infinite', tab],
-    queryFn: ({ pageParam = 0 }) => fetchDummyPage({ cursor: pageParam, limit: 12 }),
-    initialPageParam: 0,
-    getNextPageParam: (last) => last.nextCursor ?? undefined,
-  });
-
-  const items: ContentItem[] = useMemo(
-    () =>
-      (pages?.pages ?? []).flatMap((p) =>
-        p.items.map((it) => ({
-          contentId: it.id,
-          title: it.title,
-          contentImage: it.image,
-          favoriteCount: it.favoriteCount,
-          reviewCount: it.reviewCount,
-          rating: it.rating,
-        })),
-      ),
-    [pages],
-  );
 
   const { data: userDetail, isLoading: isUserLoading } = useUserDetail(
     { ...PATH_OPTION, path: { ...PATH_OPTION.path, userId: uidNum } },
@@ -113,18 +128,12 @@ export default function UserPage() {
           />
         </div>
 
-        <ProfileTabs value={tab} onChange={setTab} />
-
-        <div className='mt-6 pb-[80px]'>
-          <VirtualizedContentGrid
-            items={items}
-            hasNextPage={!!hasNextPage}
-            fetchNextPage={fetchNextPage}
-            isLoading={isLoading || isFetchingNextPage}
-            itemHeightEstimate={276}
-            rowGap={16}
-          />
-        </div>
+        <ProfileTabsSection
+          userId={uidNum}
+          mapReviewed={mapReviewed}
+          mapCreated={mapCreated}
+          mapFavorite={mapFavorite}
+        />
       </div>
     </div>
   );
