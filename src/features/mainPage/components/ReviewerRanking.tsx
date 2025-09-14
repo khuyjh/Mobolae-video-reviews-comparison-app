@@ -10,6 +10,7 @@ import { useUserStore } from '@/shared/stores/userStore';
 import { mapUserRankingToReviewer } from '@/shared/utils/reviewerMapper';
 import { sortReviewers } from '@/shared/utils/reviewerSort';
 
+import ContentEmpty from './ContentEmpty';
 import { useUserRanking } from '../../../../openapi/queries';
 
 import type { Reviewer } from '@/shared/types/reviewer';
@@ -30,14 +31,19 @@ type ReviewerRankingListProps = {
  */
 const ReviewerRankingList = ({ reviewers, direction = 'row' }: ReviewerRankingListProps) => {
   const meId = useUserStore((state) => state.user?.id);
-
   const top = useMemo(() => [...reviewers].sort(sortReviewers).slice(0, 5), [reviewers]);
-
   const rankingMap = useMemo(() => new Map(top.map((r, i) => [r.userId, i + 1])), [top]);
-
   const getHref = (userId: number) => (meId && userId === meId ? '/mypage' : `/user/${userId}`);
-
   const containerRef = useRef<HTMLDivElement>(null);
+
+  if (top.length === 0) {
+    return (
+      <ContentEmpty
+        title='랭킹 데이터가 없어요'
+        description='리뷰가 더 쌓이면 랭킹에 표시됩니다.'
+      />
+    );
+  }
 
   if (direction === 'row') {
     return (
@@ -111,9 +117,27 @@ export const ReviewerRankingHorizontal = () => {
   const { data, isLoading, isError } = useUserRanking(PATH_OPTION, [], { staleTime: 30_000 });
 
   if (isLoading) return <div>리뷰어 랭킹 불러오는 중...</div>;
-  if (isError || !data) return <div>리뷰어 랭킹 불러오기 실패</div>;
+
+  if (isError) {
+    return (
+      <ContentEmpty
+        variant='error'
+        title='리뷰어 랭킹을 불러오지 못했어요'
+        description='잠시 후 다시 시도해주세요.'
+      />
+    );
+  }
 
   const reviewers: Reviewer[] = (data ?? []).map(mapUserRankingToReviewer);
+
+  if (reviewers.length === 0) {
+    return (
+      <ContentEmpty
+        title='랭킹 데이터가 없어요'
+        description='리뷰가 더 쌓이면 랭킹에 표시됩니다.'
+      />
+    );
+  }
 
   return (
     <section>
@@ -131,9 +155,33 @@ export const ReviewerRankingSidebar = () => {
   const { data, isLoading, isError } = useUserRanking(PATH_OPTION, [], { staleTime: 30_000 });
 
   if (isLoading) return <div>리뷰어 랭킹 불러오는 중...</div>;
-  if (isError || !data) return <div>리뷰어 랭킹 불러오기 실패</div>;
+
+  if (isError) {
+    return (
+      <aside className='border-black-800 sticky top-26 max-h-[calc(100vh-80px)] max-w-[250px] min-w-[250px] self-start overflow-auto border-l px-[30px] py-[45px]'>
+        <h2 className='text-base-regular mb-[30px] text-white'>리뷰어 랭킹</h2>
+        <ContentEmpty
+          variant='error'
+          title='리뷰어 랭킹을 불러오지 못했어요'
+          description='잠시 후 다시 시도해주세요.'
+        />
+      </aside>
+    );
+  }
 
   const reviewers: Reviewer[] = (data ?? []).map(mapUserRankingToReviewer);
+
+  if (reviewers.length === 0) {
+    return (
+      <aside className='border-black-800 sticky top-26 max-h-[calc(100vh-80px)] max-w-[250px] min-w-[250px] self-start overflow-auto border-l px-[30px] py-[45px]'>
+        <h2 className='text-base-regular mb-[30px] text-white'>리뷰어 랭킹</h2>
+        <ContentEmpty
+          title='랭킹 데이터가 없어요'
+          description='리뷰가 더 쌓이면 랭킹에 표시됩니다.'
+        />
+      </aside>
+    );
+  }
 
   return (
     <aside className='border-black-800 sticky top-26 max-h-[calc(100vh-80px)] max-w-[250px] min-w-[250px] self-start overflow-auto border-l px-[30px] py-[45px]'>

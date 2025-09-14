@@ -2,6 +2,7 @@
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
+import { UseInfiniteQueryResult } from '@tanstack/react-query';
 import React, { useMemo, useCallback } from 'react';
 
 import MobileCategorySheet from '@/features/mainPage/components/MobileCategorySheet';
@@ -12,6 +13,7 @@ import { PRODUCT_ORDER_OPTIONS, type ProductOrderKey } from '@/shared/types/Sort
 import { toContentItem } from '@/shared/utils/mapApiToItem';
 import { readQuery } from '@/shared/utils/query';
 
+import ContentEmpty from './ContentEmpty';
 import VirtualizedContentGrid from './VirtualizedContentGrid';
 import { useInfiniteApi } from '../../../../openapi/queries/infiniteQueries';
 
@@ -46,7 +48,7 @@ const ContentList = () => {
   const normKeyword = (keyword ?? '').trim().toLowerCase();
   const normOrder: ProductOrderKey = order ?? 'recent';
 
-  const { data, isFetchingNextPage, fetchNextPage, hasNextPage, isPending } = useInfiniteApi(
+  const query: UseInfiniteQueryResult<{ items: ContentApi[] }, Error> = useInfiniteApi(
     ['contents', TEAM_ID!, category ?? 'all', normKeyword, normOrder, PAGE_SIZE],
     '/{teamId}/products',
     {
@@ -60,11 +62,20 @@ const ContentList = () => {
     },
   );
 
+  const { data, isFetchingNextPage, fetchNextPage, hasNextPage, isPending, isError, error } = query;
+
+  const errorMsg = error instanceof Error ? error.message : undefined;
+
   /** API → UI 모델 매핑 */
   const items = useMemo(
     () => ((data?.items ?? []) as ContentApi[]).map(toContentItem),
     [data?.items],
   );
+
+  // 초기 로딩 여부
+  const isInitialLoading = Boolean(isPending) && (!data || !(data.items?.length > 0));
+  // 빈 상태 여부
+  const isEmpty = !isInitialLoading && !isError && items.length === 0;
 
   /** 정렬 변경 → URL만 갱신, cursor 초기화 */
   const handleChangeOrder = useCallback(
@@ -81,6 +92,65 @@ const ContentList = () => {
     [searchParams, router, pathname, order],
   );
 
+  /** 에러 상태 UI */
+  if (isError) {
+    return (
+      <section className='mx-auto mb-11 w-full'>
+        <div className='mb-[15px] flex w-full flex-col justify-between space-y-[30px] md:mb-[30px] md:flex-row md:space-y-0'>
+          {title && <h2 className='text-xl-semibold text-white'>{title}</h2>}
+          <div className='flex w-full items-center justify-between md:w-fit'>
+            <div className='md:hidden'>
+              <MobileCategorySheet />
+            </div>
+            <SortDropdown
+              options={PRODUCT_ORDER_OPTIONS}
+              value={order}
+              onChange={handleChangeOrder}
+            />
+          </div>
+        </div>
+        <ContentEmpty
+          variant='error'
+          title='콘텐츠를 불러오는 중 문제가 발생했어요'
+          description={errorMsg ?? '잠시 후 다시 시도해주세요'}
+        />
+      </section>
+    );
+  }
+
+  /** 빈 상태 UI */
+  if (isEmpty) {
+    const emptyTitle =
+      keyword && keyword.trim()
+        ? `‘${keyword}’에 대한 결과가 없어요`
+        : '아직 등록된 콘텐츠가 없어요';
+
+    const emptyDesc =
+      keyword && keyword.trim()
+        ? '다른 키워드로 검색해보세요'
+        : '화면 하단의 플로팅 버튼을 눌러 콘텐츠를 추가해보세요';
+
+    return (
+      <section className='mx-auto mb-11 w-full'>
+        <div className='mb-[15px] flex w-full flex-col justify-between space-y-[30px] md:mb-[30px] md:flex-row md:space-y-0'>
+          {title && <h2 className='text-xl-semibold text-white'>{title}</h2>}
+          <div className='flex w-full items-center justify-between md:w-fit'>
+            <div className='md:hidden'>
+              <MobileCategorySheet />
+            </div>
+            <SortDropdown
+              options={PRODUCT_ORDER_OPTIONS}
+              value={order}
+              onChange={handleChangeOrder}
+            />
+          </div>
+        </div>
+        <ContentEmpty title={emptyTitle} description={emptyDesc} />
+      </section>
+    );
+  }
+
+  /** 정상/로딩(추가 페이지) 상태 */
   return (
     <section className='mx-auto mb-11 w-full'>
       <div className='mb-[15px] flex w-full flex-col justify-between space-y-[30px] md:mb-[30px] md:flex-row md:space-y-0'>
@@ -89,7 +159,6 @@ const ContentList = () => {
           <div className='md:hidden'>
             <MobileCategorySheet />
           </div>
-
           <SortDropdown
             options={PRODUCT_ORDER_OPTIONS}
             value={order}
@@ -102,7 +171,7 @@ const ContentList = () => {
         items={items}
         hasNextPage={!!hasNextPage}
         fetchNextPage={fetchNextPage}
-        isLoading={isFetchingNextPage || isPending}
+        isLoading={Boolean(isFetchingNextPage) || Boolean(isPending)}
         itemHeightEstimate={276}
       />
     </section>
