@@ -44,9 +44,6 @@ export default function ProfileCard({
 }: ProfileCardProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState<'followers' | 'following' | null>(null);
-
-  const [showLoginModal, setShowLoginModal] = useState(false);
-
   const openModal = (type: 'followers' | 'following') => {
     if ((type === 'followers' && followers === 0) || (type === 'following' && following === 0))
       return;
@@ -63,7 +60,7 @@ export default function ProfileCard({
 
   const handleFollowClick = () => {
     if (!meId) {
-      setShowLoginModal(true);
+      setIsModalOpen(true);
       return;
     }
     onFollowToggle?.();
@@ -151,7 +148,7 @@ export default function ProfileCard({
         />
       )}
 
-      <RedirectModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
+      <RedirectModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </div>
   );
 }
