@@ -4,6 +4,7 @@ import React, { useMemo } from 'react';
 
 import HomeItemCard from '@/shared/components/HomeItemCard';
 import { InfinityScroll } from '@/shared/components/infinityScroll';
+import FullGridSkeleton from '@/shared/components/skeleton/FullGridSkeleton';
 import { ContentItem } from '@/shared/types/content';
 
 import useColumnCount from '../hooks/useColumnCount';
@@ -41,6 +42,10 @@ const VirtualizedContentGrid = ({
 
   // 아이템을 열 수에 맞춰 행 단위 배열로 변환
   const rows = useMemo(() => chunkArray(items, cols), [items, cols]);
+
+  if (isLoading && items.length === 0) {
+    return <FullGridSkeleton />;
+  }
 
   // InfinityScroll은 행 단위로 가상화 처리
   return (

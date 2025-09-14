@@ -6,6 +6,8 @@
 import { keepPreviousData } from '@tanstack/react-query';
 import { useEffect } from 'react';
 
+import { useMinHold } from '@/features/mainPage/hooks/useMinHold';
+import CompareResultSkeleton from '@/shared/components/skeleton/CompareResultSkeleton';
 import { PATH_OPTION } from '@/shared/constants/constants';
 import { useCompareStore } from '@/shared/stores/useCompareStore'; // a,b 전역 상태 관리용
 import {
@@ -130,12 +132,22 @@ const CompareResult = () => {
     return () => setInFlight(false);
   }, [pA.isFetching, pB.isFetching, setInFlight]);
 
+  // pending 상태 감지
+  const pending = Boolean(pA.isPending || pB.isPending);
+  // 최소 450ms 동안 스켈레톤 유지
+  const showSkeleton = useMinHold(pending, 450, requestTick);
+
   /** ---------- 상태 분기(UI만 담당) ---------- */
   if (!a || !b) return <ResultPlaceholder variant='idle' />; //  입력 전(두 슬롯 중 하나라도 비었을 때)
   if (!canCompare) return <ResultPlaceholder variant='ready' />;
   if (!requested) return <ResultPlaceholder variant='ready' />;
-  if (pA.isPending || pB.isPending)
-    return <div className='bg-black-800 mt-8 h-48 animate-pulse rounded-xl' />;
+  if (pA.isPending || pB.isPending) {
+    return <CompareResultSkeleton />;
+  }
+  if (showSkeleton) return <CompareResultSkeleton />;
+  if (pA.isError || pB.isError || !pA.data || !pB.data) {
+    return <ResultPlaceholder variant='error' />;
+  }
   if (pA.isError || pB.isError || !pA.data || !pB.data)
     return <ResultPlaceholder variant='error' />;
 
