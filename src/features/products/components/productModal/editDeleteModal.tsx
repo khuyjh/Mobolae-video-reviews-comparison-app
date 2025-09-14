@@ -92,9 +92,9 @@ export default function EditDeleteModal({
   const handleTextareaBlur = () => {
     const trimmedText = text.trim();
     if (trimmedText.length === 0) {
-      toast.error('설명 내용을 입력해주세요.');
+      toast.error('설명 내용을 입력해주세요.', { toastId: 'edit_delete_empty_description' });
     } else if (trimmedText.length < 10) {
-      toast.error('최소 10자 이상 적어주세요.');
+      toast.error('최소 10자 이상 적어주세요.', { toastId: 'edit_delete_short_description' });
     }
   };
 
@@ -110,12 +110,12 @@ export default function EditDeleteModal({
         ...PATH_OPTION,
         path: { ...PATH_OPTION.path, productId },
       });
-      toast.success('삭제되었습니다.');
+      toast.success('삭제되었습니다.', { toastId: 'edit_delete_success' });
       queryClient.invalidateQueries({ queryKey: ['products'] });
       onClose();
       router.push('/');
     } catch {
-      toast.error('삭제에 실패했습니다.');
+      toast.error('삭제에 실패했습니다.', { toastId: 'edit_delete_error' });
     }
   };
 
@@ -145,11 +145,11 @@ export default function EditDeleteModal({
       };
 
       await updateMutation.mutateAsync(payload);
-      toast.success('수정되었습니다.\n새로고침 후 반영됩니다.');
+      toast.success('수정되었습니다.\n새로고침 후 반영됩니다.', { toastId: 'edit_update_success' });
       queryClient.invalidateQueries({ queryKey: ['products'] });
       onClose();
     } catch {
-      toast.error('수정에 실패했습니다.');
+      toast.error('수정에 실패했습니다.', { toastId: 'edit_update_error' });
     }
   };
 
