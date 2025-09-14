@@ -3,12 +3,14 @@ export const revalidate = 300; // 5분마다 캐시 재생성 (ISR)
 import CategorySidebar from '@/features/mainPage/components/CategorySidebar';
 import FilterSwitch from '@/features/mainPage/components/FilterSwitch';
 import FloatingButton from '@/features/mainPage/components/FloatingButton';
+import { HomeQueryGuard } from '@/features/mainPage/components/HomeQueryGuard';
 import MostReviewed from '@/features/mainPage/components/MostReviewed';
 import {
   ReviewerRankingHorizontal,
   ReviewerRankingSidebar,
 } from '@/features/mainPage/components/ReviewerRanking';
 import TopRated from '@/features/mainPage/components/TopRated';
+import { normalizeOrRedirectOnServer } from '@/features/mainPage/services/queryNorm';
 import { ContentItem } from '@/shared/types/content';
 import { toContentItem } from '@/shared/utils/mapApiToItem';
 import { sortByRatingDescending, sortByReviewCountDescending } from '@/shared/utils/productSorters';
@@ -39,7 +41,16 @@ async function fetchTop6ByReviewCount(): Promise<ContentItem[]> {
     .map(toContentItem);
 }
 
-const Home = async () => {
+const Home = async ({
+  searchParams,
+}: {
+  /** Next.js가 서버에서 제공하는 쿼리 레코드 타입 */
+  searchParams?: Record<string, string | string[] | undefined>;
+}) => {
+  // 1. 서버 단계 정규화: 표준 쿼리와 다르면 즉시 redirect
+  normalizeOrRedirectOnServer(searchParams ?? {}, '/');
+
+  // 2. 정규화가 끝났으므로 안전하게 데이터 병렬 조회
   const [top6ByRating, top6ByReview] = await Promise.all([
     fetchTop6ByRating(),
     fetchTop6ByReviewCount(),
@@ -47,45 +58,48 @@ const Home = async () => {
 
   return (
     <main className='mx-auto w-full max-w-[1540px]'>
-      {/* 콘텐츠 등록 플로팅 버튼 */}
-      <FloatingButton />
+      {/* 클라이언트 단계 정규화 + 쿼리 가드 */}
+      <HomeQueryGuard>
+        {/* 콘텐츠 등록 플로팅 버튼 */}
+        <FloatingButton />
 
-      <div className='flex'>
-        {/* 좌측: 카테고리 메뉴 (데스크탑 전용) */}
-        <div className='hidden md:block'>
-          <CategorySidebar />
-        </div>
-
-        {/* 가운데: 메인 콘텐츠 */}
-        <section
-          aria-labelledby='main-title'
-          className='mt-[30px] min-h-[60vh] min-w-0 flex-1 md:mt-10 xl:mt-[60px]'
-        >
-          <h1 id='main-title' className='sr-only'>
-            메인 콘텐츠
-          </h1>
-
-          {/* 모바일/태블릿: 상단 가로형 랭킹 */}
-          <div className='mb-[60px] pl-5 md:pl-[30px] lg:hidden'>
-            <ReviewerRankingHorizontal />
+        <div className='flex'>
+          {/* 좌측: 카테고리 메뉴 (데스크탑 전용) */}
+          <div className='hidden md:block'>
+            <CategorySidebar />
           </div>
 
-          {/* Top6(별점순) + 리뷰 많은 순 */}
-          <div className='px-5 md:px-[30px] xl:px-[60px]'>
-            <FilterSwitch>
-              <>
-                <MostReviewed items={top6ByReview} />
-                <TopRated items={top6ByRating} />
-              </>
-            </FilterSwitch>
-          </div>
-        </section>
+          {/* 가운데: 메인 콘텐츠 */}
+          <section
+            aria-labelledby='main-title'
+            className='mt-[30px] min-h-[60vh] min-w-0 flex-1 md:mt-10 xl:mt-[60px]'
+          >
+            <h1 id='main-title' className='sr-only'>
+              메인 콘텐츠
+            </h1>
 
-        {/* 우측: 랭킹 사이드바 (데스크탑 전용) */}
-        <div className='hidden flex-none md:block md:max-w-[250px] md:min-w-[250px]'>
-          <ReviewerRankingSidebar />
+            {/* 모바일/태블릿: 상단 가로형 랭킹 */}
+            <div className='mb-[60px] pl-5 md:pl-[30px] lg:hidden'>
+              <ReviewerRankingHorizontal />
+            </div>
+
+            {/* Top6(별점순) + 리뷰 많은 순 */}
+            <div className='px-5 md:px-[30px] xl:px-[60px]'>
+              <FilterSwitch>
+                <>
+                  <MostReviewed items={top6ByReview} />
+                  <TopRated items={top6ByRating} />
+                </>
+              </FilterSwitch>
+            </div>
+          </section>
+
+          {/* 우측: 랭킹 사이드바 (데스크탑 전용) */}
+          <div className='hidden flex-none md:block md:max-w-[250px] md:min-w-[250px]'>
+            <ReviewerRankingSidebar />
+          </div>
         </div>
-      </div>
+      </HomeQueryGuard>
     </main>
   );
 };
