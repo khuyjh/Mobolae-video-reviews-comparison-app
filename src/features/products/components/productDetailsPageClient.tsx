@@ -166,32 +166,38 @@ export default function ProductDetailsPageClient({
             <ReviewSortDropdown value={sortValue} onChange={setSortValue} />
           </section>
 
-          {/* VirtualizedInfinityScroll 사용 */}
-          <VirtualizedInfinityScroll<Review>
-            items={reviews}
-            renderItem={(review, index) => (
-              <div
-                style={{
-                  marginBottom: index === reviews.length - 1 ? 0 : itemSpacing,
-                }}
-              >
-                <ReviewCard
-                  review={review}
-                  onLikeClick={onLikeClick}
-                  productName={product.name}
-                  productCategory={product.category}
-                />
-              </div>
-            )}
-            hasNextPage={!!hasNextPage}
-            fetchNextPage={fetchNextPage}
-            isLoading={isFetchingNextPage}
-            itemHeightEstimate={itemHeightEstimate}
-            maxItems={500}
-            overscan={5}
-            loadingText='loading...'
-            loadMoreText=''
-          />
+          {/* 리뷰가 없을 때 안내 문구 */}
+          {reviews.length === 0 ? (
+            <p className='text-xl-regular py-20 text-center text-gray-400'>
+              첫 리뷰를 작성해보세요!
+            </p>
+          ) : (
+            <VirtualizedInfinityScroll<Review>
+              items={reviews}
+              renderItem={(review, index) => (
+                <div
+                  style={{
+                    marginBottom: index === reviews.length - 1 ? 0 : itemSpacing,
+                  }}
+                >
+                  <ReviewCard
+                    review={review}
+                    onLikeClick={onLikeClick}
+                    productName={product.name}
+                    productCategory={product.category}
+                  />
+                </div>
+              )}
+              hasNextPage={!!hasNextPage}
+              fetchNextPage={fetchNextPage}
+              isLoading={isFetchingNextPage}
+              itemHeightEstimate={itemHeightEstimate}
+              maxItems={500}
+              overscan={5}
+              loadingText='loading...'
+              loadMoreText=''
+            />
+          )}
         </div>
       </div>
     </main>
