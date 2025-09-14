@@ -81,7 +81,7 @@ export default function ProfileBadge({
   };
 
   return (
-    <div className={clsx('flex min-w-0', variant === 'follower' && 'mb-[40px]')}>
+    <div className={clsx('flex min-w-0', variant === 'follower' && 'mb-[15px] xl:mb-[20px]')}>
       {/* 아바타 */}
       <div
         className={clsx(

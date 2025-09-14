@@ -44,6 +44,8 @@ export default function ProfileCard({
 }: ProfileCardProps) {
   const [isFollowModalOpen, setIsFollowModalOpen] = useState(false);
   const [followModalType, setFollowModalType] = useState<'followers' | 'following' | null>(null);
+  const hasFollowers = followers > 0;
+  const hasFollowing = following > 0;
 
   const [isRedirectOpen, setIsRedirectOpen] = useState(false);
   const openModal = (type: 'followers' | 'following') => {
@@ -94,11 +96,17 @@ export default function ProfileCard({
           onKeyDown={onKeyOpen}
           aria-label='팔로워 보기'
         >
-          <strong className={FOLLOW_COUNT}>{followers}</strong>
-          <span className={FOLLOW_LABEL}>팔로워</span>
+          <strong
+            className={clsx(FOLLOW_COUNT, hasFollowers ? 'cursor-pointer' : 'cursor-default')}
+          >
+            {followers}
+          </strong>
+          <span className={clsx(FOLLOW_LABEL, hasFollowers ? 'cursor-pointer' : 'cursor-default')}>
+            팔로워
+          </span>
         </div>
         <div
-          className='w-[50%]'
+          className={'inline-flex w-[50%] flex-col items-center text-center'}
           role='button'
           tabIndex={0}
           data-type='following'
@@ -106,8 +114,14 @@ export default function ProfileCard({
           onKeyDown={onKeyOpen}
           aria-label='팔로잉 보기'
         >
-          <strong className={FOLLOW_COUNT}>{following}</strong>
-          <span className={FOLLOW_LABEL}>팔로잉</span>
+          <strong
+            className={clsx(FOLLOW_COUNT, hasFollowers ? 'cursor-pointer' : 'cursor-default')}
+          >
+            {following}
+          </strong>
+          <span className={clsx(FOLLOW_LABEL, hasFollowers ? 'cursor-pointer' : 'cursor-default')}>
+            팔로잉
+          </span>
         </div>
       </div>
 
@@ -165,9 +179,10 @@ const CARD_CONTAINER =
 const PROFILE_TEXT_WRAPPER = 'mt-[30px] flex flex-col items-center gap-[10px] text-center';
 
 const FOLLOW_INFO_WRAPPER = 'mt-[30px] flex justify-between text-center';
-const FOLLOW_BOX_LEFT = 'w-[50%] border-r border-r-black-700 cursor-pointer';
-const FOLLOW_COUNT = 'text-base-semibold block text-white cursor-pointer';
-const FOLLOW_LABEL = 'text-md-regular block text-gray-400 cursor-pointer';
+const FOLLOW_BOX_LEFT =
+  'w-[50%] border-r border-r-black-700 inline-flex flex-col items-center text-center ';
+const FOLLOW_COUNT = 'text-base-semibold  text-white hover:text-main';
+const FOLLOW_LABEL = 'text-md-regular  text-gray-400';
 
 const BUTTON_GROUP = 'mt-[30px] flex flex-col gap-[10px]';
 const BUTTON_BASE = 'text-base-semibold w-full rounded-[8px] py-[15px] transition cursor-pointer';
