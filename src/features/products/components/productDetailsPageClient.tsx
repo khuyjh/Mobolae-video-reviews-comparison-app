@@ -2,7 +2,7 @@
 
 import Script from 'next/script';
 
-import { ChartBar, MessageSquareText } from 'lucide-react';
+import { ChartColumn, MessageSquareText } from 'lucide-react';
 import { useMemo, useState, useEffect } from 'react';
 
 import ProductCard from '@/features/products/components/productCard/productCard';
@@ -133,7 +133,7 @@ export default function ProductDetailsPageClient({
         {/* 통계 섹션 */}
         <section className={SUBSECTION_GAP}>
           <h2 className={cn(SECTION_TITLE, 'flex items-center gap-x-2')}>
-            <ChartBar className='size-4 md:size-5 xl:size-6' />
+            <ChartColumn className='size-4 md:size-5 xl:size-6' />
             <span>콘텐츠 통계</span>
           </h2>
           <Statistics
