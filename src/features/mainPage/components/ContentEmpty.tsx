@@ -17,9 +17,13 @@ const ContentEmpty = ({ variant = 'empty', title, description }: ContentEmptyPro
   return (
     <div className='flex flex-col items-center justify-center py-20 text-center'>
       {isError ? (
-        <AlertTriangle className='mb-6 h-16 w-16 text-red-500' strokeWidth={1.5} />
+        <AlertTriangle
+          aria-hidden='true'
+          className='mb-6 h-16 w-16 text-red-500'
+          strokeWidth={1.5}
+        />
       ) : (
-        <Search className='mb-6 h-16 w-16 text-gray-500' strokeWidth={1.5} />
+        <Search aria-hidden='true' className='mb-6 h-16 w-16 text-gray-500' strokeWidth={1.5} />
       )}
 
       <h2 className='text-lg-semibold mb-2 text-white'>

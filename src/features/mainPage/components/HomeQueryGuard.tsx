@@ -34,7 +34,7 @@ export const HomeQueryGuard = ({ children }: PropsWithChildren) => {
     if (canonical !== current) {
       // replace로 교체하여 히스토리 오염 방지
       const href = canonical ? `${pathname}?${canonical}` : pathname || '/';
-      router.replace(href);
+      router.replace(href, { scroll: false });
     }
   }, [isHomePath, safeQuery, pathname, searchParams, router]);
 
