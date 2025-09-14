@@ -47,7 +47,7 @@ const iconMap = {
  * title: 제목
  * value: 표시할 통계 값 (null인 경우 '-'로 표시)
  * iconType: 아이콘 타입
- * comparisonValue: 차이값
+ * comparisonValue: 차이값 (요청에 따라 null 없음)
  */
 export interface StatisticsCardProps {
   title: string;
@@ -76,21 +76,15 @@ const StatisticsCard = ({
   let comparisonText: React.ReactNode;
   const { unit, moreText, lessText, sameText } = config;
 
-  if (comparisonValue === null) {
-    comparisonText = (
-      <>
-        <span className='text-white'>-</span>
-        {unit} {lessText}
-      </>
-    );
-  } else {
-    const absValue = Math.abs(comparisonValue);
-    const formattedComparison =
-      iconType === 'star'
-        ? (Math.floor(absValue * 10) / 10).toFixed(1)
-        : formatNumber(Math.trunc(absValue));
+  const cmp = comparisonValue as number;
 
-    if (comparisonValue === 0) {
+  const absValue = Math.abs(cmp);
+
+  if (iconType === 'star') {
+    const rounded = Math.round(absValue * 10) / 10;
+    const formattedComparison = rounded.toFixed(1);
+
+    if (rounded === 0) {
       comparisonText = (
         <>
           <span className='text-white'>
@@ -101,7 +95,33 @@ const StatisticsCard = ({
         </>
       );
     } else {
-      const text = comparisonValue > 0 ? moreText : lessText;
+      const text = cmp > 0 ? moreText : lessText;
+      comparisonText = (
+        <>
+          <span className='text-white'>
+            {formattedComparison}
+            {unit}
+          </span>{' '}
+          {text}
+        </>
+      );
+    }
+  } else {
+    const intPart = Math.trunc(absValue);
+    const formattedComparison = formatNumber(intPart);
+
+    if (intPart === 0) {
+      comparisonText = (
+        <>
+          <span className='text-white'>
+            {formattedComparison}
+            {unit}
+          </span>
+          {sameText}
+        </>
+      );
+    } else {
+      const text = cmp > 0 ? moreText : lessText;
       comparisonText = (
         <>
           <span className='text-white'>
