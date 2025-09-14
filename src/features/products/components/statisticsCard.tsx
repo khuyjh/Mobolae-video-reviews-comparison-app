@@ -66,7 +66,12 @@ const StatisticsCard = ({
   className,
 }: StatisticsCardProps) => {
   const config = iconMap[iconType];
-  const formattedValue = value !== null ? formatNumber(Math.trunc(value)) : '-';
+  const formattedValue =
+    value !== null
+      ? iconType === 'star'
+        ? (Math.floor(value * 10) / 10).toFixed(1)
+        : formatNumber(Math.trunc(value))
+      : '-';
 
   let comparisonText: React.ReactNode;
   const { unit, moreText, lessText, sameText } = config;
@@ -80,7 +85,10 @@ const StatisticsCard = ({
     );
   } else {
     const absValue = Math.abs(comparisonValue);
-    const formattedComparison = formatNumber(Math.trunc(absValue));
+    const formattedComparison =
+      iconType === 'star'
+        ? (Math.floor(absValue * 10) / 10).toFixed(1)
+        : formatNumber(Math.trunc(absValue));
 
     if (comparisonValue === 0) {
       comparisonText = (

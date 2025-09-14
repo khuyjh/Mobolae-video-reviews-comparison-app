@@ -32,7 +32,7 @@ export function handleCompareClick({
   const newItem: CompareCandidate = { id: productId, name: title, categoryId };
 
   if ((a && a.id === newItem.id) || (b && b.id === newItem.id)) {
-    toast.error(TOAST_MESSAGES.ALREADY_ADDED);
+    toast.error(TOAST_MESSAGES.ALREADY_ADDED, { toastId: 'already_added' });
     return;
   }
 
@@ -41,7 +41,7 @@ export function handleCompareClick({
   if (!a) {
     const result = trySetA(newItem);
     if (!result.ok) {
-      toast.error(TOAST_MESSAGES.DIFFERENT_CATEGORY);
+      toast.error(TOAST_MESSAGES.DIFFERENT_CATEGORY, { toastId: 'different_category' });
       return;
     }
     setCompareModalType('added');
@@ -49,14 +49,14 @@ export function handleCompareClick({
   } else if (!b) {
     const result = trySetB(newItem);
     if (!result.ok) {
-      toast.error(TOAST_MESSAGES.DIFFERENT_CATEGORY);
+      toast.error(TOAST_MESSAGES.DIFFERENT_CATEGORY, { toastId: 'different_category' });
       return;
     }
     setCompareModalType('ready');
     setIsCompareModalOpen(true);
   } else {
     if (a.categoryId !== newItem.categoryId || b.categoryId !== newItem.categoryId) {
-      toast.error(TOAST_MESSAGES.DIFFERENT_CATEGORY);
+      toast.error(TOAST_MESSAGES.DIFFERENT_CATEGORY, { toastId: 'different_category' });
       return;
     }
     setCompareModalType('replaceSelect');

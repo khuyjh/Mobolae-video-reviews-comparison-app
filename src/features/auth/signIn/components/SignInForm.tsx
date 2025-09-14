@@ -9,7 +9,6 @@ import { toast } from 'react-toastify';
 
 import Button from '@/shared/components/Button';
 import Input from '@/shared/components/Input';
-import PasswordInput from '@/shared/components/PasswordInput';
 import { PATH_OPTION } from '@/shared/constants/constants';
 import { useUserStore } from '@/shared/stores/userStore';
 
@@ -117,9 +116,11 @@ const SignInForm = ({ redirectUrl }: Props) => {
         error={errors.email}
         {...register('email')}
       />
-      <PasswordInput
+      <Input
         label='비밀번호'
         id='password'
+        type='password'
+        hasButton={true}
         placeholder='비밀번호를 입력해 주세요'
         autoComplete='current-password'
         error={errors.password}
