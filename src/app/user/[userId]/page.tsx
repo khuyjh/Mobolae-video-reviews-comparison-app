@@ -79,7 +79,6 @@ const mapFavorite = (it: FavoriteItem): ContentItem => mapToContentItem(it);
 
 export default function UserPage() {
   const { userId } = useParams<{ userId: string }>();
-  const router = useRouter();
   const uidNum = Number(userId);
   const enabled = Number.isFinite(uidNum) && !!TEAM_ID;
 
@@ -88,8 +87,6 @@ export default function UserPage() {
 
   const fm = useFollowMutations(uidNum, isLoggedIn ? meId : undefined);
   const followBtnDisabled = isLoggedIn ? fm.actionDisabled : false;
-
-  const [showLoginModal, setShowLoginModal] = useState(false);
 
   const { data: userDetail, isLoading: isUserLoading } = useUserDetail(
     { ...PATH_OPTION, path: { ...PATH_OPTION.path, userId: uidNum } },
@@ -105,10 +102,6 @@ export default function UserPage() {
   const isFollowing = card.isFollowing;
 
   const handleFollowToggle = () => {
-    if (!isLoggedIn || !meId) {
-      setShowLoginModal(true);
-      return;
-    }
     isFollowing ? fm.unfollow() : fm.follow();
   };
 
