@@ -80,7 +80,6 @@ export default function RootLayout({
         <QueryProvider>
           <ToastProvider>
             <AuthGuard>
-              <SplashScreen />
               <GlobalNav />
               {children}
               <ScrollToTop />
