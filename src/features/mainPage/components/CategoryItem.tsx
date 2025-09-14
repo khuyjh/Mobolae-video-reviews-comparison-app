@@ -25,7 +25,7 @@ interface CategoryItemProps extends AnchorProps, Partial<LinkProps> {
 
 /** 공통 기본 스타일 */
 const BASE_STYLE =
-  'nav-item block text-md-medium xl:text-base-medium w-full cursor-pointer  rounded-lg border px-5 py-[15px] text-left transition-all duration-200';
+  'nav-item block text-md-medium xl:text-base-medium w-full cursor-pointer rounded-lg border px-5 py-[15px] text-left transition-all duration-200';
 
 /** 상태별 스타일 */
 const VARIANT_STYLE = {
@@ -40,13 +40,13 @@ const VARIANT_STYLE = {
  * - 선택된 항목은 강조 스타일 적용
  * - 외부 컴포넌트(SheetClose 등)에서 전달하는 이벤트/속성들을 내부 <a>에 전달 가능
  */
-const CategoryItem: React.FC<CategoryItemProps> = ({
+const CategoryItem = ({
   category,
   isSelected,
   href,
   className,
   ...rest // SheetClose가 주입하는 onClick, data-*, aria-* 등
-}) => (
+}: CategoryItemProps) => (
   <Link
     href={href}
     replace
