@@ -96,7 +96,8 @@ const ReviewModal = ({
       return !isDuplicate;
     });
 
-    if (duplicatesFound) toast.error('이미 존재하는 파일은 추가할 수 없습니다.');
+    if (duplicatesFound)
+      toast.error('이미 존재하는 파일은 추가할 수 없습니다.', { toastId: 'duplicate_file_error' });
     if (uniqueNewFiles.length === 0) return;
 
     /* 최대 업로드 개수 제한 */
@@ -128,8 +129,10 @@ const ReviewModal = ({
 
   /* 리뷰 blur 시 유효성 검사  */
   const handleReviewBlur = () => {
-    if (reviewText.trim().length === 0) toast.error('리뷰 내용을 입력해주세요.');
-    else if (reviewText.trim().length < 10) toast.error('최소 10자 이상 적어주세요.');
+    if (reviewText.trim().length === 0)
+      toast.error('리뷰 내용을 입력해주세요.', { toastId: 'review_empty_error' });
+    else if (reviewText.trim().length < 10)
+      toast.error('최소 10자 이상 적어주세요.', { toastId: 'review_short_error' });
   };
 
   /* API hooks */
@@ -161,7 +164,7 @@ const ReviewModal = ({
           },
         };
         await createReviewMutation.mutateAsync(payload);
-        toast.success('리뷰가 작성되었습니다.');
+        toast.success('리뷰가 작성되었습니다.', { toastId: 'review_add_success' });
       } else if (mode === 'edit' && review) {
         /* 기존 리뷰 수정 */
         const payload: UpdateReviewData = {
@@ -180,7 +183,7 @@ const ReviewModal = ({
           },
         };
         await updateReviewMutation.mutateAsync(payload);
-        toast.success('리뷰가 수정되었습니다.');
+        toast.success('리뷰가 수정되었습니다.', { toastId: 'review_edit_success' });
       }
 
       /* 리스트 실시간 갱신 */
@@ -188,7 +191,7 @@ const ReviewModal = ({
 
       handleModalClose();
     } catch {
-      toast.error('요청 중 오류가 발생했습니다.');
+      toast.error('요청 중 오류가 발생했습니다.', { toastId: 'review_request_error' });
     }
   };
 
