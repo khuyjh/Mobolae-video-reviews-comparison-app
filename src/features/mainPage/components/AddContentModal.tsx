@@ -62,13 +62,7 @@ function CategoryDropdown({
   );
 }
 
-/* ───────── 콘텐츠 추가 모달 ─────────
- * 검증 전략
- * - 스키마 검증: zod (resolver)
- * - 제목(name): onBlur 시 스키마/중복 검증 및 토스트
- * - 설명(description): onBlur 시 스키마 검증 및 토스트
- * - 버튼 활성화: formState.isValid && !liveNameDuplicate
- */
+/* ───────── 콘텐츠 추가 모달 ───────── */
 const AddContentModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
   const router = useRouter();
 
@@ -85,7 +79,7 @@ const AddContentModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
     getFieldState,
   } = useForm<ProductFormValues>({
     resolver: zodResolver(productCreateSchema),
-    mode: 'onChange', // isValid 즉시 반영
+    mode: 'onChange',
     reValidateMode: 'onChange',
     defaultValues: { name: '', categoryId: 0, description: '', images: [] },
   });
@@ -104,18 +98,22 @@ const AddContentModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
   const previewUrls = useMemo(() => imageFiles.map((f) => URL.createObjectURL(f)), [imageFiles]);
   useEffect(() => () => previewUrls.forEach((u) => URL.revokeObjectURL(u)), [previewUrls]);
 
-  /* 이미지 선택 핸들러 (1장 제한 + 중복 파일 방지) */
+  /* 이미지 선택 핸들러 */
   const handleImageChange = (newFiles: File[]): void => {
     const current = watch('images') ?? [];
 
     if (current.length >= MAX_IMAGE_COUNT) {
-      toast.error('대표 이미지는 1장만 업로드할 수 있습니다.');
+      toast.error('대표 이미지는 1장만 업로드할 수 있습니다.', {
+        toastId: '대표 이미지는 1장만 업로드할 수 있습니다.',
+      });
       return;
     }
 
     if (!newFiles?.length) return;
     if (newFiles.length > 1) {
-      toast.error('대표 이미지는 1장만 가능합니다. \n 첫 번째 파일만 등록합니다.');
+      toast.error('대표 이미지는 1장만 가능합니다. \n 첫 번째 파일만 등록합니다.', {
+        toastId: '대표 이미지는 1장만 가능합니다.',
+      });
     }
 
     const file = newFiles[0];
@@ -123,7 +121,7 @@ const AddContentModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
 
     const dup = current.some((f) => f.name === file.name && f.size === file.size);
     if (dup) {
-      toast.error('이미 선택한 파일입니다.');
+      toast.error('이미 선택한 파일입니다.', { toastId: '이미 선택한 파일입니다.' });
       return;
     }
 
@@ -162,12 +160,13 @@ const AddContentModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
     await trigger('name');
     const msg = getFieldState('name').error?.message;
     if (msg) {
-      toast.error(msg);
+      toast.error(msg, { toastId: msg });
       return;
     }
     if (liveNameDuplicate) {
-      setError('name', { type: 'duplicate', message: '이미 등록된 콘텐츠입니다.' });
-      toast.error('이미 등록된 콘텐츠입니다.');
+      const duplicateMsg = '이미 등록된 콘텐츠입니다.';
+      setError('name', { type: 'duplicate', message: duplicateMsg });
+      toast.error(duplicateMsg, { toastId: duplicateMsg });
       return;
     }
     if (errors.name) clearErrors('name');
@@ -176,7 +175,7 @@ const AddContentModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
   /* 제출 버튼 활성화 조건 */
   const isSubmitReady = isValid && !liveNameDuplicate && !isSubmitting;
 
-  /* 제출: 이미지 존재 확인 후 업로드 → 생성 */
+  /* 제출 */
   const onValid = async (_values: ProductFormValues): Promise<void> => {
     const file = imageFiles?.[0];
     if (!file) {
@@ -207,12 +206,15 @@ const AddContentModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
       const productId = createRes.data.id;
 
       if (!productId) throw new Error('생성 응답에 콘텐츠 ID가 없습니다.');
-      toast.success('콘텐츠가 등록되었습니다.');
+      toast.success('콘텐츠가 등록되었습니다.', {
+        toastId: '콘텐츠가 등록되었습니다.',
+      });
       onClose();
       router.push(`/products/${productId}`);
     } catch (e) {
       console.error(e);
-      toast.error('콘텐츠 등록에 실패했습니다. 잠시 후 다시 시도해 주세요.');
+      const msg = '콘텐츠 등록에 실패했습니다. 잠시 후 다시 시도해 주세요.';
+      toast.error(msg, { toastId: msg });
     }
   };
 
@@ -221,7 +223,7 @@ const AddContentModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
     const messages = Object.values(formErrors)
       .map((e) => e?.message)
       .filter(Boolean) as string[];
-    Array.from(new Set(messages)).forEach((m) => toast.error(m));
+    Array.from(new Set(messages)).forEach((m) => toast.error(m, { toastId: m }));
   };
 
   /* 카테고리 옵션 구성 */
@@ -314,7 +316,7 @@ const AddContentModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
                   field.onBlur();
                   await trigger('description');
                   const msg = getFieldState('description').error?.message;
-                  if (msg) toast.error(msg);
+                  if (msg) toast.error(msg, { toastId: msg });
                 }}
               />
             )}
