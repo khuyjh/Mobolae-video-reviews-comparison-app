@@ -42,13 +42,15 @@ export default function ProfileCard({
   onEdit,
   onLogout,
 }: ProfileCardProps) {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalType, setModalType] = useState<'followers' | 'following' | null>(null);
+  const [isFollowModalOpen, setIsFollowModalOpen] = useState(false);
+  const [followModalType, setFollowModalType] = useState<'followers' | 'following' | null>(null);
+
+  const [isRedirectOpen, setIsRedirectOpen] = useState(false);
   const openModal = (type: 'followers' | 'following') => {
     if ((type === 'followers' && followers === 0) || (type === 'following' && following === 0))
       return;
-    setModalType(type);
-    setIsModalOpen(true);
+    setFollowModalType(type);
+    setIsFollowModalOpen(true);
   };
 
   const onKeyOpen: React.KeyboardEventHandler<HTMLDivElement> = (e) => {
@@ -60,7 +62,7 @@ export default function ProfileCard({
 
   const handleFollowClick = () => {
     if (!meId) {
-      setIsModalOpen(true);
+      setIsRedirectOpen(true);
       return;
     }
     onFollowToggle?.();
@@ -137,18 +139,18 @@ export default function ProfileCard({
         )}
       </div>
 
-      {isModalOpen && (
+      {isFollowModalOpen && followModalType && (
         <FollowModal
           userId={userId}
           meId={meId}
-          type={modalType}
+          type={followModalType}
           nickname={name}
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
+          isOpen={isFollowModalOpen}
+          onClose={() => setIsFollowModalOpen(false)}
         />
       )}
 
-      <RedirectModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+      <RedirectModal isOpen={isRedirectOpen} onClose={() => setIsRedirectOpen(false)} />
     </div>
   );
 }
