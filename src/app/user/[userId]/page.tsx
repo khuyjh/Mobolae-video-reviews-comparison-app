@@ -8,6 +8,7 @@ import ActivityCard from '@/features/mypage/components/activityCard';
 import ProfileCard from '@/features/mypage/components/ProfileCard';
 import ProfileTabsSection from '@/features/mypage/components/ProfileTabsSection';
 import { useFollowMutations } from '@/features/user/hooks/useFollowMutaion';
+import ProfilePageSkeleton from '@/shared/components/skeleton/PofilePageSkeleton';
 import { TEAM_ID, PATH_OPTION } from '@/shared/constants/constants';
 import { useUserStore } from '@/shared/stores/userStore';
 import { mapToContentItem } from '@/shared/utils/mapToContentItem';
@@ -92,7 +93,9 @@ export default function UserPage() {
     { enabled, retry: false },
   );
 
-  if (isUserLoading || !userDetail) return null;
+  if (isUserLoading || !userDetail) {
+    return <ProfilePageSkeleton />;
+  }
 
   const card = mapUserToCard(userDetail);
   const isFollowing = card.isFollowing;

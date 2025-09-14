@@ -5,6 +5,7 @@ import Link from 'next/link';
 import React, { useMemo, useRef } from 'react';
 
 import ProfileBadge from '@/shared/components/card/avatarCard';
+import ReviewerRankingSkeleton from '@/shared/components/skeleton/ReviewerRankingSkeleton';
 import { PATH_OPTION } from '@/shared/constants/constants';
 import { useUserStore } from '@/shared/stores/userStore';
 import { mapUserRankingToReviewer } from '@/shared/utils/reviewerMapper';
@@ -110,7 +111,7 @@ const ReviewerRankingList = ({ reviewers, direction = 'row' }: ReviewerRankingLi
 export const ReviewerRankingHorizontal = () => {
   const { data, isLoading, isError } = useUserRanking(PATH_OPTION, [], { staleTime: 30_000 });
 
-  if (isLoading) return <div>리뷰어 랭킹 불러오는 중...</div>;
+  if (isLoading) return <ReviewerRankingSkeleton direction='row' />;
   if (isError || !data) return <div>리뷰어 랭킹 불러오기 실패</div>;
 
   const reviewers: Reviewer[] = (data ?? []).map(mapUserRankingToReviewer);
@@ -130,7 +131,7 @@ export const ReviewerRankingHorizontal = () => {
 export const ReviewerRankingSidebar = () => {
   const { data, isLoading, isError } = useUserRanking(PATH_OPTION, [], { staleTime: 30_000 });
 
-  if (isLoading) return <div>리뷰어 랭킹 불러오는 중...</div>;
+  if (isLoading) return <ReviewerRankingSkeleton direction='col' />;
   if (isError || !data) return <div>리뷰어 랭킹 불러오기 실패</div>;
 
   const reviewers: Reviewer[] = (data ?? []).map(mapUserRankingToReviewer);
