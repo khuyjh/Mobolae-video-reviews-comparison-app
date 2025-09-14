@@ -104,7 +104,7 @@ export default function GlobalNav() {
             </button>
             <input
               type='text'
-              placeholder='상품 이름을 검색해 보세요'
+              placeholder='콘텐츠 이름을 검색해 보세요'
               className='ml-[12px] w-full bg-transparent outline-none'
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}
@@ -186,7 +186,7 @@ export default function GlobalNav() {
             <input
               ref={mobileInputRef}
               type='text'
-              placeholder='상품 이름을 검색해 보세요'
+              placeholder='콘텐츠 이름을 검색해 보세요'
               className='ml-[15px] w-full rounded-md bg-transparent outline-none'
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}
