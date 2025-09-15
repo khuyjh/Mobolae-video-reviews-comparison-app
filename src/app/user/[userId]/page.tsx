@@ -3,12 +3,12 @@
 import { useParams, useRouter } from 'next/navigation';
 
 import React, { useState } from 'react';
+import { toast } from 'react-toastify';
 
 import ActivityCard from '@/features/mypage/components/activityCard';
 import ProfileCard from '@/features/mypage/components/ProfileCard';
 import ProfileTabsSection from '@/features/mypage/components/ProfileTabsSection';
 import { useFollowMutations } from '@/features/user/hooks/useFollowMutaion';
-import BaseModal from '@/shared/components/BaseModal';
 import ProfilePageSkeleton from '@/shared/components/skeleton/PofilePageSkeleton';
 import { TEAM_ID, PATH_OPTION } from '@/shared/constants/constants';
 import { useUserStore } from '@/shared/stores/userStore';
@@ -100,9 +100,13 @@ export default function UserPage() {
 
   const card = mapUserToCard(userDetail);
   const isFollowing = card.isFollowing;
+  const toastName = card.name;
 
   const handleFollowToggle = () => {
     isFollowing ? fm.unfollow() : fm.follow();
+    isFollowing
+      ? toast.success(toastName + '님을 언팔로우 했습니다')
+      : toast.success(toastName + '님을 팔로우 했습니다');
   };
 
   return (
