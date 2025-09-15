@@ -2,6 +2,7 @@
 
 import React, { useMemo, useState } from 'react';
 
+import ContentEmpty from '@/features/mainPage/components/ContentEmpty';
 import VirtualizedContentGrid from '@/features/mainPage/components/VirtualizedContentGrid';
 import ProfileTabs from '@/features/mypage/components/ProfileTabs';
 import { PATH_OPTION } from '@/shared/constants/constants';
@@ -42,6 +43,7 @@ function SectionBlock<T>({
   isLoading,
   isError,
   emptyText,
+  errorText,
   mapFn,
   hasNextPage,
   fetchNextPage,
@@ -50,13 +52,19 @@ function SectionBlock<T>({
   isLoading: boolean;
   isError: boolean;
   emptyText: string;
+  errorText: string;
   mapFn: (it: T) => ContentItem;
   hasNextPage: boolean;
   fetchNextPage: () => void;
 }) {
-  if (isLoading && list.length === 0) return <p className='text-gray-400'>불러오는 중…</p>;
-  if (isError) return <p className='text-red-400'>불러오기에 실패했어요.</p>;
-  if (list.length === 0) return <p className='text-gray-400'>{emptyText}</p>;
+  if (isError) {
+    return (
+      <ContentEmpty variant='error' title={errorText} description='잠시 후 다시 시도해주세요' />
+    );
+  }
+  if (list.length === 0) {
+    return <ContentEmpty title={emptyText} />;
+  }
   return (
     <VirtualizedContentGrid
       items={list.map(mapFn)}
@@ -102,7 +110,8 @@ export default function ProfileTabsSection({
           list: reviewedQ.data?.items ?? [],
           isLoading: reviewedQ.isLoading || reviewedQ.isFetchingNextPage,
           isError: !!reviewedQ.isError,
-          emptyText: '리뷰가 없어요',
+          emptyText: '아직 등록한 리뷰가 없어요',
+          errorText: '리뷰 목록을 불러오지 못했어요',
           mapFn: mapReviewed,
           hasNextPage: !!reviewedQ.hasNextPage,
           fetchNextPage: () => reviewedQ.fetchNextPage(),
@@ -111,7 +120,8 @@ export default function ProfileTabsSection({
           list: createdQ.data?.items ?? [],
           isLoading: createdQ.isLoading || createdQ.isFetchingNextPage,
           isError: !!createdQ.isError,
-          emptyText: '등록한 콘텐츠가 없어요',
+          emptyText: '아직 등록한 콘텐츠가 없어요',
+          errorText: '등록한 콘텐츠를 불러오지 못했어요',
           mapFn: mapCreated,
           hasNextPage: !!createdQ.hasNextPage,
           fetchNextPage: () => createdQ.fetchNextPage(),
@@ -120,7 +130,8 @@ export default function ProfileTabsSection({
           list: favoriteQ.data?.items ?? [],
           isLoading: favoriteQ.isLoading || favoriteQ.isFetchingNextPage,
           isError: !!favoriteQ.isError,
-          emptyText: '찜한 콘텐츠가 없어요',
+          emptyText: '아직 찜한 콘텐츠가 없어요',
+          errorText: '찜한 콘텐츠를 불러오지 못했어요',
           mapFn: mapFavorite,
           hasNextPage: !!favoriteQ.hasNextPage,
           fetchNextPage: () => favoriteQ.fetchNextPage(),
@@ -140,6 +151,7 @@ export default function ProfileTabsSection({
           isLoading={active.isLoading}
           isError={active.isError}
           emptyText={active.emptyText}
+          errorText={active.errorText}
           mapFn={active.mapFn}
           hasNextPage={active.hasNextPage}
           fetchNextPage={active.fetchNextPage}
