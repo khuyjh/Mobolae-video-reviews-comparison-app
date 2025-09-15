@@ -3,6 +3,7 @@
 import clsx from 'clsx';
 import { useState } from 'react';
 
+import RedirectModal from '@/features/auth/components/RedirectModal';
 import FollowModal from '@/features/mypage/components/ProfileModal/FollowModal';
 import Button from '@/shared/components/Button';
 import SafeProfileImage from '@/shared/components/SafeProfileImage';
@@ -41,14 +42,17 @@ export default function ProfileCard({
   onEdit,
   onLogout,
 }: ProfileCardProps) {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalType, setModalType] = useState<'followers' | 'following' | null>(null);
+  const [isFollowModalOpen, setIsFollowModalOpen] = useState(false);
+  const [followModalType, setFollowModalType] = useState<'followers' | 'following' | null>(null);
+  const hasFollowers = followers > 0;
+  const hasFollowing = following > 0;
 
+  const [isRedirectOpen, setIsRedirectOpen] = useState(false);
   const openModal = (type: 'followers' | 'following') => {
     if ((type === 'followers' && followers === 0) || (type === 'following' && following === 0))
       return;
-    setModalType(type);
-    setIsModalOpen(true);
+    setFollowModalType(type);
+    setIsFollowModalOpen(true);
   };
 
   const onKeyOpen: React.KeyboardEventHandler<HTMLDivElement> = (e) => {
@@ -56,6 +60,14 @@ export default function ProfileCard({
       const target = (e.currentTarget.dataset.type as 'followers' | 'following')!;
       openModal(target);
     }
+  };
+
+  const handleFollowClick = () => {
+    if (!meId) {
+      setIsRedirectOpen(true);
+      return;
+    }
+    onFollowToggle?.();
   };
 
   return (
@@ -76,7 +88,7 @@ export default function ProfileCard({
 
       <div className={FOLLOW_INFO_WRAPPER}>
         <div
-          className={FOLLOW_BOX_LEFT}
+          className={clsx(FOLLOW_BOX, FOLLOW_BOX_LEFT)}
           role='button'
           tabIndex={0}
           data-type='followers'
@@ -84,11 +96,17 @@ export default function ProfileCard({
           onKeyDown={onKeyOpen}
           aria-label='팔로워 보기'
         >
-          <strong className={FOLLOW_COUNT}>{followers}</strong>
-          <span className={FOLLOW_LABEL}>팔로워</span>
+          <strong
+            className={clsx(FOLLOW_COUNT, hasFollowers ? 'cursor-pointer' : 'cursor-default')}
+          >
+            {followers}
+          </strong>
+          <span className={clsx(FOLLOW_LABEL, hasFollowers ? 'cursor-pointer' : 'cursor-default')}>
+            팔로워
+          </span>
         </div>
         <div
-          className='w-[50%]'
+          className={FOLLOW_BOX}
           role='button'
           tabIndex={0}
           data-type='following'
@@ -96,34 +114,36 @@ export default function ProfileCard({
           onKeyDown={onKeyOpen}
           aria-label='팔로잉 보기'
         >
-          <strong className={FOLLOW_COUNT}>{following}</strong>
-          <span className={FOLLOW_LABEL}>팔로잉</span>
+          <strong
+            className={clsx(FOLLOW_COUNT, hasFollowing ? 'cursor-pointer' : 'cursor-default')}
+          >
+            {following}
+          </strong>
+          <span className={clsx(FOLLOW_LABEL, hasFollowing ? 'cursor-pointer' : 'cursor-default')}>
+            팔로잉
+          </span>
         </div>
       </div>
 
       <div className={BUTTON_GROUP}>
         {isMe ? (
           <>
-            <Button onClick={onEdit} variant={'primary'} className={clsx(BUTTON_BASE, BTN_EDIT)}>
+            <Button onClick={onEdit} variant='primary' className={clsx(BUTTON_BASE, BTN_EDIT)}>
               편집하기
             </Button>
-            <Button
-              onClick={onLogout}
-              variant={'tertiary'}
-              className={clsx(BUTTON_BASE, BTN_LOGOUT)}
-            >
+            <Button onClick={onLogout} variant='tertiary' className={clsx(BUTTON_BASE, BTN_LOGOUT)}>
               로그아웃
             </Button>
           </>
         ) : (
           <Button
-            onClick={onFollowToggle}
+            onClick={handleFollowClick}
             disabled={actionDisabled}
             aria-busy={actionDisabled || undefined}
             aria-label={`${name ?? '-'}을(를) ${isFollowing ? '언팔로우' : '팔로우'}하기`}
             variant={isFollowing ? 'tertiary' : 'primary'}
             className={clsx(
-              'max-w-[160px]',
+              'block !w-full max-w-none', // 100% 강제
               'disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-60',
               'disabled:hover:!border-gray-700 disabled:hover:!bg-transparent disabled:hover:!text-gray-500 disabled:hover:!brightness-100',
             )}
@@ -133,16 +153,18 @@ export default function ProfileCard({
         )}
       </div>
 
-      {isModalOpen && (
+      {isFollowModalOpen && followModalType && (
         <FollowModal
           userId={userId}
           meId={meId}
-          type={modalType}
+          type={followModalType}
           nickname={name}
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
+          isOpen={isFollowModalOpen}
+          onClose={() => setIsFollowModalOpen(false)}
         />
       )}
+
+      <RedirectModal isOpen={isRedirectOpen} onClose={() => setIsRedirectOpen(false)} />
     </div>
   );
 }
@@ -152,16 +174,17 @@ const IMG_WRAPPER =
 const IMG_STYLE = 'h-full w-full object-cover';
 
 const CARD_CONTAINER =
-  'bg-black-800 border border-black-700 w-full md:w-[509px] mx-auto xl:w-[340px] rounded-[12px] px-[30px] py-[20px] md:py-[30px] xl:py-[20px] xl:pt-[40px] xl:pb-[30px]';
+  'bg-black-800 border border-black-700 w-full md:w-[509px] mx-auto xl:w-[340px] rounded-[12px] px-[30px] py-[20px] md:py-[30px] xl:py-[20px] xl:pt-[40px] xl:pb-[30px]'; // ← 오타 수정
 
 const PROFILE_TEXT_WRAPPER = 'mt-[30px] flex flex-col items-center gap-[10px] text-center';
 
 const FOLLOW_INFO_WRAPPER = 'mt-[30px] flex justify-between text-center';
-const FOLLOW_BOX_LEFT = 'w-[50%] border-r border-r-black-700 cursor-pointer';
-const FOLLOW_COUNT = 'text-base-semibold block text-white cursor-pointer';
-const FOLLOW_LABEL = 'text-md-regular block text-gray-400 cursor-pointer';
+const FOLLOW_BOX_LEFT = ' border-r border-r-black-700';
+const FOLLOW_BOX = 'group w-[50%] inline-flex flex-col items-center text-center ';
+const FOLLOW_COUNT = 'text-base-semibold  text-white group-hover:!text-main transition-colors ';
+const FOLLOW_LABEL = 'text-md-regular  text-gray-400 ';
 
 const BUTTON_GROUP = 'mt-[30px] flex flex-col gap-[10px]';
 const BUTTON_BASE = 'text-base-semibold w-full rounded-[8px] py-[15px] transition cursor-pointer';
 const BTN_EDIT = 'bg-main text-black-800 hover:opacity-90';
-const BTN_LOGOUT = 'border border-black-700 text-gray-400 hover:bg-black-700/40';
+const BTN_LOGOUT = 'border border-black-700 text-gray-400 hover:bg-black-700';

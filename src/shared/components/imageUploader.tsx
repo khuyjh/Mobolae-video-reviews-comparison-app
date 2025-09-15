@@ -24,12 +24,9 @@ interface ImageUploaderProps {
 }
 
 const IMAGE_ITEM_BASE_CLASSES = 'bg-black-800 group relative rounded-[8px] border border-black-700';
-
-const IMAGE_ITEM_SIZES =
-  'w-[123px] h-[123px] aspect-square md:h-[135px] md:w-[135px] xl:h-[160px] xl:w-[160px]';
-
+const IMAGE_SIZE_CLASSES = 'aspect-square md:h-[135px] md:w-[135px] xl:h-[160px] xl:w-[160px]';
 const IMAGE_REMOVE_BUTTON_CLASSES =
-  'bg-black-900/60 absolute top-1 right-1 rounded-full p-1 opacity-0 transition-opacity group-hover:opacity-100';
+  'bg-black-900/60 absolute top-1 right-1 rounded-full p-1 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-black-800';
 
 export default function ImageUploader({
   value,
@@ -59,6 +56,9 @@ export default function ImageUploader({
 
   const canAddMore = previewUrls.length < maxImages;
 
+  const imageItemClasses =
+    maxImages === 1 ? `w-full ${IMAGE_SIZE_CLASSES}` : `w-[140px] ${IMAGE_SIZE_CLASSES}`;
+
   return (
     <div className={cn('flex flex-col gap-3', className)}>
       {/* 이미지 개수 별 레이아웃 */}
@@ -72,7 +72,7 @@ export default function ImageUploader({
         {previewUrls.map((previewUrl, index) => (
           <div
             key={`${value[index]?.name ?? 'img'}-${index}`}
-            className={cn(IMAGE_ITEM_BASE_CLASSES, IMAGE_ITEM_SIZES)}
+            className={cn(IMAGE_ITEM_BASE_CLASSES, imageItemClasses)}
           >
             <img
               src={previewUrl}
@@ -105,7 +105,7 @@ export default function ImageUploader({
             }}
             className={cn(
               IMAGE_ITEM_BASE_CLASSES,
-              IMAGE_ITEM_SIZES,
+              imageItemClasses,
               'hover:bg-black-700 flex cursor-pointer items-center justify-center transition-colors',
               'focus:ring-main focus:ring-1 focus:outline-none',
             )}

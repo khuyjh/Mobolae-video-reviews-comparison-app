@@ -1,8 +1,9 @@
 'use client';
 
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 
-import React from 'react';
+import React, { useState } from 'react';
+import { toast } from 'react-toastify';
 
 import ActivityCard from '@/features/mypage/components/activityCard';
 import ProfileCard from '@/features/mypage/components/ProfileCard';
@@ -85,7 +86,7 @@ export default function UserPage() {
   const meId = user?.id;
 
   const fm = useFollowMutations(uidNum, isLoggedIn ? meId : undefined);
-  const followBtnDisabled = !isLoggedIn || fm.actionDisabled;
+  const followBtnDisabled = isLoggedIn ? fm.actionDisabled : false;
 
   const { data: userDetail, isLoading: isUserLoading } = useUserDetail(
     { ...PATH_OPTION, path: { ...PATH_OPTION.path, userId: uidNum } },
@@ -99,42 +100,52 @@ export default function UserPage() {
 
   const card = mapUserToCard(userDetail);
   const isFollowing = card.isFollowing;
+  const toastName = card.name;
+
+  const handleFollowToggle = () => {
+    isFollowing ? fm.unfollow() : fm.follow();
+    isFollowing
+      ? toast.success(toastName + '님을 언팔로우 했습니다')
+      : toast.success(toastName + '님을 팔로우 했습니다');
+  };
 
   return (
-    <div className='mt-[30px] px-[20px] md:px-[117px] xl:mx-auto xl:flex xl:max-w-[1340px] xl:px-[0px]'>
-      <div className='mb-[60px] xl:mr-[60px]'>
-        <ProfileCard
-          userId={uidNum}
-          meId={meId}
-          name={card.name}
-          avatarSrc={card.avatarSrc}
-          bio={card.bio}
-          followers={card.followers}
-          following={card.following}
-          isMe={false}
-          isFollowing={isFollowing}
-          actionDisabled={followBtnDisabled}
-          onFollowToggle={() => (isFollowing ? fm.unfollow() : fm.follow())}
-        />
-      </div>
-
-      <div className='flex-1'>
-        <div className='mb-[60px]'>
-          <h2 className='text-lg-semibold mb-[30px] text-white'>활동 내역</h2>
-          <ActivityCard
-            rating={userDetail.averageRating}
-            reviewCount={userDetail.reviewCount}
-            topCategoryId={userDetail.mostFavoriteCategory?.id ?? null}
+    <>
+      <div className='mt-[30px] px-[20px] md:px-[117px] xl:mx-auto xl:flex xl:max-w-[1340px] xl:px-[0px]'>
+        <div className='mb-[60px] xl:mr-[60px]'>
+          <ProfileCard
+            userId={uidNum}
+            meId={meId}
+            name={card.name}
+            avatarSrc={card.avatarSrc}
+            bio={card.bio}
+            followers={card.followers}
+            following={card.following}
+            isMe={false}
+            isFollowing={isFollowing}
+            actionDisabled={followBtnDisabled}
+            onFollowToggle={handleFollowToggle}
           />
         </div>
 
-        <ProfileTabsSection
-          userId={uidNum}
-          mapReviewed={mapReviewed}
-          mapCreated={mapCreated}
-          mapFavorite={mapFavorite}
-        />
+        <div className='flex-1'>
+          <div className='mb-[60px]'>
+            <h2 className='text-lg-semibold mb-[30px] text-white'>활동 내역</h2>
+            <ActivityCard
+              rating={userDetail.averageRating}
+              reviewCount={userDetail.reviewCount}
+              topCategoryId={userDetail.mostFavoriteCategory?.id ?? null}
+            />
+          </div>
+
+          <ProfileTabsSection
+            userId={uidNum}
+            mapReviewed={mapReviewed}
+            mapCreated={mapCreated}
+            mapFavorite={mapFavorite}
+          />
+        </div>
       </div>
-    </div>
+    </>
   );
 }

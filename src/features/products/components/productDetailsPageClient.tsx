@@ -192,8 +192,7 @@ export default function ProductDetailsPageClient({
               fetchNextPage={fetchNextPage}
               isLoading={isFetchingNextPage}
               itemHeightEstimate={itemHeightEstimate}
-              maxItems={500}
-              overscan={5}
+              overscan={10}
               loadingText='loading...'
               loadMoreText=''
             />

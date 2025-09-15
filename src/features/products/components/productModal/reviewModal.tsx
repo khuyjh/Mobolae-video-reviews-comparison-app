@@ -234,7 +234,7 @@ const ReviewModal = ({
       size='L'
       closeOnOutsideClick={false}
     >
-      <div className='flex flex-col px-5 pb-4 md:px-10 md:pb-10'>
+      <div className='flex min-w-[300px] flex-col px-5 pb-4 md:px-10 md:pb-10'>
         <div className='flex flex-col items-start'>
           <Chip {...categoryChipProps} />
           <h2 className='text-xl-semibold mt-2.5 text-white'>{productName}</h2>
@@ -284,7 +284,7 @@ const ReviewModal = ({
           }}
           previewUrls={[...existingImages.map((img) => img.url), ...previews.map((p) => p.url)]}
           maxImages={maxImages}
-          className='mt-2.5 w-[120px] max-w-none'
+          className='mt-2.5'
         />
 
         <p className='text-xs-medium mt-1.5 text-gray-400'>
