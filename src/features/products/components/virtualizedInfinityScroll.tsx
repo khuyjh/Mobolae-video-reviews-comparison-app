@@ -1,7 +1,7 @@
 /* 상세 페이지 무한스크롤 로직 분리 */
 
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 
 import LoadingText from '@/shared/components/loadingText';
 
@@ -12,7 +12,6 @@ interface VirtualizedInfinityScrollProps<T extends { id?: string | number }> {
   fetchNextPage: () => void;
   isLoading: boolean;
   itemHeightEstimate: number;
-  maxItems?: number;
   overscan?: number;
   loadingText?: string;
   loadMoreText?: string;
@@ -25,33 +24,26 @@ export function VirtualizedInfinityScroll<T extends { id?: string | number }>({
   fetchNextPage,
   isLoading,
   itemHeightEstimate,
-  maxItems = 1000,
-  overscan = 5,
+  overscan = 10,
   loadMoreText = '',
   loadingText = 'Loading...',
 }: VirtualizedInfinityScrollProps<T>) {
-  const [displayItems, setDisplayItems] = useState<T[]>([]);
+  const displayItems = items;
 
-  useEffect(() => {
-    if (items.length > maxItems) {
-      setDisplayItems(items.slice(items.length - maxItems));
-    } else {
-      setDisplayItems(items);
-    }
-  }, [items, maxItems]);
-
-  // 가상화 설정
+  /* 가상화 설정 */
   const rowVirtualizer = useWindowVirtualizer({
     count: hasNextPage ? displayItems.length + 1 : displayItems.length,
-    estimateSize: () => itemHeightEstimate,
-    overscan,
+    estimateSize: () => itemHeightEstimate, // 초기 추정치
+    overscan, // 화면 위/아래 추가로 유지할 DOM 범위
     getItemKey: (index) =>
       displayItems[index]?.id != null ? String(displayItems[index]!.id) : String(index),
+
+    /* 실제 DOM 높이를 자동 측정 */
+    measureElement: (el) => el.getBoundingClientRect().height,
   });
 
   const virtualItems = rowVirtualizer.getVirtualItems();
 
-  // 무한 스크롤 로직
   useEffect(() => {
     const lastItem = virtualItems[virtualItems.length - 1];
     if (!lastItem) return;
