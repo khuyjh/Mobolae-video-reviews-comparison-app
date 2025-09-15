@@ -105,7 +105,7 @@ export default function UserPage() {
   const handleFollowToggle = () => {
     isFollowing ? fm.unfollow() : fm.follow();
     isFollowing
-      ? toast.success(toastName + '남울 언팔로우 했습니다')
+      ? toast.success(toastName + '님을 언팔로우 했습니다')
       : toast.success(toastName + '님을 팔로우 했습니다');
   };
 
