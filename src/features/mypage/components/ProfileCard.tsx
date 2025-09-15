@@ -182,7 +182,7 @@ const FOLLOW_INFO_WRAPPER = 'mt-[30px] flex justify-between text-center';
 const FOLLOW_BOX_LEFT = ' border-r border-r-black-700';
 const FOLLOW_BOX = 'group w-[50%] inline-flex flex-col items-center text-center ';
 const FOLLOW_COUNT = 'text-base-semibold  text-white group-hover:!text-main transition-colors ';
-const FOLLOW_LABEL = 'text-md-regular  text-gray-400 group-hover:!text-main transition-colors';
+const FOLLOW_LABEL = 'text-md-regular  text-gray-400 ';
 
 const BUTTON_GROUP = 'mt-[30px] flex flex-col gap-[10px]';
 const BUTTON_BASE = 'text-base-semibold w-full rounded-[8px] py-[15px] transition cursor-pointer';
