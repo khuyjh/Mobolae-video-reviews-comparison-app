@@ -12,34 +12,18 @@ const nextConfig: NextConfig = {
     return config;
   },
   images: {
+    loader: 'custom',
+    loaderFile: './src/shared/lib/wsrvLoader.ts',
+
+    // Tailwind 브레이크포인트에 맞춘 반응형 이미지 크기
+    deviceSizes: [360, 768, 1280], // 모바일, 태블릿, PC
+    imageSizes: [16, 32, 64, 128, 256], // 아이콘/썸네일 등 소형 이미지
+
     remotePatterns: [
       {
         protocol: 'https',
         hostname: 'sprint-fe-project.s3.ap-northeast-2.amazonaws.com',
         pathname: '/**', // 경로 패턴, 모든 이미지 허용
-      },
-      //TODO: example api 연결 후 삭제 (테스트 전용)
-      {
-        protocol: 'https',
-        hostname: 'example.com',
-        pathname: '/**',
-      },
-      //TODO: 애도 임시 추가
-      {
-        protocol: 'https',
-        hostname: 'encrypted-tbn0.gstatic.com',
-      },
-      //TODO: 아래 도메인 api 연결 후 삭제 (목데이터 전용)
-      {
-        protocol: 'https',
-        hostname: 'picsum.photos',
-        pathname: '/**', // 목업 이미지 허용
-      },
-      // TODO: mockContent에 쓰이는 i.pravatar.cc 추가
-      {
-        protocol: 'https',
-        hostname: 'i.pravatar.cc',
-        pathname: '/**',
       },
     ],
   },
