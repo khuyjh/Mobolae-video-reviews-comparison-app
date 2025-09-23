@@ -4,10 +4,10 @@ import Link from 'next/link';
 
 import React from 'react';
 
-import { useFollowMutations } from '@/features/user/hooks/useFollowMutaion';
 import BaseModal from '@/shared/components/BaseModal';
 import ProfileBadge from '@/shared/components/card/avatarCard';
 import { TEAM_ID } from '@/shared/constants/constants';
+import { useUserStore } from '@/shared/stores/userStore';
 
 import { useListUserFollowers, useListUserFollowees } from '../../../../../openapi/queries/queries';
 
@@ -28,21 +28,13 @@ type UserLite = (FollowerRow['follower'] | FolloweeRow['followee']) & {
 
 type FollowModalProps = {
   userId: number;
-  meId?: number;
   nickname?: string;
   type: 'followers' | 'following' | null;
   isOpen: boolean;
   onClose: () => void;
 };
 
-export default function FollowModal({
-  userId,
-  meId,
-  nickname,
-  type,
-  isOpen,
-  onClose,
-}: FollowModalProps) {
+export default function FollowModal({ userId, nickname, type, isOpen, onClose }: FollowModalProps) {
   const isFollowers = type === 'followers';
   const isFollowees = type === 'following';
   const open = Boolean(isOpen && type);
@@ -102,9 +94,12 @@ export default function FollowModal({
 }
 
 function UserRow({ user }: { user: UserLite }) {
+  const meId = useUserStore((state) => state.user?.id);
+  const userId = user.id;
+  const getHref = (userId: number) => (meId && userId === meId ? '/mypage' : `/user/${userId}`);
   return (
     <div className='flex items-center justify-between py-2'>
-      <Link href={`/user/${user.id}`} className='min-w-0'>
+      <Link href={getHref(userId)} className='min-w-0'>
         <ProfileBadge
           variant='follower'
           id={user.id}
