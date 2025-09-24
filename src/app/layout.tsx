@@ -41,6 +41,7 @@ const pretendard = localFont({
   ],
   variable: '--font-nanumSquare',
   display: 'swap',
+  preload: false,
 });
 
 export const metadata: Metadata = {
