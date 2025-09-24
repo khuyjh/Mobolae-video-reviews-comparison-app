@@ -1,5 +1,7 @@
 import Image from 'next/image';
 
+import wsrvLoader from '@/shared/lib/wsrvLoader';
+
 interface ReviewDescriptionProps {
   reviewContent: string;
   Images?: string[];
@@ -28,9 +30,11 @@ const ReviewDescription = ({ reviewContent, Images }: ReviewDescriptionProps) =>
           {Images.map((imageSrc, index) => (
             <div key={imageSrc} className={IMAGE_WRAPPER_STYLE}>
               <Image
+                loader={wsrvLoader}
                 src={imageSrc}
                 alt={`리뷰에 첨부된 이미지 ${index + 1}`}
                 fill
+                sizes='(max-width: 640px) 150px, (max-width: 1024px) 200px, 250px'
                 className='rounded-md object-cover'
               />
             </div>
