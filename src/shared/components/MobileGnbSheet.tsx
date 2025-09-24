@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname, useSearchParams } from 'next/navigation';
 
 import clsx from 'clsx';
 import { MenuIcon } from 'lucide-react';
@@ -27,6 +28,11 @@ const LINK_STYLE =
  * - 비교할 컨텐츠가 두 개 준비되면 비교하기 버튼과 햄버거 버튼 ui 변화
  */
 const MobileGnbSheet = ({ isLoggedIn, isCompareReady }: GnbSheetProps) => {
+  const currentPath = usePathname();
+  const params = useSearchParams();
+  const redirectUrl = params.get('redirect_url') ? params.get('redirect_url') : currentPath;
+  const query = `?redirect_url=${redirectUrl}`;
+
   // 로그인 여부에 따라 메뉴 항목을 분기
   const items = isLoggedIn
     ? [
@@ -34,8 +40,8 @@ const MobileGnbSheet = ({ isLoggedIn, isCompareReady }: GnbSheetProps) => {
         { href: '/mypage', label: '마이페이지' },
       ]
     : [
-        { href: '/signin', label: '로그인' },
-        { href: '/signup', label: '회원가입' },
+        { href: `/signin${query}`, label: '로그인' },
+        { href: `/signup${query}`, label: '회원가입' },
       ];
 
   return (
