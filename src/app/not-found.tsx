@@ -18,6 +18,7 @@ const NotFoundPage = () => {
           width={300}
           height={300}
           className='h-auto w-full object-contain'
+          unoptimized
         />
       </div>
 
