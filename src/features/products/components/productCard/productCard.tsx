@@ -97,6 +97,7 @@ const ProductCard = ({
             fill
             className='object-cover'
             priority
+            fetchPriority='high'
             sizes='(max-width: 768px) 100vw, 256px'
             onError={() => setImgSrc(fallbackImg.src)}
           />
