@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 
-import { ComponentProps, useEffect, useState } from 'react';
+import React, { ComponentProps, useEffect, useState } from 'react';
 
 import profileFallbackImage from '../../../public/images/ProfileFallbackImg.png';
 import { cn } from '../lib/cn';
@@ -65,4 +65,4 @@ const SafeProfileImage = ({
   );
 };
 
-export default SafeProfileImage;
+export default React.memo(SafeProfileImage);
