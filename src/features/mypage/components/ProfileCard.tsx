@@ -8,25 +8,27 @@ import FollowModal from '@/features/mypage/components/ProfileModal/FollowModal';
 import Button from '@/shared/components/Button';
 import SafeProfileImage from '@/shared/components/SafeProfileImage';
 
+// 프로필 카드 컴포넌트 prop 타입 정의
 export type ProfileCardProps = {
   userId: number;
-  meId?: number;
+  meId?: number; // 로그인 사용자 id (없으면 비로그인 상태)
 
   name: string;
   avatarSrc?: string;
   bio?: string;
   followers?: number;
   following?: number;
-  isMe?: boolean;
-  isFollowing?: boolean;
+  isMe?: boolean; // 내 프로필 여부
+  isFollowing?: boolean; // 팔로잉 상태
 
-  actionDisabled?: boolean;
+  actionDisabled?: boolean; // 버튼 로딩/비활성 상태
 
   onEdit?: () => void;
   onLogout?: () => void;
-  onFollowToggle?: () => void;
+  onFollowToggle?: () => void; // 팔로우/언팔로우 토글 핸들러
 };
 
+// 프로필 카드 UI
 export default function ProfileCard({
   userId,
   meId,
@@ -42,12 +44,16 @@ export default function ProfileCard({
   onEdit,
   onLogout,
 }: ProfileCardProps) {
+  // 팔로워/팔로잉 모달 상태
   const [isFollowModalOpen, setIsFollowModalOpen] = useState(false);
   const [followModalType, setFollowModalType] = useState<'followers' | 'following' | null>(null);
   const hasFollowers = followers > 0;
   const hasFollowing = following > 0;
 
+  // 로그인 리다이렉트 모달 상태
   const [isRedirectOpen, setIsRedirectOpen] = useState(false);
+
+  // 팔로워/팔로잉 모달 열기
   const openModal = (type: 'followers' | 'following') => {
     if ((type === 'followers' && followers === 0) || (type === 'following' && following === 0))
       return;
@@ -55,6 +61,7 @@ export default function ProfileCard({
     setIsFollowModalOpen(true);
   };
 
+  // 키보드 접근성: Enter/Space로 모달 열기
   const onKeyOpen: React.KeyboardEventHandler<HTMLDivElement> = (e) => {
     if (e.key === 'Enter' || e.key === ' ') {
       const target = (e.currentTarget.dataset.type as 'followers' | 'following')!;
@@ -62,8 +69,10 @@ export default function ProfileCard({
     }
   };
 
+  // 팔로우 버튼 클릭 시 처리
   const handleFollowClick = () => {
     if (!meId) {
+      // 로그인 안 되어 있으면 리다이렉트 모달
       setIsRedirectOpen(true);
       return;
     }
@@ -72,6 +81,7 @@ export default function ProfileCard({
 
   return (
     <div className={CARD_CONTAINER}>
+      {/* 프로필 이미지 */}
       <SafeProfileImage
         wrapperClassName={IMG_WRAPPER}
         imgClassName={IMG_STYLE}
@@ -81,12 +91,15 @@ export default function ProfileCard({
         height={120}
       />
 
+      {/* 닉네임 / 소개글 */}
       <div className={PROFILE_TEXT_WRAPPER}>
         <h3 className='text-xl-semibold text-white'>{name || '-'}</h3>
         <p className='text-md-regular mt-[10px] text-left text-gray-600'>{bio}</p>
       </div>
 
+      {/* 팔로워/팔로잉 숫자 + 클릭 영역 */}
       <div className={FOLLOW_INFO_WRAPPER}>
+        {/* 팔로워 */}
         <div
           className={clsx(FOLLOW_BOX, FOLLOW_BOX_LEFT)}
           role='button'
@@ -105,6 +118,8 @@ export default function ProfileCard({
             팔로워
           </span>
         </div>
+
+        {/* 팔로잉 */}
         <div
           className={FOLLOW_BOX}
           role='button'
@@ -125,6 +140,7 @@ export default function ProfileCard({
         </div>
       </div>
 
+      {/* 버튼 그룹: 내 프로필이면 편집/로그아웃, 아니면 팔로우 */}
       <div className={BUTTON_GROUP}>
         {isMe ? (
           <>
@@ -143,7 +159,7 @@ export default function ProfileCard({
             aria-label={`${name ?? '-'}을(를) ${isFollowing ? '언팔로우' : '팔로우'}하기`}
             variant={isFollowing ? 'tertiary' : 'primary'}
             className={clsx(
-              'block !w-full max-w-none', // 100% 강제
+              'block !w-full max-w-none', // 100% 폭
               'disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-60',
               'disabled:hover:!border-gray-700 disabled:hover:!bg-transparent disabled:hover:!text-gray-500 disabled:hover:!brightness-100',
             )}
@@ -153,10 +169,10 @@ export default function ProfileCard({
         )}
       </div>
 
+      {/* 팔로워/팔로잉 모달 */}
       {isFollowModalOpen && followModalType && (
         <FollowModal
           userId={userId}
-          meId={meId}
           type={followModalType}
           nickname={name}
           isOpen={isFollowModalOpen}
@@ -164,17 +180,19 @@ export default function ProfileCard({
         />
       )}
 
+      {/* 로그인 유도 모달 */}
       <RedirectModal isOpen={isRedirectOpen} onClose={() => setIsRedirectOpen(false)} />
     </div>
   );
 }
 
+/* 스타일 상수 모음 */
 const IMG_WRAPPER =
   'mx-auto h-[120px] w-[120px] xl:w-[180px] xl:h-[180px] overflow-hidden rounded-full';
 const IMG_STYLE = 'h-full w-full object-cover';
 
 const CARD_CONTAINER =
-  'bg-black-800 border border-black-700 w-full md:w-[509px] mx-auto xl:w-[340px] rounded-[12px] px-[30px] py-[20px] md:py-[30px] xl:py-[20px] xl:pt-[40px] xl:pb-[30px]'; // ← 오타 수정
+  'bg-black-800 border border-black-700 w-full md:w-[509px] mx-auto xl:w-[340px] rounded-[12px] px-[30px] py-[20px] md:py-[30px] xl:py-[20px] xl:pt-[40px] xl:pb-[30px]';
 
 const PROFILE_TEXT_WRAPPER = 'mt-[30px] flex flex-col items-center gap-[10px] text-center';
 
