@@ -29,6 +29,7 @@ import {
 /* ───────── 상수 / 타입 ───────── */
 
 type CategoryOption = { name: string; value: number };
+const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
 /** Dropdown mixed value → number 로 변환 */
 const toNumber = (value: unknown): number => {
@@ -125,6 +126,11 @@ const AddContentModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
       return;
     }
 
+    // 파일 크기 검증
+    if (file.size > MAX_FILE_SIZE) {
+      toast.error('파일 크기는 5MB 이하여야 합니다.');
+      return;
+    }
     setValue('images', [file], {
       shouldDirty: true,
       shouldTouch: true,
