@@ -23,6 +23,60 @@ type ReviewerRankingListProps = {
   direction?: Direction; // 기본값: 'row'
 };
 
+type ReviewerRankingSubListProps = {
+  reviewers: Reviewer[];
+  getHref: (userId: number) => string;
+  rankingMap: Map<number, number>;
+};
+
+const ReviewerRankingRowList = ({
+  reviewers,
+  getHref,
+  rankingMap,
+}: ReviewerRankingSubListProps) => (
+  <ul className='flex w-full flex-nowrap gap-5 overflow-x-auto scroll-smooth [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'>
+    {reviewers.map((r) => (
+      <li key={r.userId} className='min-w-[147px] shrink-0 list-none'>
+        <Link href={getHref(r.userId)} draggable={false}>
+          <ProfileBadge
+            variant='ranking'
+            id={r.userId}
+            name={r.name}
+            avatarSrc={r.profileImageUrl}
+            followers={r.followers ?? 0}
+            review={r.review ?? 0}
+            rankingMap={rankingMap}
+          />
+        </Link>
+      </li>
+    ))}
+  </ul>
+);
+
+const ReviewerRankingColList = ({
+  reviewers,
+  getHref,
+  rankingMap,
+}: ReviewerRankingSubListProps) => (
+  <ul className='space-y-[30px]'>
+    {reviewers.map((r) => (
+      <li key={r.userId} className='list-none'>
+        <Link href={getHref(r.userId)} draggable={false}>
+          <ProfileBadge
+            variant='ranking'
+            id={r.userId}
+            name={r.name}
+            avatarSrc={r.profileImageUrl}
+            followers={r.followers ?? 0}
+            review={r.review ?? 0}
+            rankingMap={rankingMap}
+          />
+        </Link>
+      </li>
+    ))}
+  </ul>
+);
+
 /**
  * ReviewerRankingList
  * - reviewers 정렬 후 상위 5명만 표시
@@ -36,47 +90,10 @@ const ReviewerRankingList = ({ reviewers, direction = 'row' }: ReviewerRankingLi
   const rankingMap = useMemo(() => new Map(top.map((r, i) => [r.userId, i + 1])), [top]);
   const getHref = (userId: number) => (meId && userId === meId ? '/mypage' : `/user/${userId}`);
 
-  if (direction === 'row') {
-    return (
-      <ul className='flex w-full flex-nowrap gap-5 overflow-x-auto scroll-smooth [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'>
-        {top.map((r) => (
-          <li key={r.userId} className='min-w-[147px] shrink-0 list-none'>
-            <Link href={getHref(r.userId)} draggable={false}>
-              <ProfileBadge
-                variant='ranking'
-                id={r.userId}
-                name={r.name}
-                avatarSrc={r.profileImageUrl}
-                followers={r.followers ?? 0}
-                review={r.review ?? 0}
-                rankingMap={rankingMap}
-              />
-            </Link>
-          </li>
-        ))}
-      </ul>
-    );
-  }
-
-  // 세로 모드(col)
-  return (
-    <ul className='space-y-[30px]'>
-      {top.map((r) => (
-        <li key={r.userId} className='list-none'>
-          <Link href={getHref(r.userId)} draggable={false}>
-            <ProfileBadge
-              variant='ranking'
-              id={r.userId}
-              name={r.name}
-              avatarSrc={r.profileImageUrl}
-              followers={r.followers ?? 0}
-              review={r.review ?? 0}
-              rankingMap={rankingMap}
-            />
-          </Link>
-        </li>
-      ))}
-    </ul>
+  return direction === 'row' ? (
+    <ReviewerRankingRowList reviewers={top} getHref={getHref} rankingMap={rankingMap} />
+  ) : (
+    <ReviewerRankingColList reviewers={top} getHref={getHref} rankingMap={rankingMap} />
   );
 };
 
