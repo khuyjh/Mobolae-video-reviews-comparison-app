@@ -31,13 +31,9 @@ const CategorySidebar = () => {
               active ? null : Number(category.id),
             );
             return (
-              <CategoryItem
-                key={category.id}
-                category={category}
-                isSelected={active}
-                href={href}
-                className='mb-2 last:mb-0'
-              />
+              <li key={category.id} className='mb-2 last:mb-0'>
+                <CategoryItem category={category} isSelected={active} href={href} />
+              </li>
             );
           })}
         </ArrowList>
