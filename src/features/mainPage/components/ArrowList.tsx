@@ -83,7 +83,7 @@ const ArrowList = ({ children }: ArrowListProps) => {
   });
 
   return (
-    <ul role='list' tabIndex={-1} onKeyDown={handleKeyDown} className='outline-none'>
+    <ul tabIndex={-1} onKeyDown={handleKeyDown} className='outline-none'>
       {enhancedChildren}
     </ul>
   );
