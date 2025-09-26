@@ -38,18 +38,32 @@ const ReviewerRankingList = ({ reviewers, direction = 'row' }: ReviewerRankingLi
 
   if (direction === 'row') {
     return (
-      <div
-        role='list'
-        className='flex w-full flex-nowrap gap-5 overflow-x-auto scroll-smooth [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'
-      >
+      <ul className='flex w-full flex-nowrap gap-5 overflow-x-auto scroll-smooth [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'>
         {top.map((r) => (
-          <Link
-            key={r.userId}
-            href={getHref(r.userId)}
-            role='listitem'
-            className='min-w-[147px] flex-none shrink-0'
-            draggable={false}
-          >
+          <li key={r.userId} className='min-w-[147px] shrink-0 list-none'>
+            <Link href={getHref(r.userId)} draggable={false}>
+              <ProfileBadge
+                variant='ranking'
+                id={r.userId}
+                name={r.name}
+                avatarSrc={r.profileImageUrl}
+                followers={r.followers ?? 0}
+                review={r.review ?? 0}
+                rankingMap={rankingMap}
+              />
+            </Link>
+          </li>
+        ))}
+      </ul>
+    );
+  }
+
+  // 세로 모드(col)
+  return (
+    <ul className='space-y-[30px]'>
+      {top.map((r) => (
+        <li key={r.userId} className='list-none'>
+          <Link href={getHref(r.userId)} draggable={false}>
             <ProfileBadge
               variant='ranking'
               id={r.userId}
@@ -60,34 +74,9 @@ const ReviewerRankingList = ({ reviewers, direction = 'row' }: ReviewerRankingLi
               rankingMap={rankingMap}
             />
           </Link>
-        ))}
-      </div>
-    );
-  }
-
-  // 세로 모드(col)
-  return (
-    <div role='list' className='space-y-[30px]'>
-      {top.map((r) => (
-        <Link
-          key={r.userId}
-          href={getHref(r.userId)}
-          role='listitem'
-          className='block'
-          draggable={false}
-        >
-          <ProfileBadge
-            variant='ranking'
-            id={r.userId}
-            name={r.name}
-            avatarSrc={r.profileImageUrl}
-            followers={r.followers ?? 0}
-            review={r.review ?? 0}
-            rankingMap={rankingMap}
-          />
-        </Link>
+        </li>
       ))}
-    </div>
+    </ul>
   );
 };
 
