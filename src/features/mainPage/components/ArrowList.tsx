@@ -30,7 +30,7 @@ const ArrowList = ({ children }: ArrowListProps) => {
     itemRefs.current = itemRefs.current.slice(0, childrenArray.length);
   }, [childrenArray.length]);
 
-  const handleKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLUListElement>) => {
     const { key } = e;
     if (key !== 'ArrowDown' && key !== 'ArrowUp') return;
 
@@ -83,9 +83,9 @@ const ArrowList = ({ children }: ArrowListProps) => {
   });
 
   return (
-    <div role='listbox' tabIndex={-1} onKeyDown={handleKeyDown} className='outline-none'>
+    <ul role='list' tabIndex={-1} onKeyDown={handleKeyDown} className='outline-none'>
       {enhancedChildren}
-    </div>
+    </ul>
   );
 };
 
