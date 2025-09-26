@@ -11,5 +11,11 @@ type LoaderProps = {
  */
 export default function wsrvLoader({ src, width, quality }: LoaderProps): string {
   const q = quality || 75;
+
+  // 로컬 public 폴더 이미지 → wsrv.nl 안 거치고 그대로 사용
+  if (src.startsWith('/')) {
+    return src;
+  }
+
   return `https://wsrv.nl/?url=${encodeURIComponent(src)}&w=${width}&q=${q}&output=webp`;
 }
