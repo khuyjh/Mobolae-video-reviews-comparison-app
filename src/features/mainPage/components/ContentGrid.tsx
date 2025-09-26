@@ -28,9 +28,9 @@ const ContentGrid = ({ items }: ContentGridProps) => {
 
   return (
     <ul className='grid grid-cols-2 gap-4 xl:grid-cols-3'>
-      {items.map((item) => (
+      {items.map((item, index) => (
         <li key={item.contentId}>
-          <HomeItemCard {...item} />
+          <HomeItemCard {...item} isCritical={index < 3} />
         </li>
       ))}
     </ul>

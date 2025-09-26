@@ -55,16 +55,16 @@ const VirtualizedContentGrid = ({
       fetchNextPage={fetchNextPage}
       isLoading={isLoading}
       itemHeightEstimate={itemHeightEstimate + rowGap}
-      renderItem={(rowItems, _rowIndex) => (
+      renderItem={(rowItems, rowIndex) => (
         <div className='w-full'>
           {/* 열 단위 그리드, cols 값에 맞게 반복 */}
           <div
             className='grid gap-4'
             style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
           >
-            {rowItems.map((item) => (
+            {rowItems.map((item, colIndex) => (
               <div key={item.contentId}>
-                <HomeItemCard {...item} />
+                <HomeItemCard {...item} isCritical={rowIndex === 0 && colIndex < 3} />
               </div>
             ))}
           </div>
