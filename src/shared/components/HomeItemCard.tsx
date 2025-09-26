@@ -25,6 +25,7 @@ interface HomeItemCardProps {
   rating: number;
   contentId: number;
   className?: string;
+  isCritical?: boolean;
 }
 
 // 카드 내부 스타일 정리
@@ -35,6 +36,10 @@ const REVIEW_FAVORITE_TEXT_STYLE =
 const STAR_CONTAINER_STYLE =
   'order-last flex shrink-0 basis-full items-center gap-1 md:order-none md:ml-auto md:basis-auto';
 
+// 시안 기준 카드 폭: PC 300px, Tablet 247px, Mobile 160px
+// grid 간격과 컨테이너 패딩을 고려해 break-point별 고정 크기로 힌트를 준다.
+const CARD_IMAGE_SIZES = '(min-width:1280px) 300px, (min-width:768px) 247px, 160px';
+
 const HomeItemCard = ({
   title,
   contentImage,
@@ -43,6 +48,7 @@ const HomeItemCard = ({
   rating,
   contentId,
   className,
+  isCritical,
 }: HomeItemCardProps) => {
   return (
     // 가장 바깥 컨테이너 - 고정값 제거, w-full로 변경, className props 추가
@@ -51,7 +57,17 @@ const HomeItemCard = ({
       <div className='flex w-full flex-col gap-[10px]'>
         {/* 이미지 컨테이너 - api 이미지 비율이 다를 경우 깨질 수 있어 고정 값 대신 해당 사항 적용 + 최소 너비 min-w 추가 이미지에 rounded-lg 적용 */}
         <div className='relative aspect-[14/9] w-full min-w-[140px] overflow-hidden rounded-lg'>
-          <SafeImage src={contentImage} alt={title} fill className='object-cover' />
+          <SafeImage
+            src={contentImage}
+            alt={title}
+            fill
+            fetchPriority={isCritical ? 'high' : 'auto'}
+            priority={isCritical}
+            loading={isCritical ? 'eager' : 'lazy'}
+            sizes={CARD_IMAGE_SIZES}
+            showSkeleton={!isCritical}
+            className='object-cover'
+          />
         </div>
         {/* 제목 및 값 섹션 */}
         <div className='w-full'>
