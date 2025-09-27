@@ -5,7 +5,6 @@ import dynamic from 'next/dynamic';
 import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 
-//import RedirectModal from '@/features/auth/components/RedirectModal';
 import DeleteConfirmModal from '@/shared/components/deleteConfirmModal';
 import { TEAM_ID } from '@/shared/constants/constants';
 import { useUserStore } from '@/shared/stores/userStore';
@@ -14,7 +13,6 @@ import ReviewDescription from './reviewDescription';
 import ReviewMeta from './reviewMeta';
 import ReviewUser from './reviewUser';
 import { useDeleteReview, useLikeReview, useUnlikeReview } from '../../../../../openapi/queries';
-//import ReviewModal from '../productModal/reviewModal';
 
 import type { Review } from '../../../../../openapi/requests';
 
