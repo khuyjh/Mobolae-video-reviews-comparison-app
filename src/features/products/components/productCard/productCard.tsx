@@ -7,6 +7,7 @@ import React, { useState } from 'react';
 import RedirectModal from '@/features/auth/components/RedirectModal';
 import { CompareCandidate } from '@/features/compare/types/compareTypes';
 import CompareModal, { CompareModalType } from '@/features/products/components/productModal';
+import wsrvLoader from '@/shared/lib/wsrvLoader';
 import { useUserStore } from '@/shared/stores/userStore';
 import { handleCompareClick } from '@/shared/utils/compareModalUtils';
 
@@ -90,11 +91,13 @@ const ProductCard = ({
         {/* 이미지 섹션 */}
         <div className={IMAGE_CONTAINER_STYLES}>
           <Image
+            loader={wsrvLoader}
             src={imgSrc}
             alt={title}
             fill
             className='object-cover'
             priority
+            sizes='(max-width: 768px) 100vw, 256px'
             onError={() => setImgSrc(fallbackImg.src)}
           />
         </div>

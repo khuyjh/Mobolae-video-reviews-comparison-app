@@ -49,6 +49,7 @@ const CategoryItem = ({
 }: CategoryItemProps) => (
   <Link
     href={href}
+    aria-label={category.name}
     replace
     className={`${BASE_STYLE} ${
       isSelected ? VARIANT_STYLE.selected : VARIANT_STYLE.default

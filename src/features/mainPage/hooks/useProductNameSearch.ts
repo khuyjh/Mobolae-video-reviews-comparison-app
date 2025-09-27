@@ -50,13 +50,14 @@ export function useProductNameSearch(teamId: string | undefined, keyword: string
   const enabled = Boolean(teamId && kw.length >= 1);
 
   return useQuery<string[]>({
-    queryKey: ['product-names', teamId ?? 'NA', kw, limit],
+    queryKey: ['product-names', teamId ?? 'NA', kw],
     enabled,
     queryFn: async ({ signal }) => {
       // 반환 타입을 unknown으로 두고 타입 좁히기
       const raw: unknown = await listProduct({
         path: { teamId: teamId! },
-        query: { keyword: kw || undefined, limit },
+        // 서버에는 limit 전달하지 않음 → 캐시 중복 방지
+        query: { keyword: kw || undefined },
         signal,
       });
 
@@ -69,9 +70,9 @@ export function useProductNameSearch(teamId: string | undefined, keyword: string
         return [];
       }
 
-      const names = unwrapped.list.map((item) => item.name).filter((v): v is string => Boolean(v));
+      const names = unwrapped.list.map((item) => item.name).filter(Boolean);
 
-      // 중복 제거 + 상한 적용
+      // 중복 제거 + 상한 적용 (클라이언트에서만 limit 처리)
       return Array.from(new Set(names)).slice(0, limit);
     },
     placeholderData: (previous) => previous,
