@@ -1,8 +1,9 @@
 'use client';
 
 import { useQueryClient } from '@tanstack/react-query';
+import { toast } from 'react-toastify';
 
-import { TEAM_ID, PATH_OPTION } from '@/shared/constants/constants';
+import { PATH_OPTION } from '@/shared/constants/constants';
 
 import { useFollow, useUnfollow } from '../../../..//openapi/queries/queries';
 import * as Common from '../../../../openapi/queries/common';
@@ -15,8 +16,14 @@ import type {
   UnfollowMutationResult, // 언팔로우 요청 결과 타입
 } from '../../../..//openapi/queries/common';
 
+type Snapshot = {
+  prevUserDetail?: UserDetailDefaultResponse;
+  prevFollowers?: ListUserFollowersDefaultResponse;
+  prevFollowees?: ListUserFolloweesDefaultResponse;
+};
+
 // targetUserId: 프로필 주인 / meUserId: 로그인 사용자(선택)
-export function useFollowMutations(targetUserId: number, meUserId?: number) {
+export function useFollowMutations(targetUserId: number, meUserId?: number, toastLabel?: string) {
   const queriesClient = useQueryClient(); // react-query 캐시 클라이언트
   const followMut = useFollow<FollowMutationResult>(); // 팔로우 API 호출용 훅
   const unfollowMut = useUnfollow<UnfollowMutationResult>(); // 언팔로우 API 호출용 훅
@@ -89,9 +96,26 @@ export function useFollowMutations(targetUserId: number, meUserId?: number) {
       });
     }
   };
+  const getSnapshots = () => {
+    const prevUserDetail = queriesClient.getQueryData<UserDetailDefaultResponse>(userDetailKey);
+    const prevFollowers =
+      queriesClient.getQueryData<ListUserFollowersDefaultResponse>(followersKey);
+    const prevFollowees = myFolloweesKey
+      ? queriesClient.getQueryData<ListUserFolloweesDefaultResponse>(myFolloweesKey)
+      : undefined;
+
+    return { prevUserDetail, prevFollowers, prevFollowees } satisfies Snapshot;
+  };
+  const rollback = (snap: Snapshot) => {
+    if (snap.prevUserDetail) queriesClient.setQueryData(userDetailKey, snap.prevUserDetail);
+    if (snap.prevFollowers) queriesClient.setQueryData(followersKey, snap.prevFollowers);
+    if (myFolloweesKey && snap.prevFollowees)
+      queriesClient.setQueryData(myFolloweesKey, snap.prevFollowees);
+  };
 
   /** 팔로우 실행 */
   const follow = () => {
+    const snap = getSnapshots();
     // 상세 즉시 반영(+1)
     queriesClient.setQueryData<UserDetailDefaultResponse>(userDetailKey, (prev) => {
       if (!prev) return prev;
@@ -111,7 +135,15 @@ export function useFollowMutations(targetUserId: number, meUserId?: number) {
         body: { userId: targetUserId },
       },
       {
-        // 서버 카운트 동기화는 invalidate로 처리 (any 회피)
+        onSuccess: () => {
+          toast.success(toastLabel ? `${toastLabel}님을 팔로우했습니다` : '팔로우했습니다');
+        },
+        onError: () => {
+          rollback(snap);
+          toast.error(
+            toastLabel ? `${toastLabel}님 팔로우에 실패했습니다` : '팔로우에 실패했습니다',
+          );
+        },
         onSettled: () => void refetchAll(),
       },
     );
@@ -119,6 +151,7 @@ export function useFollowMutations(targetUserId: number, meUserId?: number) {
 
   /** 언팔로우 실행 */
   const unfollow = () => {
+    const snap = getSnapshots();
     // 상세 즉시 반영(-1)
     queriesClient.setQueryData<UserDetailDefaultResponse>(userDetailKey, (prev) => {
       if (!prev) return prev;
@@ -138,6 +171,15 @@ export function useFollowMutations(targetUserId: number, meUserId?: number) {
         body: { userId: targetUserId },
       },
       {
+        onSuccess: () => {
+          toast.success(toastLabel ? `${toastLabel}님을 언팔로우했습니다` : '언팔로우했습니다');
+        },
+        onError: () => {
+          rollback(snap);
+          toast.error(
+            toastLabel ? `${toastLabel}님 언팔로우에 실패했습니다` : '언팔로우에 실패했습니다',
+          );
+        },
         onSettled: () => void refetchAll(),
       },
     );
