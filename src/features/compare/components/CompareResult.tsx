@@ -1,6 +1,5 @@
 // 비교 결과 테이블, 비교 결과 문구 담는 컨테이너 컴포넌트
-// 역할: CompareResultTable, CompareResultSummary 포함,
-// api 가져오기
+// 역할: CompareResultTable, CompareResultSummary 포함, api 가져오기
 'use client';
 
 import { keepPreviousData } from '@tanstack/react-query';
@@ -16,11 +15,11 @@ import {
   selectRequested,
   selectRequestTick,
   selectCanCompare,
-} from '@/shared/stores/useCompareStoreSelectors'; // 표준 셀렉터 적용
+} from '@/shared/stores/useCompareStoreSelectors';
 
 import CompareResultSummary from './CompareResultSummary';
 import CompareResultTable from './CompareResultTable';
-import { useRetrieveProduct } from '../../../../openapi/queries'; // 코드젠으로 생성된 API 훅
+import { useRetrieveProduct } from '../../../../openapi/queries';
 import compareCalc from '../lib/compareCalc';
 import {
   METRIC_CONFIG,
@@ -30,8 +29,7 @@ import {
   decideWinner,
 } from '../types/compareTypes';
 
-import type { RetrieveProductDefaultResponse } from '../../../../openapi/queries/common'; //코드젠이 생성한 "원본 응답" 타입
-
+import type { RetrieveProductDefaultResponse } from '../../../../openapi/queries/common';
 /** ===============================================
  * 타입 정리
  * =============================================== */
