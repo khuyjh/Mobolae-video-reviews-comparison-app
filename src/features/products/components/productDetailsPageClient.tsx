@@ -115,8 +115,6 @@ export default function ProductDetailsPageClient({
 
   return (
     <main className={MAIN_LAYOUT}>
-      <Script src='https://developers.kakao.com/sdk/js/kakao.js' strategy='afterInteractive' />
-
       <div className='flex flex-col gap-[60px] xl:gap-[80px]'>
         {/* 상세 섹션 */}
         <ProductCard
