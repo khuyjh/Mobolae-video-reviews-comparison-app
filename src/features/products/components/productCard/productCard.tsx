@@ -1,12 +1,12 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import Image from 'next/image';
 
 import React, { useState } from 'react';
 
 import RedirectModal from '@/features/auth/components/RedirectModal';
 import { CompareCandidate } from '@/features/compare/types/compareTypes';
-import CompareModal, { CompareModalType } from '@/features/products/components/productModal';
 import wsrvLoader from '@/shared/lib/wsrvLoader';
 import { useUserStore } from '@/shared/stores/userStore';
 import { handleCompareClick } from '@/shared/utils/compareModalUtils';
@@ -15,8 +15,14 @@ import ProductButtons from './productButtons';
 import ProductDescription from './productDescription';
 import ProductHeader from './productHeader';
 import fallbackImg from '../../../../../public/images/FallbackImg.png';
-import EditDeleteModal from '../productModal/editDeleteModal';
-import ReviewModal from '../productModal/reviewModal';
+
+/* 모달 dynamic import + ssr: false 처리 */
+const ReviewModal = dynamic(() => import('../productModal/reviewModal'), { ssr: false });
+const EditDeleteModal = dynamic(() => import('../productModal/editDeleteModal'), { ssr: false });
+const CompareModal = dynamic(() => import('@/features/products/components/productModal'), {
+  ssr: false,
+});
+import type { CompareModalType } from '@/features/products/components/productModal';
 
 interface ProductCardProps {
   imageSrc: string;
@@ -97,6 +103,7 @@ const ProductCard = ({
             fill
             className='object-cover'
             priority
+            fetchPriority='high'
             sizes='(max-width: 768px) 100vw, 256px'
             onError={() => setImgSrc(fallbackImg.src)}
           />
