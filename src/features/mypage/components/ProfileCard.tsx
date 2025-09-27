@@ -11,8 +11,7 @@ import SafeProfileImage from '@/shared/components/SafeProfileImage';
 // 프로필 카드 컴포넌트 prop 타입 정의
 export type ProfileCardProps = {
   userId: number;
-  meId?: number; // 로그인 사용자 id (없으면 비로그인 상태)
-
+  isLoggedIn?: boolean;
   name: string;
   avatarSrc?: string;
   bio?: string;
@@ -31,8 +30,8 @@ export type ProfileCardProps = {
 // 프로필 카드 UI
 export default function ProfileCard({
   userId,
-  meId,
   name,
+  isLoggedIn = false,
   avatarSrc = '',
   bio,
   followers = 0,
@@ -71,7 +70,7 @@ export default function ProfileCard({
 
   // 팔로우 버튼 클릭 시 처리
   const handleFollowClick = () => {
-    if (!meId) {
+    if (!isLoggedIn) {
       // 로그인 안 되어 있으면 리다이렉트 모달
       setIsRedirectOpen(true);
       return;

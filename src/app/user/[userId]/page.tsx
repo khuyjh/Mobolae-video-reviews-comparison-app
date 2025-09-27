@@ -41,44 +41,12 @@ type ReviewedItem = NonNullable<ReviewedResp>['list'][number];
 type CreatedItem = NonNullable<CreatedResp>['list'][number];
 type FavoriteItem = NonNullable<FavoriteResp>['list'][number];
 
-// 제품 관련 공통 타입
-type ProductLike = {
-  id: number;
-  name?: string;
-  title?: string;
-  image?: string | null;
-  favoriteCount?: number;
-  reviewCount?: number;
-  averageRating?: number;
-  rating?: number;
-};
-
-// 안전한 객체 접근 유틸
-const asRecord = (x: unknown): Record<string, unknown> | null =>
-  x && typeof x === 'object' ? (x as Record<string, unknown>) : null;
-
-const getProp = <T,>(obj: unknown, key: string): T | undefined => {
-  const r = asRecord(obj);
-  return r && key in r ? (r[key] as T) : undefined;
-};
-
-// 제품 데이터 변환
-const getProductLike = (x: unknown): ProductLike | undefined => {
-  const maybeProduct = getProp<unknown>(x, 'product');
-  const base = maybeProduct ?? x;
-  const r = asRecord(base);
-  if (r && 'id' in r && typeof r.id === 'number') {
-    return r as unknown as ProductLike;
-  }
-  return undefined;
-};
-
 // 아이템 매핑 함수들
-const mapReviewed = (it: ReviewedItem): ContentItem =>
-  mapToContentItem(it, { preferSelfRating: true });
+const mapReviewed = (item: ReviewedItem): ContentItem =>
+  mapToContentItem(item, { preferSelfRating: true });
 
-const mapCreated = (it: CreatedItem): ContentItem => mapToContentItem(it);
-const mapFavorite = (it: FavoriteItem): ContentItem => mapToContentItem(it);
+const mapCreated = (item: CreatedItem): ContentItem => mapToContentItem(item);
+const mapFavorite = (item: FavoriteItem): ContentItem => mapToContentItem(item);
 
 export default function UserPage() {
   // URL 파라미터에서 userId 추출
@@ -89,6 +57,7 @@ export default function UserPage() {
   // 로그인 사용자 정보
   const { isLoggedIn, user } = useUserStore();
   const meId = user?.id;
+  const isMe = !!meId && meId === uidNum;
 
   // 유저 상세 API 호출
   const { data: userDetail, isLoading: isUserLoading } = useUserDetail(
@@ -122,13 +91,13 @@ export default function UserPage() {
       <div className='mb-[60px] xl:mr-[60px]'>
         <ProfileCard
           userId={uidNum}
-          meId={meId}
+          isLoggedIn={isLoggedIn}
+          isMe={isMe}
           name={card.name}
           avatarSrc={card.avatarSrc}
           bio={card.bio}
           followers={card.followers}
           following={card.following}
-          isMe={false}
           isFollowing={isFollowing}
           actionDisabled={followBtnDisabled}
           onFollowToggle={handleFollowToggle}
