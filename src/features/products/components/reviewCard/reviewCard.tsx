@@ -1,9 +1,11 @@
 'use client';
 
+import dynamic from 'next/dynamic';
+
 import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 
-import RedirectModal from '@/features/auth/components/RedirectModal';
+//import RedirectModal from '@/features/auth/components/RedirectModal';
 import DeleteConfirmModal from '@/shared/components/deleteConfirmModal';
 import { TEAM_ID } from '@/shared/constants/constants';
 import { useUserStore } from '@/shared/stores/userStore';
@@ -12,9 +14,19 @@ import ReviewDescription from './reviewDescription';
 import ReviewMeta from './reviewMeta';
 import ReviewUser from './reviewUser';
 import { useDeleteReview, useLikeReview, useUnlikeReview } from '../../../../../openapi/queries';
-import ReviewModal from '../productModal/reviewModal';
+//import ReviewModal from '../productModal/reviewModal';
 
 import type { Review } from '../../../../../openapi/requests';
+
+const ReviewModal = dynamic(() => import('../productModal/reviewModal'), {
+  loading: () => null,
+  ssr: false,
+});
+
+const RedirectModal = dynamic(() => import('@/features/auth/components/RedirectModal'), {
+  loading: () => null,
+  ssr: false,
+});
 
 interface ReviewCardProps {
   review: Review;
@@ -52,13 +64,8 @@ const ReviewCard = ({ review, onLikeClick, productName, productCategory }: Revie
     const prevCount = localLikeCount;
 
     /* 즉시 반영 */
-    if (localIsLiked) {
-      setLocalIsLiked(false);
-      setLocalLikeCount((c) => Math.max(0, c - 1));
-    } else {
-      setLocalIsLiked(true);
-      setLocalLikeCount((c) => c + 1);
-    }
+    setLocalIsLiked(!localIsLiked);
+    setLocalLikeCount(localIsLiked ? Math.max(0, localLikeCount - 1) : localLikeCount + 1);
 
     try {
       if (prevIsLiked) {
