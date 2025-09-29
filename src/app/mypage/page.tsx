@@ -1,14 +1,12 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 
 import React, { useState } from 'react';
-import { toast } from 'react-toastify';
 
 import ActivityCard from '@/features/mypage/components/activityCard';
 import ProfileCard from '@/features/mypage/components/ProfileCard';
-import ProfileTabsSection from '@/features/mypage/components/ProfileTabsSection';
-import ProfileUpdateModal from '@/features/mypage/components/ProfileUpdateModal';
 import { PATH_OPTION } from '@/shared/constants/constants';
 import { useUserStore } from '@/shared/stores/userStore';
 import { mapToContentItem } from '@/shared/utils/mapToContentItem';
@@ -24,6 +22,26 @@ import type {
 } from '../../../openapi/queries/common';
 import type { ContentItem } from '@/shared/types/content';
 
+const ProfileUpdateModal = dynamic(
+  () => import('@/features/mypage/components/ProfileUpdateModal'),
+  {
+    ssr: false,
+    loading: () => null,
+  },
+);
+const ProfileTabsSection = dynamic(
+  () => import('@/features/mypage/components/ProfileTabsSection'),
+  {
+    ssr: false,
+    loading: () => null,
+  },
+);
+
+// toast는 필요한 순간에만 로딩
+async function notifySuccess(msg: string) {
+  const { toast } = await import('react-toastify');
+  toast.success(msg);
+}
 const toSrc = (url?: string | null): string =>
   url && url.trim() !== '' ? url : '/images/ProfileFallbackImg.png';
 
@@ -40,34 +58,6 @@ const mapMeToCard = (meDetail?: MeDefaultResponse) => ({
 type ReviewedItem = NonNullable<ReviewedResp>['list'][number];
 type CreatedItem = NonNullable<CreatedResp>['list'][number];
 type FavoriteItem = NonNullable<FavoriteResp>['list'][number];
-
-type ProductLike = {
-  id: number;
-  name?: string;
-  title?: string;
-  image?: string | null;
-  favoriteCount?: number;
-  reviewCount?: number;
-  averageRating?: number;
-  rating?: number;
-};
-const asRecord = (x: unknown): Record<string, unknown> | null =>
-  x && typeof x === 'object' ? (x as Record<string, unknown>) : null;
-
-const getProp = <T,>(obj: unknown, key: string): T | undefined => {
-  const r = asRecord(obj);
-  return r && key in r ? (r[key] as T) : undefined;
-};
-
-const getProductLike = (x: unknown): ProductLike | undefined => {
-  const maybeProduct = getProp<unknown>(x, 'product');
-  const base = maybeProduct ?? x;
-  const r = asRecord(base);
-  if (r && 'id' in r && typeof r.id === 'number') {
-    return r as unknown as ProductLike;
-  }
-  return undefined;
-};
 
 const mapReviewed = (it: ReviewedItem): ContentItem =>
   mapToContentItem(it, { preferSelfRating: true });
@@ -108,7 +98,7 @@ export default function MyPage() {
           onLogout={() => {
             clearUser();
             router.replace('/');
-            toast.success('로그아웃 되었습니다.');
+            notifySuccess('로그아웃 되었습니다.');
           }}
         />
       </div>

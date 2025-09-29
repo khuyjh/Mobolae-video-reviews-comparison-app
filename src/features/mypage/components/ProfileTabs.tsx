@@ -1,55 +1,84 @@
 'use client';
 
-import clsx from 'clsx';
+import dynamic from 'next/dynamic';
 
-import SortDropdown, { OrderOption } from '@/shared/components/SortDropdown';
+import React, { memo, useEffect, useMemo, useState } from 'react';
 
-/* 탭 값으로 쓸 문자 */
+import type { OrderOption } from '@/shared/components/SortDropdown';
+
 type TabKey = 'reviews' | 'items' | 'wishlist';
 
-/*드롭다운 옵션 */
 const profileTabOptions: OrderOption<TabKey>[] = [
   { label: '리뷰 남긴 콘텐츠', value: 'reviews' },
   { label: '등록한 콘텐츠', value: 'items' },
   { label: '찜한 콘텐츠', value: 'wishlist' },
 ];
 
-type Props = {
-  value: TabKey; // 현재 선택된 탭
-  onChange: (val: TabKey) => void; // 탭 변경
-};
+// dynamic으로 불러오기
+const MobileDropdown = dynamic(() => import('@/shared/components/SortDropdown'), {
+  ssr: false,
+  loading: () => null,
+});
 
-export default function ProfileTabs({ value, onChange }: Props) {
+function toStringOptions(opts: OrderOption<TabKey>[]): OrderOption<string>[] {
+  return opts.map((o) => ({ label: o.label, value: o.value }));
+}
+
+function isTabKey(v: string): v is TabKey {
+  return v === 'reviews' || v === 'items' || v === 'wishlist';
+}
+
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const mql = window.matchMedia('(max-width: 767px)');
+    const update = () => setIsMobile(mql.matches);
+    update();
+    mql.addEventListener?.('change', update);
+    return () => mql.removeEventListener?.('change', update);
+  }, []);
+  return isMobile;
+}
+
+type Props = { value: TabKey; onChange: (val: TabKey) => void };
+
+function ProfileTabs({ value, onChange }: Props) {
+  const isMobile = useIsMobile();
+
+  // readonly 이슈 방지 + 타입 맞춤
+  const dropdownOptions = useMemo(() => toStringOptions(profileTabOptions), []);
+
   return (
     <div className='w-full'>
-      {/* 모바일 드롭다운 */}
-      <div className='md:hidden'>
-        <SortDropdown<TabKey>
-          options={profileTabOptions} // 배열전달
-          value={value} // 현재 선택 값
-          onChange={onChange} // 값 변경 시 전달
-          placeholder='탭 선택'
-          labelClassName='text-white text-left !text-lg-semibold' // 라벨 스타일 커스텀
-          buttonClassName='!justify-between' // 버튼 내부 정렬 커스텀
-          className='!w-[145px]'
-        />
-      </div>
+      {isMobile && (
+        <div className='md:hidden'>
+          <MobileDropdown
+            options={dropdownOptions}
+            value={value}
+            onChange={(v: string) => {
+              if (isTabKey(v)) onChange(v);
+            }}
+            placeholder='탭 선택'
+            labelClassName='text-white text-left !text-lg-semibold'
+            buttonClassName='!justify-between'
+            className='!w-[145px]'
+          />
+        </div>
+      )}
 
-      {/* pc 탭 버튼 */}
       <div className='hidden gap-6 md:flex'>
-        {/*옵션 버튼 생성*/}
         {profileTabOptions.map((opt) => {
-          const isActive = value === opt.value; //현재 탭과 동일한지 확인
+          const isActive = value === opt.value;
           return (
             <button
               key={opt.value}
-              onClick={() => onChange(opt.value)} // 클릭 시 클릭한 탭으로 변경
-              className={clsx(
-                'cursor-pointer pb-2 text-base transition',
+              type='button'
+              onClick={() => onChange(opt.value)}
+              className={`cursor-pointer pb-2 text-base transition ${
                 isActive
                   ? 'border-white font-semibold text-white'
-                  : 'text-gray-400 hover:text-white',
-              )}
+                  : 'text-gray-400 hover:text-white'
+              }`}
             >
               {opt.label}
             </button>
@@ -59,3 +88,5 @@ export default function ProfileTabs({ value, onChange }: Props) {
     </div>
   );
 }
+
+export default memo(ProfileTabs);
