@@ -17,7 +17,10 @@ import { sortByRatingDescending, sortByReviewCountDescending } from '@/shared/ut
 
 // 별점 높은 순 Top6 데이터 조회
 async function fetchTop6ByRating(): Promise<ContentItem[]> {
-  const res = await fetch(`https://mogazoa-api.vercel.app/16-7/products?order=rating`);
+  const res = await fetch(`https://mogazoa-api.vercel.app/16-7/products?order=rating`, {
+    next: { revalidate: 300 },
+    cache: 'force-cache',
+  });
   if (!res.ok) {
     throw new Error(`[fetchTop6ByRating] HTTP ${res.status} ${res.statusText}`);
   }

@@ -68,7 +68,7 @@ const SafeImage = ({
       />
       {showSkeleton && !loaded && (
         <div
-          aria-hidden
+          aria-hidden='true'
           className={clsx(
             'bg-black-700/60 pointer-events-none absolute inset-0 animate-pulse',
             skeletonClassName,
