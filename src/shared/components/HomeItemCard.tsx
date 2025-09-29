@@ -67,6 +67,7 @@ const HomeItemCard = ({
             sizes={CARD_IMAGE_SIZES}
             showSkeleton={!isCritical}
             className='object-cover'
+            quality={60}
           />
         </div>
         {/* 제목 및 값 섹션 */}
@@ -94,7 +95,10 @@ const HomeItemCard = ({
             {/* 별점 컨테이너 - 모바일은 다음 줄로 이동, 태블릿 이상에선 오른쪽 정렬*/}
             <div className={STAR_CONTAINER_STYLE}>
               {/* 별 아이콘 lucide 사용 */}
-              <Star className='aria-hidden="true" h-auto w-[12px] fill-yellow-400 stroke-yellow-400 md:w-[15px] xl:w-[16px]' />
+              <Star
+                aria-hidden='true'
+                className='h-auto w-[12px] fill-yellow-400 stroke-yellow-400 md:w-[15px] xl:w-[16px]'
+              />
               {/* 별점 - 소수점 1자리수까지 반올림, 정수로 떨어져도 .0까지는 표시,  string값으로 반환 */}
               <span className='text-sm-regular md:text-md-regular xl:text-base-regular text-gray-400'>
                 {rating !== undefined && rating !== null ? rating.toFixed(1) : '0.0'}
