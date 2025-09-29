@@ -24,7 +24,6 @@ type Props = {
   categories?: Category[];
   className?: string;
   hideWhenRequested?: boolean;
-  showHintText?: boolean;
 };
 
 const CHIP_BASE = 'inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium';
@@ -43,7 +42,6 @@ const CompareCategoryNoticeChip: React.FC<Props> = ({
   categories,
   className,
   hideWhenRequested = true,
-  showHintText = true,
 }) => {
   const requested = useCompareStore(selectRequested);
   const inFlight = useCompareStore(selectInFlight);
@@ -70,7 +68,7 @@ const CompareCategoryNoticeChip: React.FC<Props> = ({
       aria-atomic='true'
       role='status'
     >
-      {showHintText && label !== '—' && <span className={HINT_TEXT}>카테고리:</span>}
+      {label !== '—' && <span className={HINT_TEXT}>카테고리:</span>}
       {inFlight ? (
         <Skeleton className='h-[22px] w-16 rounded-full' />
       ) : (
