@@ -9,7 +9,7 @@ import ActivityCard from '@/features/mypage/components/activityCard';
 import ProfileCard from '@/features/mypage/components/ProfileCard';
 import ProfileTabsSection from '@/features/mypage/components/ProfileTabsSection';
 import ProfileUpdateModal from '@/features/mypage/components/ProfileUpdateModal';
-import { TEAM_ID } from '@/shared/constants/constants';
+import { PATH_OPTION } from '@/shared/constants/constants';
 import { useUserStore } from '@/shared/stores/userStore';
 import { mapToContentItem } from '@/shared/utils/mapToContentItem';
 
@@ -76,10 +76,7 @@ const mapFavorite = (it: FavoriteItem): ContentItem => mapToContentItem(it);
 
 export default function MyPage() {
   // 내 정보
-  const { data: meData, isLoading: isMeLoading } = useMe(
-    { path: { teamId: TEAM_ID as string } },
-    [],
-  );
+  const { data: meData, isLoading: isMeLoading } = useMe(PATH_OPTION, []);
   const router = useRouter();
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const clearUser = useUserStore((s) => s.clearUser);
