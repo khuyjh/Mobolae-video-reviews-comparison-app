@@ -1,10 +1,10 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { useParams } from 'next/navigation';
 
 import ActivityCard from '@/features/mypage/components/activityCard';
 import ProfileCard from '@/features/mypage/components/ProfileCard';
-import ProfileTabsSection from '@/features/mypage/components/ProfileTabsSection';
 import { useFollowMutations } from '@/features/user/hooks/useFollowMutaion';
 import ProfilePageSkeleton from '@/shared/components/skeleton/PofilePageSkeleton';
 import { TEAM_ID, PATH_OPTION } from '@/shared/constants/constants';
@@ -21,6 +21,10 @@ import type {
 } from '../../../../openapi/queries/common';
 import type { ContentItem } from '@/shared/types/content';
 
+const ProfileTabsSection = dynamic(
+  () => import('@/features/mypage/components/ProfileTabsSection'),
+  { ssr: false, loading: () => null },
+);
 // 프로필 이미지가 없을 때 기본 이미지 반환
 const toSrc = (url?: string | null): string =>
   url && url.trim() !== '' ? url : '/images/ProfileFallbackImg.png';
