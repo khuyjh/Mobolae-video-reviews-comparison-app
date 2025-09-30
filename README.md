@@ -137,7 +137,7 @@
 
 15. **디자인 수정** 클릭 가능한 요소에 cursor pointer 적용  - [PR #140](https://github.com/khuyjh/Mobolae-video-reviews-comparison-app/pull/140) (배혜민)
 
-16. **낙관적 업데이트** 팔로우/언팔로우에 낙관적 업데이트 적용으로 즉각적 반응  - [PR #96](https://github.com/khuyjh/Mobolae-video-reviews-comparison-app/pull/96) (배혜민)
+16. **낙관적 업데이트** 팔로우/언팔로우에 낙관적 업데이트 적용으로 즉각적 반응  - [PR #114](https://github.com/khuyjh/Mobolae-video-reviews-comparison-app/pull/114) (배혜민)
 
 17. **탭메뉴 제작**  탭 메뉴 추가로 정보 탐색 편의성 향상 - [PR #124](https://github.com/khuyjh/Mobolae-video-reviews-comparison-app/pull/124) (배혜민) 
 
