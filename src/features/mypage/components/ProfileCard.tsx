@@ -86,8 +86,10 @@ export default function ProfileCard({
         imgClassName={IMG_STYLE}
         src={avatarSrc}
         alt={name}
-        width={120}
-        height={120}
+        fill
+        sizes='(min-width:1280px) 180px, 120px'
+        priority
+        quality={80}
       />
 
       {/* 닉네임 / 소개글 */}
